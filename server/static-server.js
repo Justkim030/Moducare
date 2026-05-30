@@ -4,12 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
-
-// Load environment variables from .env file
-require('dotenv').config();
-
 const PORT = process.env.PORT || 8081;
 const ROOT = process.cwd();
+require('dotenv').config();
 
 const mime = {
   '.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json',
@@ -17,7 +14,9 @@ const mime = {
   '.gif':'image/gif','.ico':'image/x-icon','.woff2':'font/woff2','.woff':'font/woff'
 };
 
-// Parse Database Path from Connection URL (e.g., sqlite://src/data/hospital.db)
+
+
+
 let dbPath;
 const dbUrl = process.env.DATABASE_URL;
 
@@ -28,13 +27,11 @@ if (dbUrl && dbUrl.startsWith('sqlite://')) {
   dbPath = path.join(ROOT, 'src', 'data', 'hospital.db');
 }
 
-// Ensure the parent directory for the database exists
 const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Open connection to your SQLite database file
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Database connection failed:', err.message);
@@ -111,7 +108,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // POST /api/login
+
     if (req.method === 'POST' && url === '/api/login') {
       let body = '';
       req.on('data', ch => body += ch);
