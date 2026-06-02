@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Admin",
+    "email": "alice@acme.org",
+    "role": "admin"
+  },
+  {
+    "id": 2,
+    "name": "Bob Staff",
+    "email": "bob@acme.org",
+    "role": "staff"
+  },
+  {
+    "id": "usr_1779957773304",
+    "name": "MELVIL",
+    "email": "KEMBOIMELVIL@GMAIL.COM",
+    "role": "staff",
+    "passwordHash": "68f5d85633fc821bffb3c6fdf678388dac56f1a18b890a9ca4f857d4e712b1b7"
+  }
+]
