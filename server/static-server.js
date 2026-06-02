@@ -71,6 +71,7 @@ function serveIndex(res) {
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);
 
+<<<<<<< Updated upstream
   if (url.startsWith('/api/')) {
     if (req.method === 'GET' && url === '/api/health') return sendJSON(res, 200, { ok: true });
 
@@ -86,6 +87,72 @@ const server = http.createServer((req, res) => {
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(rows));
+=======
+  // Simple mock API under /api/
+  if (url.startsWith('/api/')){
+    if (req.method === 'GET' && url === '/api/health') return sendJSON(res,200,{ok:true});
+    if (req.method === 'GET' && url === '/api/users'){
+      const data = readUsers();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'GET' && url === '/api/activities'){
+      const data = readActivities();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'GET' && url === '/api/appointments'){
+      const data = readAppointments();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'GET' && url === '/api/operations'){
+      const data = readOperations();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'GET' && url === '/api/finance'){
+      const data = readFinance();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'GET' && url === '/api/analytics'){
+      const data = readAnalytics();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'GET' && url === '/api/incidents'){
+      const data = readIncidents();
+      return sendJSON(res,200,data);
+    }
+    if (req.method === 'POST' && url === '/api/incidents'){
+      let body = '';
+      req.on('data', ch=> body += ch);
+      req.on('end', ()=>{
+        try{
+          const payload = JSON.parse(body || '{}');
+          const arr = readIncidents();
+          const incident = Object.assign({ id: Date.now(), created: new Date().toISOString() }, payload);
+          arr.unshift(incident);
+          const ok = writeIncidents(arr);
+          if (!ok) return sendJSON(res,500,{ok:false,error:'write failed'});
+          return sendJSON(res,201,{ok:true,incident});
+        }catch(e){ return sendJSON(res,400,{ok:false,error:'invalid json'}); }
+      });
+      return;
+    }
+    // Login endpoint — validate password against stored hash
+    if (req.method === 'POST' && url === '/api/login'){
+      let body = '';
+      req.on('data',ch=> body+=ch);
+      req.on('end',()=>{
+        try{
+          const payload = JSON.parse(body || '{}');
+          const { email, password } = payload;
+          if (!email || !password) return sendJSON(res,400,{ok:false,error:'email and password required'});
+          const arr = readUsers();
+          const user = arr.find(u => u.email && u.email.toLowerCase() === String(email).toLowerCase());
+          if (!user) return sendJSON(res,401,{ok:false,error:'invalid credentials'});
+          const hash = crypto.createHash('sha256').update(password).digest('hex');
+          if (!user.passwordHash || user.passwordHash !== hash) return sendJSON(res,401,{ok:false,error:'invalid credentials'});
+          const safe = Object.assign({}, user); delete safe.passwordHash; // don't leak hash
+          return sendJSON(res,200,{ok:true,user:safe});
+        }catch(e){ console.error(e); return sendJSON(res,400,{ok:false,error:'invalid json'}); }
+>>>>>>> Stashed changes
       });
       return;
     }

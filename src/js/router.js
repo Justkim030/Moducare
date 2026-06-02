@@ -1,8 +1,10 @@
 import State from './state.js';
 import { getSession } from '../../js/auth.js';
+import './sidebar.js';
 
 const outlet = document.getElementById('app-content');
 const head = document.head;
+let activeFeature = null; // holds returned instance with optional destroy()
 
 function routeNameFromPath(path){
   const p = path.replace(/^\/+/,'').split('/')[0];
@@ -13,6 +15,13 @@ async function loadFeature(name){
   // remove any previously injected feature stylesheet for cleanliness
   const prev = document.querySelector('link[data-feature-styles]');
   if (prev) prev.remove();
+  // if previous feature exposed a destroy hook, call it to remove listeners/subscriptions
+  try{
+    if (activeFeature && typeof activeFeature.destroy === 'function'){
+      activeFeature.destroy();
+    }
+  }catch(e){ console.warn('Error during feature destroy', e); }
+  activeFeature = null;
 
   try{
     const modPromise = import(`/src/features/${name}/index.js`);
@@ -37,7 +46,11 @@ async function loadFeature(name){
     }
     outlet.innerHTML = tmpl;
     if (mod && typeof mod.init === 'function') {
-      await mod.init(outlet, State);
+      // allow module to return a cleanup object e.g. { destroy() { ... } }
+      try{
+        const inst = await mod.init(outlet, State);
+        if (inst && typeof inst.destroy === 'function') activeFeature = inst;
+      }catch(e){ console.error('Feature init error', e); }
     }
   }catch(err){
     show404(name);
