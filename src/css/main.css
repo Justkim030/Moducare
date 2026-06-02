@@ -36,6 +36,29 @@ body{margin:0;background:var(--mc-bg);color:var(--mc-text);font-family:var(--mc-
 .mc-nav-link{display:block;padding:10px 12px;border-radius:6px;color:var(--mc-text);text-decoration:none}
 .mc-nav-link:focus,.mc-nav-link:hover{background:rgba(255,255,255,0.02);outline:2px solid rgba(0,179,166,0.08)}
 
+/* Nested Navigation */
+.mc-nav-dropdown {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: none; /* Hidden by default */
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+  margin-top: 4px;
+}
+.mc-nav-item.expanded .mc-nav-dropdown { display: flex; }
+.mc-nav-item.expanded #dashboard-toggle { color: var(--mc-accent); font-weight: 600; }
+.mc-nav-link.sub {
+  font-size: 11px;
+  padding: 6px 12px;
+  color: var(--mc-muted);
+}
+.mc-nav-link.sub:hover { color: var(--mc-text); background: rgba(255,255,255,0.01); }
+.mc-nav-link.sub.active { color: var(--mc-accent); font-weight: 600; background: rgba(0,179,166,0.04); }
+.mc-nav-chevron { float: right; font-size: 10px; opacity: 0.5; transition: transform 0.2s; }
+.mc-nav-item.expanded .mc-nav-chevron { transform: rotate(180deg); }
+
 /* Admin-only nav hidden by default; shown only when State indicates admin */
 .mc-nav-admin{display:none}
 .mc-nav-admin.visible{display:block}
