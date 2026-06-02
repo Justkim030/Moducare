@@ -1,7 +1,0 @@
-[
-  {"id":1,"time":"2026-05-26T09:12:00.000Z","user":"Alice","action":"Updated record","details":"Patient #4321","priority":"high","due":"2026-05-25T09:00:00.000Z","status":"open"},
-  {"id":2,"time":"2026-05-26T08:58:00.000Z","user":"Scheduler","action":"Created shift","details":"Ops Team","priority":"medium","due":"2026-05-28T09:00:00.000Z","status":"open"},
-  {"id":3,"time":"2026-05-25T08:12:00.000Z","user":"Bob","action":"Approved invoice","details":"Invoice #9873","priority":"low","due":"2026-05-23T09:00:00.000Z","status":"done"},
-  {"id":4,"time":"2026-05-23T07:30:00.000Z","user":"Eve","action":"New referral","details":"Patient #4328","priority":"high","due":"2026-05-26T09:00:00.000Z","status":"open"},
-  {"id":5,"time":"2026-05-20T10:00:00.000Z","user":"Finance","action":"Posted payment","details":"Client #110","priority":"low","due":"2026-05-26T10:00:00.000Z","status":"open"}
-]

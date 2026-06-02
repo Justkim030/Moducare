@@ -1,4 +1,0 @@
-[
-  { "id": 1, "metric": "Active Users", "value": 123, "period": "24h" },
-  { "id": 2, "metric": "Appointments", "value": 42, "period": "24h" }
-]

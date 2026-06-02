@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuCare Communications Hub</title>
+    <!-- Google Fonts for crisp, clean UI typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for matching icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Linked External Stylesheet -->
+    <link rel="stylesheet" href="comm.css">
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <h1>ModuCare</h1>
+                <p>Communications Hub</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#"><i class="fa-solid fa-file-invoice"></i> Executive Summary</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-chart-pie"></i> Sales Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-user-group"></i> User Growth</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-server"></i> System Status</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-gear"></i> Account Settings</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Admin Dashboard Avatar" class="avatar">
+            <div class="user-info">
+                <h4>Admin Dashboard</h4>
+                <p>analytics@corp.com</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN INTERFACE MAIN BODY -->
+    <main class="main-content">
+        
+        <!-- TOP CONTROLS BAR -->
+        <header class="top-bar">
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search messages, staff, or announcements...">
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> New Message</button>
+                <button class="btn btn-secondary"><i class="fa-solid fa-bullhorn"></i> Broadcast</button>
+                <button class="icon-btn"><i class="fa-regular fa-calendar"></i></button>
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="badge-dot"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- URGENT ANNOUNCEMENTS BILLBOARD -->
+        <section>
+            <div class="section-header">
+                <h2>Urgent Announcements</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="announcements-grid">
+                
+                <!-- Card 1 -->
+                <div class="announcement-card card-mandatory">
+                    <div>
+                        <div class="card-top">
+                            <span class="tag tag-mandatory">Mandatory</span>
+                            <i class="fa-solid fa-asterisk"></i>
+                        </div>
+                        <h3>Code Blue Training</h3>
+                        <p>Recertification required for all ICU staff by Friday. Check your scheduled slot.</p>
+                    </div>
+                    <div class="card-footer card-footer-alert">
+                        <i class="fa-regular fa-clock"></i> Due in 2 days
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="announcement-card card-update">
+                    <div>
+                        <div class="card-top">
+                            <span class="tag tag-update">Update</span>
+                            <i class="fa-solid fa-briefcase-medical"></i>
+                        </div>
+                        <h3>New Protocol: Vent 2.0</h3>
+                        <p>Updated ventilation management guidelines now available in the portal.</p>
+                    </div>
+                    <div class="card-footer">
+                        <i class="fa-regular fa-eye"></i> 42 staff acknowledged
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="announcement-card card-facility">
+                    <div>
+                        <div class="card-top">
+                            <span class="tag tag-facility">Facility</span>
+                            <i class="fa-solid fa-building-shield"></i>
+                        </div>
+                        <h3>Main Lab Downtime</h3>
+                        <p>Scheduled maintenance for blood analyzers tonight from 22:00 to 00:00.</p>
+                    </div>
+                    <div class="card-footer">
+                        <i class="fa-regular fa-clock"></i> Starts in 4h
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- MAIN RECENT MESSAGES INTERACTION WORKSPACE -->
+        <section style="display: flex; flex-direction: column; flex-grow: 1;">
+            <div class="section-header">
+                <h2>Recent Messages</h2>
+            </div>
+            
+            <div class="workspace">
+                
+                <!-- Tabbed Inbox Items Pane -->
+                <div class="message-list-pane">
+                    <div class="pane-tabs">
+                        <button class="tab active">Inbox</button>
+                        <button class="tab">Drafts</button>
+                        <button class="tab">Sent</button>
+                    </div>
+                    <div class="msg-items-container">
+                        
+                        <!-- Item 1 (Active) -->
+                        <div class="msg-item active">
+                            <div class="msg-meta">
+                                <span class="msg-sender">Dr. Sarah Jenkins</span>
+                                <span>10:42 AM</span>
+                            </div>
+                            <h4>Patient #4429 Discharge Summary</h4>
+                            <p>I've reviewed the lab results for the...</p>
+                        </div>
+
+                        <!-- Item 2 -->
+                        <div class="msg-item">
+                            <div class="msg-meta">
+                                <span class="msg-sender">ICU Nursing Team</span>
+                                <span>09:15 AM</span>
+                            </div>
+                            <h4>Shift Handoff Checklist</h4>
+                            <p>The night shift has updated the vitals log...</p>
+                        </div>
+
+                        <!-- Item 3 -->
+                        <div class="msg-item">
+                            <div class="msg-meta">
+                                <span class="msg-sender">Admin Support</span>
+                                <span>Yesterday</span>
+                            </div>
+                            <h4>Quarterly Performance Reviews</h4>
+                            <p>Please ensure your self-assessment is...</p>
+                        </div>
+
+                        <!-- Item 4 -->
+                        <div class="msg-item">
+                            <div class="msg-meta">
+                                <span class="msg-sender">Pharmacy Alert</span>
+                                <span>Yesterday</span>
+                            </div>
+                            <h4>Medication Shortage: Atropine</h4>
+                            <p>Current stock is low. Please follow the...</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Expanded Document View Pane -->
+                <div class="message-view-pane">
+                    <div class="view-header">
+                        <div class="sender-profile">
+                            <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=100&q=80" alt="Dr. Sarah Jenkins" class="avatar">
+                            <div class="sender-details">
+                                <h3>Dr. Sarah Jenkins</h3>
+                                <p>Chief of Medicine • s.jenkins@moducare.com</p>
+                            </div>
+                        </div>
+                        <div class="view-actions">
+                            <button class="icon-btn"><i class="fa-solid fa-reply"></i></button>
+                            <button class="icon-btn"><i class="fa-solid fa-box-archive"></i></button>
+                            <button class="icon-btn"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="view-body">
+                        <div class="msg-title-area">
+                            <h2>Patient #4429 Discharge Summary</h2>
+                            <span class="msg-date">Oct 24, 2023 at 10:42 AM</span>
+                        </div>
+                        
+                        <div class="msg-text">
+                            <p>Hi Team,</p>
+                            <p>I've completed the final review for Patient #4429 (Maria Gonzalez). Her lab results from this morning show a significant improvement in renal function, and her blood pressure has stabilized at 128/82.</p>
+                            
+                            <!-- Internal Attachment Block -->
+                            <div class="attachments-section">
+                                <div class="attachment-title">
+                                    <i class="fa-solid fa-paperclip"></i> Attached Documents
+                                </div>
+                                <div class="file-card">
+                                    <i class="fa-regular fa-file-pdf"></i>
+                                    <span>Discharge_Summary_4429.pdf</span>
+                                    <span class="file-size">(1.2MB)</span>
+                                </div>
+                            </div>
+
+                            <p>Please initiate the discharge protocol for 2:00 PM today. Ensure she has her follow-up appointment scheduled with Cardiology for next Tuesday. I've already signed the prescription orders in the system.</p>
+                            <p>Thanks for the excellent care over the weekend!</p>
+                            <p>Best regards,<br><strong>Sarah</strong></p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Input Reply Dock -->
+                    <div class="reply-box-container">
+                        <div class="reply-input-wrapper">
+                            <input type="text" placeholder="Type a quick reply...">
+                            <button class="btn-send"><i class="fa-solid fa-pencil"></i></button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

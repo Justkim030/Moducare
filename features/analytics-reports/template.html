@@ -1,4 +1,106 @@
-<section class="feature-analytics">
-  <header><h2>Analytics & Reports</h2></header>
-  <div id="analytics-root">Use the `init` or `render` contract to mount visualizations here.</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Analytics & Reports</title>
+
+  <!-- 🎨 CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- 📊 Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<section id="analytics-container">
+
+  <!-- 🏷 HEADER -->
+  <h2>Analytics & Reports</h2>
+
+  <!-- 🔍 FILTERS + SEARCH -->
+  <div class="analytics-controls">
+
+    <input type="text" id="search-input" placeholder="Search records..." />
+
+    <div class="filters">
+      <button data-range="today">Today</button>
+      <button data-range="7d">7 Days</button>
+      <button data-range="30d">30 Days</button>
+    </div>
+
+    <div class="exports">
+      <button id="export-csv">Export CSV</button>
+      <button id="export-pdf">Export PDF</button>
+    </div>
+
+  </div>
+
+  <!-- 📊 KPI SUMMARY CARDS -->
+  <div class="cards">
+
+    <div id="kpi-users" class="card">
+      <h3>Total Users</h3>
+      <p>1,240</p>
+    </div>
+
+    <div id="kpi-active" class="card">
+      <h3>Active</h3>
+      <p>980</p>
+    </div>
+
+    <div id="kpi-inactive" class="card">
+      <h3>Inactive</h3>
+      <p>260</p>
+    </div>
+
+    <div id="kpi-growth" class="card">
+      <h3>Growth</h3>
+      <p>+12%</p>
+    </div>
+
+  </div>
+
+  <!-- 📈 TRENDS / CHARTS -->
+  <div id="chart-area">
+    <canvas id="analytics-chart"></canvas>
+  </div>
+
+  <!-- 📋 MAIN DATA TABLE -->
+  <table id="analytics-table">
+
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Value</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+
+    <tbody></tbody>
+
+  </table>
+
+  <!-- 🔄 RECENT ACTIVITY LOG -->
+  <div id="activity-log">
+
+    <h3>Recent Activity</h3>
+
+    <ul>
+      <li>User John updated record</li>
+      <li>Payroll processed</li>
+      <li>New patient registered</li>
+    </ul>
+
+  </div>
+
 </section>
+
+<!-- ⚙️ JS -->
+<script type="module" src="index.js"></script>
+
+</body>
+</html>
