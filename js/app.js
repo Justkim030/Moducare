@@ -151,6 +151,18 @@ function initUserMenu() {
   });
 }
 
+// Sign-out button in profile menu (explicit hookup + red styling class)
+function initSignOutButton() {
+  const signout = document.getElementById('profile-signout');
+  if (!signout) return;
+  // Use design-system button tokens for consistency
+  signout.classList.add('btn', 'btn-danger');
+  // Hook logout
+  signout.addEventListener('click', () => {
+    try { logout(); } catch (e) { console.error('Logout failed', e); }
+  });
+}
+
 // ── Hide Inaccessible Nav Items ──────────────────────────────
 function applyNavPermissions() {
   import('./auth.js').then(({ canAccessModule }) => {
@@ -169,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearch();
   initNotifications();
   initUserMenu();
+  initSignOutButton();
   applyNavPermissions();
   initRouter();
 
