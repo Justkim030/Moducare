@@ -3,6 +3,9 @@
    Shared interactive UI components used across all modules.
    ============================================================ */
 
+/* Import component-specific dashboard visuals */
+@import url("./components/dashboard.css");
+
 /* ── Modal ────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
