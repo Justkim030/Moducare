@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scheduling Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h1 class="logo">ModuCare MS</h1>
+
+    <nav>
+      <ul>
+        <li><i class="fa-solid fa-table-columns"></i> Dashboard</li>
+        <li><i class="fa-solid fa-users"></i> HR</li>
+        <li><i class="fa-solid fa-gear"></i> Operations</li>
+        <li><i class="fa-solid fa-wallet"></i> Finance</li>
+        <li><i class="fa-solid fa-chart-line"></i> Analytics</li>
+
+        <li class="active">
+          <i class="fa-solid fa-calendar-days"></i>
+          Scheduling
+        </li>
+
+        <li><i class="fa-solid fa-sliders"></i> Settings</li>
+      </ul>
+    </nav>
+
+    <div class="status-box">
+      <p>SYSTEM STATUS</p>
+      <span>● Cloud Sync Active</span>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <header class="topbar">
+      <div class="title">
+        <i class="fa-solid fa-bars"></i>
+        <h2>Scheduling</h2>
+      </div>
+
+      <div class="top-actions">
+        <button class="schedule-btn">
+          <i class="fa-solid fa-plus"></i>
+          New Schedule
+        </button>
+
+        <div class="profile">UA</div>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <section class="stats">
+
+      <div class="card">
+        <h4>DAILY SHIFTS</h4>
+        <h2>42</h2>
+        <span class="green">↗ 12%</span>
+      </div>
+
+      <div class="card">
+        <h4>STAFF ON DUTY</h4>
+        <h2>18</h2>
+        <p>of 25 available</p>
+      </div>
+
+      <div class="card">
+        <h4>PENDING REQUESTS</h4>
+        <h2 class="red">7</h2>
+        <span class="alert">Action Required</span>
+      </div>
+
+      <div class="card blue-card">
+        <h4>UTILIZATION RATE</h4>
+        <h2>94%</h2>
+
+        <div class="progress">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Calendar -->
+    <section class="calendar-container">
+
+      <div class="calendar-header">
+
+        <div class="tabs">
+          <button>Day</button>
+          <button class="active-tab">Week</button>
+          <button>Month</button>
+        </div>
+
+        <h3>October 21 – 27, 2024</h3>
+
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search staff or patient..." />
+        </div>
+
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="calendar-grid">
+
+        <div class="time-column">
+          <div>08:00</div>
+          <div>09:00</div>
+          <div>10:00</div>
+          <div>11:00</div>
+        </div>
+
+        <!-- Days -->
+        <div class="day-column">
+          <div class="day-header">MON 21</div>
+          <div class="event blue">A. Johnson<br>General Checkup</div>
+        </div>
+
+        <div class="day-column">
+          <div class="day-header">TUE 22</div>
+          <div class="event green">
+            Shift: Nursing<br>Ward 4 Monitoring
+          </div>
+        </div>
+
+        <div class="day-column active-day">
+          <div class="day-header">WED 23</div>
+          <div class="slot">Available Slot</div>
+        </div>
+
+        <div class="day-column">
+          <div class="day-header">THU 24</div>
+
+          <div class="event orange">
+            Surgery Prep<br>Team Meeting
+          </div>
+
+          <div class="event pink">
+            EMERGENCY<br>Full Staff Participation
+          </div>
+        </div>
+
+        <div class="day-column">
+          <div class="day-header">FRI 25</div>
+
+          <div class="event blue">
+            K. Miller<br>Consultation
+          </div>
+        </div>
+
+        <div class="day-column">
+          <div class="day-header">SAT 26</div>
+        </div>
+
+        <div class="day-column">
+          <div class="day-header">SUN 27</div>
+        </div>
+
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <span><span class="dot blue"></span> Patient Appointment</span>
+        <span><span class="dot green"></span> Staff Shift</span>
+        <span><span class="dot orange"></span> Administration</span>
+        <span><span class="dot pink"></span> Critical/Urgent</span>
+      </div>
+
+    </section>
+
+  </main>
+
+</body>
+</html>

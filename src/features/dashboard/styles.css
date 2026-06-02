@@ -1,12 +1,12 @@
 .feature-dashboard{display:block;padding:8px}
 .feature-dashboard h1{margin:0 0 8px 0}
 .feature-dashboard h2{margin:12px 0 8px 0}
-.dashboard-layout{display:grid;grid-template-columns:260px 1fr;gap:16px}
-.dashboard-left{background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:12px;border-radius:6px}
+.dashboard-layout{display:grid;grid-template-columns:minmax(200px,260px) 1fr;gap:20px}
+.dashboard-left{background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:14px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
 .dashboard-tabs{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .tab-btn{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:6px;text-align:left;color:var(--mc-text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .tab-btn .icon{width:18px;height:18px;flex:0 0 18px;margin-right:8px}
-.tab-btn[aria-selected="true"]{background:rgba(0,179,166,0.12);border-color:rgba(0,179,166,0.18)}
+.tab-btn[aria-selected="true"]{background:rgba(0,179,166,0.12);border-color:rgba(0,179,166,0.18);box-shadow:0 6px 18px rgba(0,179,166,0.04)}
 .badge{background:rgba(0,0,0,0.32);color:var(--mc-text);padding:2px 6px;border-radius:999px;font-size:11px;margin-left:8px}
 .dashboard-widgets .widget{margin-bottom:12px}
 .quick-filters{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}

@@ -51,7 +51,7 @@ body{margin:0;background:var(--mc-bg);color:var(--mc-text);font-family:var(--mc-
 .dense-table tr:hover{background:rgba(255,255,255,0.01)}
 
 /* Header controls */
-.mc-search input[type=search]{min-width:420px;max-width:720px;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--mc-text)}
+.mc-search input[type=search]{width:clamp(140px,35vw,420px);padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--mc-text);min-width:0;max-width:100%;}
 .mc-header-actions{display:flex;align-items:center;gap:8px}
 .mc-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--mc-text);padding:6px 8px;border-radius:6px;cursor:pointer}
 .mc-btn:focus{outline:3px solid rgba(0,179,166,0.12)}
@@ -71,3 +71,34 @@ body{margin:0;background:var(--mc-bg);color:var(--mc-text);font-family:var(--mc-
   .mc-sidebar,.mc-header,.mc-footer,.mc-btn{display:none}
   .mc-content{padding:0;margin:0}
 }
+
+/* Sign-out uses design-system `.btn` + `.btn-danger` */
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .mc-search input[type=search] { width: clamp(120px, 40vw, 360px); }
+  .mc-content { padding: 12px; }
+}
+
+@media (max-width: 700px) {
+  /* Narrow screens: collapse sidebar and simplify header */
+  .mc-sidebar { width: 68px; padding: 12px; }
+  .mc-brand { font-size: 16px; }
+  .mc-search input[type=search] { display: none; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .mc-content { padding: 8px; }
+  .mc-header { padding: 8px; }
+  .mc-nav-link { padding: 8px 10px; font-size: 14px; }
+  .mc-sidebar { position: fixed; z-index: 200; height: 100vh; overflow:auto; }
+  .mc-main { margin-left: 68px; }
+}
+
+/* Collapsed state (manual or programmatic) */
+.mc-sidebar.collapsed {
+  width: 68px !important;
+  padding-left: 8px; padding-right: 8px;
+}
+
+.mc-sidebar.collapsed .mc-brand { font-size: 14px; }
+.mc-sidebar.collapsed .mc-nav-link { padding: 8px 10px; }

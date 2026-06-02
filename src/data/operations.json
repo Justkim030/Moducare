@@ -1,4 +1,0 @@
-[
-  { "id": 1, "name": "Daily Rounds", "owner": "Ops", "status": "ok", "scheduled": "2026-05-26T09:00:00Z" },
-  { "id": 2, "name": "Inventory Check", "owner": "Logistics", "status": "due", "scheduled": "2026-05-27T10:00:00Z" }
-]

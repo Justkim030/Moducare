@@ -8,5 +8,9 @@
   },
   "description": "ModuCare MS - static SPA with mock API",
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "sqlite3": "^6.0.1"
+  }
 }
