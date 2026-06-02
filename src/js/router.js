@@ -11,6 +11,25 @@ function routeNameFromPath(path){
   return p || 'dashboard';
 }
 
+function updateActiveLinks(path) {
+  // Clear previous states
+  document.querySelectorAll('.mc-nav-link').forEach(link => link.classList.remove('active'));
+  
+  // Highlight sub-link if exact match
+  const exactMatch = document.querySelector(`.mc-nav-link[href="${path}"]`);
+  if (exactMatch) {
+    exactMatch.classList.add('active');
+    // Auto-expand parent if it's a sub-item
+    if (exactMatch.classList.contains('sub')) {
+      document.getElementById('nav-dashboard-item')?.classList.add('expanded');
+    }
+  } else {
+    // Fallback to highlighting the main module link
+    const feature = routeNameFromPath(path);
+    document.querySelector(`.mc-nav-link[href="/${feature}"]`)?.classList.add('active');
+  }
+}
+
 async function loadFeature(name){
   // remove any previously injected feature stylesheet for cleanliness
   const prev = document.querySelector('link[data-feature-styles]');
@@ -73,6 +92,7 @@ function navigate(path){
 
 function loadRoute(path){
   const name = routeNameFromPath(path);
+  updateActiveLinks(path);
   loadFeature(name);
 }
 

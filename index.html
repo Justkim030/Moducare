@@ -18,7 +18,15 @@
       <div class="mc-brand" tabindex="0">ModuCare</div>
       <nav>
         <ul class="mc-nav-list">
-          <li><a href="/dashboard" data-route class="mc-nav-link">Dashboard</a></li>
+          <li class="mc-nav-item" id="nav-dashboard-item">
+            <a href="/dashboard" data-route class="mc-nav-link" id="dashboard-toggle">Dashboard <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/dashboard/overview" data-route class="mc-nav-link sub">Overview</a></li>
+              <li><a href="/dashboard/tasks" data-route class="mc-nav-link sub">Tasks</a></li>
+              <li><a href="/dashboard/calendar" data-route class="mc-nav-link sub">Calendar</a></li>
+              <li><a href="/dashboard/kpi-1" data-route class="mc-nav-link sub">KPI 1</a></li>
+            </ul>
+          </li>
           <li><a href="/staff" data-route class="mc-nav-link">Staff</a></li>
           <li><a href="/operations" data-route class="mc-nav-link mc-nav-operations">Operations</a></li>
           <li><a href="/finance" data-route class="mc-nav-link mc-nav-finance">Finance</a></li>
@@ -53,5 +61,12 @@
   </div>
   <script type="module" src="/src/js/router.js"></script>
   <script type="module" src="/js/app.js"></script>
+  <script>
+    // Simple toggle for the dashboard dropdown
+    document.getElementById('dashboard-toggle')?.addEventListener('click', function(e) {
+      // Toggle the 'expanded' class on the parent LI
+      document.getElementById('nav-dashboard-item').classList.toggle('expanded');
+    });
+  </script>
 </body>
 </html>
