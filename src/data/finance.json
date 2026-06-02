@@ -1,4 +1,0 @@
-[
-  { "id": 1, "type": "Invoice", "reference": "INV-1001", "amount": 1200.00, "status": "pending", "due": "2026-06-01" },
-  { "id": 2, "type": "Payment", "reference": "PAY-2001", "amount": 300.00, "status": "posted", "date": "2026-05-20" }
-]
