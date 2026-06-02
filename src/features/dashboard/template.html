@@ -7,50 +7,58 @@
   </header>
 
   <div class="dashboard-layout">
-    <aside class="dashboard-left">
-      <div class="dashboard-tabs" role="tablist" aria-label="Dashboard sections">
-        <button role="tab" class="tab-btn" data-tab="overview" aria-selected="true">Overview</button>
-        <button role="tab" class="tab-btn" data-tab="tasks" aria-selected="false">Tasks</button>
-        <button role="tab" class="tab-btn" data-tab="calendar" aria-selected="false">Calendar</button>
-      </div>
-      <div class="dashboard-widgets">
-        <div class="kpi">KPI 1</div>
-        <div class="kpi">KPI 2</div>
-      </div>
-    </aside>
-
-    <div class="dashboard-right">
+    <!-- Overview View -->
+    <div id="view-overview" class="dashboard-view active">
       <section class="card">
-        <div class="section-header">
-          <div class="section-title">Recent Activity</div>
-          <div>
-            <input id="activity-search" type="search" placeholder="Search recent activity">
-            <button id="sort-time" class="mc-btn">Sort</button>
-            <button id="export-csv" class="mc-btn">Export</button>
+          <div class="section-header">
+            <div class="section-title">Recent Activity</div>
+            <div>
+              <input id="activity-search" type="search" placeholder="Search recent activity">
+              <button id="export-csv" class="mc-btn">Export</button>
+            </div>
           </div>
-        </div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
-            <tbody id="recent-body"><tr><td colspan="4">Loading…</td></tr></tbody>
-          </table>
-        </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+              <tbody id="recent-body"><tr><td colspan="4">Loading…</td></tr></tbody>
+            </table>
+          </div>
       </section>
 
       <section class="card">
-        <div class="section-header"><div class="section-title">Upcoming</div></div>
-        <ul id="appointments-list"></ul>
-      </section>
-
-      <section class="card">
-        <div class="section-header"><div class="section-title">Report Incident</div></div>
+        <div class="section-header"><div class="section-title">Quick Report</div></div>
         <form id="incident-form">
           <div class="input-group"><label>Title<input id="inc-title" class="input"></label></div>
-          <div class="input-group"><label>Description<textarea id="inc-desc" class="input"></textarea></label></div>
-          <div class="input-group"><label>Severity<select id="inc-severity" class="input"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label></div>
           <div class="input-group"><label>Patient<input id="inc-patient" class="input"></label></div>
           <div><button type="submit" class="mc-btn">Submit</button></div>
         </form>
+      </section>
+    </div>
+
+    <!-- Tasks View -->
+    <div id="view-tasks" class="dashboard-view">
+      <section class="card">
+        <div class="section-header"><div class="section-title">My Tasks</div></div>
+        <p class="mc-muted">Assigned tasks and reminders will appear here.</p>
+      </section>
+    </div>
+
+    <!-- Calendar View -->
+    <div id="view-calendar" class="dashboard-view">
+      <section class="card">
+        <div class="section-header"><div class="section-title">Schedule Overview</div></div>
+        <div id="calendar-list" class="calendar-list">Loading appointments...</div>
+      </section>
+    </div>
+
+    <!-- KPI 1 View (Financial Metrics) -->
+    <div id="view-kpi-1" class="dashboard-view">
+      <section class="card">
+        <div class="section-header"><div class="section-title">Financial Metrics</div></div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="label">Revenue</div><div class="value" id="kpi-revenue">KSh 0.00</div></div>
+          <div class="kpi"><div class="label">Costs</div><div class="value" id="kpi-costs">KSh 0.00</div></div>
+        </div>
       </section>
     </div>
   </div>
