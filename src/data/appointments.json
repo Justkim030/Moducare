@@ -1,5 +1,0 @@
-[
-  {"id":1,"time":"2026-05-27T10:00:00.000Z","patient":"John Smith","type":"Consultation","status":"scheduled"},
-  {"id":2,"time":"2026-05-27T11:30:00.000Z","patient":"Mary Jones","type":"Follow-up","status":"confirmed"},
-  {"id":3,"time":"2026-05-28T09:00:00.000Z","patient":"Peter Lee","type":"Intake","status":"scheduled"}
-]

@@ -1,2 +1,173 @@
-/* Analytics scaffold styles */
-.feature-analytics { padding:12px }
+
+/* =========================
+   GLOBAL CONTAINER
+========================= */
+#analytics-container {
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  background: #f8fafc;
+  color: #111827;
+}
+
+/* Title */
+#analytics-container h2 {
+  margin-bottom: 14px;
+  font-size: 22px;
+}
+
+/* =========================
+   CONTROLS (SEARCH + FILTERS + EXPORT)
+========================= */
+.analytics-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+#search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.filters button,
+.exports button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #1f2937;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filters button:hover,
+.exports button:hover {
+  background: #374151;
+}
+
+/* =========================
+   KPI CARDS
+========================= */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.card {
+  background: white;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card h3 {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.card p {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 6px;
+  color: #111827;
+}
+
+/* =========================
+   CHART AREA
+========================= */
+#chart-area {
+  background: white;
+  padding: 14px;
+  border-radius: 12px;
+  margin: 15px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   TABLE
+========================= */
+#analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+#analytics-table thead {
+  background: #111827;
+  color: white;
+}
+
+#analytics-table th,
+#analytics-table td {
+  padding: 12px;
+  text-align: left;
+}
+
+#analytics-table tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+#analytics-table tbody tr:hover {
+  background: #f3f4f6;
+}
+
+/* =========================
+   STATUS COLORS
+========================= */
+.status-good {
+  color: green;
+  font-weight: bold;
+}
+
+.status-warning {
+  color: orange;
+  font-weight: bold;
+}
+
+.status-bad {
+  color: red;
+  font-weight: bold;
+}
+
+/* =========================
+   ACTIVITY LOG
+========================= */
+#activity-log {
+  margin-top: 20px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+#activity-log h3 {
+  margin-bottom: 8px;
+}
+
+#activity-log ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#activity-log li {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
