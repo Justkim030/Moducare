@@ -1,6 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance & Billing</title>
+
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
 <section class="feature-finance">
-  <header><h2>Finance & Billing</h2></header>
-  <div id="finance-root">
-    <table id="finance-table"><thead><tr><th>Type</th><th>Ref</th><th>Amount</th><th>Status</th></tr></thead><tbody></tbody></table>
+
+  <!-- Section header -->
+  <div class="fi-header">
+    <header><h2>Finance &amp; Billing</h2></header>
+    <span class="fi-updated">Last updated: Jun 2026</span>
   </div>
+
+  <!-- Summary cards -->
+  <div class="fi-cards">
+    <div class="fi-card">
+      <p class="fi-card-label">Total revenue</p>
+      <p class="fi-card-value">$48,200</p>
+      <p class="fi-card-sub text-success"><i class="ti ti-trending-up"></i> +12% this month</p>
+    </div>
+
+    <div class="fi-card">
+      <p class="fi-card-label">Outstanding</p>
+      <p class="fi-card-value">$6,450</p>
+      <p class="fi-card-sub text-warning">3 invoices pending</p>
+    </div>
+
+    <div class="fi-card">
+      <p class="fi-card-label">Expenses</p>
+      <p class="fi-card-value">$12,880</p>
+      <p class="fi-card-sub">vs last month</p>
+    </div>
+
+    <div class="fi-card">
+      <p class="fi-card-label">Overdue</p>
+      <p class="fi-card-value">$1,200</p>
+      <p class="fi-card-sub text-danger">2 overdue bills</p>
+    </div>
+  </div>
+
+  <!-- Bar chart -->
+  <div class="fi-bar-wrap">
+    <p class="fi-bar-title">Monthly revenue — last 6 months</p>
+    <div class="fi-bars" id="fi-bars"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="fi-actions">
+    <button class="fi-btn fi-btn-primary">
+      <i class="ti ti-file-plus"></i> New invoice
+    </button>
+
+    <button class="fi-btn">
+      <i class="ti ti-circle-check"></i> Record payment
+    </button>
+
+    <button class="fi-btn">
+      <i class="ti ti-download"></i> Export
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="fi-filters">
+    <span class="fi-filter-label">Filter:</span>
+
+    <button class="fi-chip active" onclick="filterTable('all', this)">All</button>
+    <button class="fi-chip" onclick="filterTable('paid', this)">Paid</button>
+    <button class="fi-chip" onclick="filterTable('pending', this)">Pending</button>
+    <button class="fi-chip" onclick="filterTable('overdue', this)">Overdue</button>
+
+    <input class="fi-search" type="search"
+      placeholder="Search ref or type..."
+      oninput="searchTable(this.value)" />
+  </div>
+
+  <!-- Table -->
+  <div class="fi-table-wrap">
+    <table class="fi-tbl">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Ref</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody id="fi-body"></tbody>
+    </table>
+
+    <div id="fi-empty" class="fi-empty">No matching records</div>
+  </div>
+
 </section>
+
+<script src="script.js"></script>
+
+</body>
+</html>
