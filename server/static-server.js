@@ -4,14 +4,26 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
+
+require('dotenv').config();
+
 const PORT = process.env.PORT || 8081;
 const ROOT = process.cwd();
 require('dotenv').config();
 
 const mime = {
-  '.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json',
-  '.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg',
-  '.gif':'image/gif','.ico':'image/x-icon','.woff2':'font/woff2','.woff':'font/woff'
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
+  '.woff': 'font/woff',
 };
 
 
@@ -42,7 +54,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 function sendJSON(res, status, obj) {
   const s = JSON.stringify(obj, null, 2);
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(s) });
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(s),
+  });
   res.end(s);
 }
 
@@ -59,9 +74,25 @@ function serveFile(filePath, res) {
 function serveIndex(res) {
   const index = path.join(ROOT, 'index.html');
   fs.readFile(index, (err, data) => {
-    if (err) { res.writeHead(500); res.end('index.html not found'); return; }
+    if (err) {
+      res.writeHead(500);
+      res.end('index.html not found');
+      return;
+    }
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(data);
+  });
+}
+
+function readBody(req, cb) {
+  let body = '';
+  req.on('data', (ch) => (body += ch));
+  req.on('end', () => {
+    try {
+      cb(null, JSON.parse(body || '{}'));
+    } catch (e) {
+      cb(e);
+    }
   });
 }
 
@@ -71,15 +102,15 @@ const server = http.createServer((req, res) => {
   if (url.startsWith('/api/')) {
     if (req.method === 'GET' && url === '/api/health') return sendJSON(res, 200, { ok: true });
 
-    // Handle generic GET requests across all system sections mapped to SQLite tables
+    // Generic GET across SQLite-mapped tables
     const tables = ['users', 'activities', 'analytics', 'appointments', 'finance', 'operations', 'incidents'];
-    const matchedTable = tables.find(t => url === `/api/${t}`);
+    const matchedTable = tables.find((t) => url === `/api/${t}`);
 
     if (req.method === 'GET' && matchedTable) {
       db.all(`SELECT * FROM ${matchedTable}`, [], (err, rows) => {
         if (err) return sendJSON(res, 500, { ok: false, error: 'Database read failure' });
         if (matchedTable === 'users') {
-          rows.forEach(u => delete u.passwordHash); // Ensure hashes never leave the server
+          rows.forEach((u) => delete u.passwordHash); // never leak hash
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(rows));
@@ -87,89 +118,81 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // POST /api/incidents
     if (req.method === 'POST' && url === '/api/incidents') {
-      let body = '';
-      req.on('data', ch => body += ch);
-      req.on('end', () => {
-        try {
-          const p = JSON.parse(body || '{}');
-          const created = new Date().toISOString();
-          db.run(
-            `INSERT INTO incidents (created, title, description, status, severity) VALUES (?, ?, ?, ?, ?)`,
-            [created, p.title || '', p.description || '', p.status || 'open', p.severity || 'low'],
-            function(err) {
-              if (err) return sendJSON(res, 500, { ok: false, error: 'Write failure' });
-              return sendJSON(res, 201, { ok: true, incident: Object.assign({ id: this.lastID, created }, p) });
-            }
-          );
-        } catch (e) { return sendJSON(res, 400, { ok: false, error: 'invalid json' }); }
+      return readBody(req, (err, p) => {
+        if (err) return sendJSON(res, 400, { ok: false, error: 'invalid json' });
+        const created = new Date().toISOString();
+        db.run(
+          `INSERT INTO incidents (created, title, description, status, severity) VALUES (?, ?, ?, ?, ?)` ,
+          [
+            created,
+            p.title || '',
+            p.description || '',
+            p.status || 'open',
+            p.severity || 'low',
+          ],
+          function (writeErr) {
+            if (writeErr) return sendJSON(res, 500, { ok: false, error: 'Write failure' });
+            return sendJSON(res, 201, {
+              ok: true,
+              incident: Object.assign({ id: this.lastID, created }, p),
+            });
+          }
+        );
       });
-      return;
     }
-
 
     if (req.method === 'POST' && url === '/api/login') {
-      let body = '';
-      req.on('data', ch => body += ch);
-      req.on('end', () => {
-        try {
-          const { email, password } = JSON.parse(body || '{}');
-          if (!email || !password) return sendJSON(res, 400, { ok: false, error: 'Credentials missing' });
+      return readBody(req, (err, p) => {
+        if (err) return sendJSON(res, 400, { ok: false, error: 'invalid json' });
+        const { email, password } = p;
+        if (!email || !password) return sendJSON(res, 400, { ok: false, error: 'Credentials missing' });
 
-          db.get("SELECT * FROM users WHERE LOWER(email) = LOWER(?)", [email], (err, user) => {
-            if (err || !user) return sendJSON(res, 401, { ok: false, error: 'Invalid credentials' });
+        db.get('SELECT * FROM users WHERE LOWER(email) = LOWER(?)', [email], (getErr, user) => {
+          if (getErr || !user) return sendJSON(res, 401, { ok: false, error: 'Invalid credentials' });
 
-            if (user.passwordHash) {
-              const hash = crypto.createHash('sha256').update(password).digest('hex');
-              if (user.passwordHash !== hash) {
-                return sendJSON(res, 401, { ok: false, error: 'Invalid credentials' });
-              }
-            }
+          if (user.passwordHash) {
+            const hash = crypto.createHash('sha256').update(password).digest('hex');
+            if (user.passwordHash !== hash) return sendJSON(res, 401, { ok: false, error: 'Invalid credentials' });
+          }
 
-            const safe = Object.assign({}, user);
-            delete safe.passwordHash;
-            return sendJSON(res, 200, { ok: true, user: safe });
-          });
-        } catch (e) { return sendJSON(res, 400, { ok: false, error: 'invalid json' }); }
+          const safe = Object.assign({}, user);
+          delete safe.passwordHash;
+          return sendJSON(res, 200, { ok: true, user: safe });
+        });
       });
-      return;
     }
 
-    // POST /api/register
     if (req.method === 'POST' && url === '/api/register') {
-      let body = '';
-      req.on('data', ch => body += ch);
-      req.on('end', () => {
-        try {
-          const { name, email, role, password } = JSON.parse(body || '{}');
-          if (!email || !password) return sendJSON(res, 400, { ok: false, error: 'Email and password required' });
+      return readBody(req, (err, p) => {
+        if (err) return sendJSON(res, 400, { ok: false, error: 'invalid json' });
+        const { name, email, role, password } = p;
+        if (!email || !password) return sendJSON(res, 400, { ok: false, error: 'Email and password required' });
 
-          const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
-          const userId = 'usr_' + Date.now();
+        const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+        const userId = 'usr_' + Date.now();
 
-          db.run(
-            "INSERT INTO users (id, name, email, role, passwordHash) VALUES (?, ?, ?, ?, ?)",
-            [userId, name || email, email, role || 'staff', passwordHash],
-            function(err) {
-              if (err) {
-                if (err.message.includes('UNIQUE')) return sendJSON(res, 400, { ok: false, error: 'Email already registered' });
-                return sendJSON(res, 500, { ok: false, error: 'Registration failed' });
+        db.run(
+          'INSERT INTO users (id, name, email, role, passwordHash) VALUES (?, ?, ?, ?, ?)',
+          [userId, name || email, email, role || 'staff', passwordHash],
+          function (writeErr) {
+            if (writeErr) {
+              if (writeErr.message && writeErr.message.includes('UNIQUE')) {
+                return sendJSON(res, 400, { ok: false, error: 'Email already registered' });
               }
-              return sendJSON(res, 201, { ok: true, user: { id: userId, name: name || email, email, role } });
+              return sendJSON(res, 500, { ok: false, error: 'Registration failed' });
             }
-          );
-        } catch (e) { return sendJSON(res, 400, { ok: false, error: 'invalid json' }); }
+            return sendJSON(res, 201, { ok: true, user: { id: userId, name: name || email, email, role } });
+          }
+        );
       });
-      return;
     }
 
-    // PUT / DELETE User records Management
     if ((req.method === 'PUT' || req.method === 'DELETE') && url.startsWith('/api/users/')) {
       const idPart = url.replace('/api/users/', '');
 
       if (req.method === 'DELETE') {
-        db.run("DELETE FROM users WHERE id = ?", [idPart], (err) => {
+        db.run('DELETE FROM users WHERE id = ?', [idPart], (err) => {
           if (err) return sendJSON(res, 500, { ok: false, error: 'Delete execution failed' });
           return sendJSON(res, 200, { ok: true });
         });
@@ -177,40 +200,38 @@ const server = http.createServer((req, res) => {
       }
 
       if (req.method === 'PUT') {
-        let body = '';
-        req.on('data', ch => body += ch);
-        req.on('end', () => {
-          try {
-            const payload = JSON.parse(body || '{}');
-            db.get("SELECT * FROM users WHERE id = ?", [idPart], (err, user) => {
-              if (err || !user) return sendJSON(res, 404, { ok: false, error: 'User not found' });
+        return readBody(req, (err, payload) => {
+          if (err) return sendJSON(res, 400, { ok: false, error: 'invalid json' });
 
-              let updatedHash = user.passwordHash;
-              if (payload.password) updatedHash = crypto.createHash('sha256').update(payload.password).digest('hex');
+          db.get('SELECT * FROM users WHERE id = ?', [idPart], (getErr, user) => {
+            if (getErr || !user) return sendJSON(res, 404, { ok: false, error: 'User not found' });
 
-              const name = payload.name !== undefined ? payload.name : user.name;
-              const email = payload.email !== undefined ? payload.email : user.email;
-              const role = payload.role !== undefined ? payload.role : user.role;
+            let updatedHash = user.passwordHash;
+            if (payload.password) {
+              updatedHash = crypto.createHash('sha256').update(payload.password).digest('hex');
+            }
 
-              db.run(
-                "UPDATE users SET name = ?, email = ?, role = ?, passwordHash = ? WHERE id = ?",
-                [name, email, role, updatedHash, idPart],
-                function(err) {
-                  if (err) return sendJSON(res, 500, { ok: false, error: 'Update failed' });
-                  return sendJSON(res, 200, { ok: true, user: { id: idPart, name, email, role } });
-                }
-              );
-            });
-          } catch (e) { return sendJSON(res, 400, { ok: false, error: 'invalid json' }); }
+            const name = payload.name !== undefined ? payload.name : user.name;
+            const email = payload.email !== undefined ? payload.email : user.email;
+            const role = payload.role !== undefined ? payload.role : user.role;
+
+            db.run(
+              'UPDATE users SET name = ?, email = ?, role = ?, passwordHash = ? WHERE id = ?',
+              [name, email, role, updatedHash, idPart],
+              function (updateErr) {
+                if (updateErr) return sendJSON(res, 500, { ok: false, error: 'Update failed' });
+                return sendJSON(res, 200, { ok: true, user: { id: idPart, name, email, role } });
+              }
+            );
+          });
         });
-        return;
       }
     }
 
     return sendJSON(res, 404, { error: 'Endpoint not found' });
   }
 
-  // Fall back to index.html for SPA frontend client-side router
+  // SPA fallback for frontend routes
   const filePath = path.join(ROOT, url === '/' ? '/index.html' : url);
   serveFile(filePath, res);
 });
@@ -223,3 +244,4 @@ process.on('SIGINT', () => {
 });
 
 server.listen(PORT, () => console.log(`Server handling SQLite file running at http://localhost:${PORT}`));
+
