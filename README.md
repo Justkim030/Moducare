@@ -1,30 +1,11 @@
-# ModuCare MS — Local development
-
-Run the frontend and test UI/logic locally using the bundled zero-dependency Node server.
-
-Start the server (requires Node.js installed):
-
-```bash
-npm start
-# or
-node server/static-server.js
-```
-
-Open: http://localhost:8080
-
-API endpoints (mock):
-
-- `GET /api/health` — health check
-- `GET /api/users` — sample users list
-- `POST /api/login` — accepts JSON {name,role} and returns a user object
-
-Notes:
-
-- Server serves static files from project root and falls back to `index.html` for SPA routing.
-- This requires only Node.js (no additional packages). The frontend is pure HTML/CSS/JS.
 # ModuCare MS
 
 > **A centralized organizational management system** for HR, Operations, Finance, Analytics, Compliance, and beyond — built with a Vanilla Web Stack (HTML5 · CSS3 · ES6 Modules).
+
+## ⚡ Quick Start (Local Development)
+Run the frontend and test UI/logic locally using the bundled Node server.
+1. **Start Server:** `npm start` or `node server/static-server.js`
+2. **Access App:** Open http://localhost:8080
 
 ---
 
@@ -37,6 +18,9 @@ Notes:
 ├── login.html                  # Authentication — Sign In
 ├── forgot-password.html        # Authentication — Password Reset
 ├── README.md                   # This file
+│
+├── /server                     # Node.js development server
+│   └── static-server.js        # Static file server with API mocks
 │
 ├── /assets
 │   ├── /fonts                  # Self-hosted web fonts (if any)
@@ -87,25 +71,16 @@ Each feature folder follows this internal structure:
 ## 🚀 Getting Started
 
 ### Prerequisites
-- A modern browser (Chrome, Firefox, Edge, Safari)
-- A local web server that supports ES6 modules (required — `file://` won't work)
+*   **Node.js:** Required for the development server and dependency management.
+*   **Browser:** A modern browser supporting ES6 modules (Chrome, Firefox, Edge, or Safari).
 
-### Recommended: VS Code Live Server
-1. Install the **Live Server** extension in VS Code
-2. Open the project folder
-3. Right-click `index.html` → **Open with Live Server**
-
-### Alternative: Node http-server
-```bash
-npx http-server . -p 3000 --cors
-# Then open: http://localhost:3000/login.html
-```
-
-### Alternative: Python
-```bash
-python3 -m http.server 3000
-# Then open: http://localhost:3000/login.html
-```
+### Installation
+1. Clone the repository.
+2. Install dependencies (required for database and server utilities):
+   ```bash
+   npm install
+   ```
+3. Start the development server: `npm start`
 
 ---
 
@@ -260,11 +235,19 @@ apiFetch('/staff');                     // fetch with auth headers
 
 *ModuCare MS · Built with Vanilla Web Stack · &copy; 2025*
 
-## Secret admin access (local dev)
+---
 
-- The admin login is intentionally not linked in the UI. To open the secret admin login page, visit `/secret-login` or use the keyboard shortcut:
+### 🛠 Developer Tools & Tips
 
-  - Windows/Linux: Ctrl+Alt+L
-  - macOS: Ctrl+Shift+L
+**Secret Admin Access:**
+The admin login is hidden from the main UI for security. To access the secret login page:
+*   **URL:** Navigate to `/secret-login`
+*   **Shortcuts:** 
+    *   Windows/Linux: `Ctrl+Alt+L`
+    *   macOS: `Ctrl+Shift+L`
 
-  The secret login uses a client-side token for local testing only; replace with real server-side auth for production.
+**API Mocks:**
+The local server provides several endpoints for development:
+*   `GET /api/health` — System status.
+*   `GET /api/users` — Returns mock user directory.
+*   `POST /api/login` — Authentication simulation.
