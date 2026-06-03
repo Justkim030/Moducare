@@ -9,6 +9,7 @@ require('dotenv').config();
 
 const PORT = process.env.PORT || 8081;
 const ROOT = process.cwd();
+require('dotenv').config();
 
 const mime = {
   '.html': 'text/html',
@@ -25,7 +26,9 @@ const mime = {
   '.woff': 'font/woff',
 };
 
-// Parse Database Path from Connection URL (e.g., sqlite://src/data/hospital.db)
+
+
+
 let dbPath;
 const dbUrl = process.env.DATABASE_URL;
 
@@ -36,7 +39,6 @@ if (dbUrl && dbUrl.startsWith('sqlite://')) {
   dbPath = path.join(ROOT, 'src', 'data', 'hospital.db');
 }
 
-// Ensure the parent directory for the database exists
 const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
