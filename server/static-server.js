@@ -4,13 +4,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
-
 require('dotenv').config();
 
 const PORT = process.env.PORT || 8081;
 const ROOT = process.cwd();
-require('dotenv').config();
-
 const mime = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -25,9 +22,6 @@ const mime = {
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
 };
-
-
-
 
 let dbPath;
 const dbUrl = process.env.DATABASE_URL;
@@ -49,7 +43,45 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.error('Database connection failed:', err.message);
     process.exit(1);
   }
-  console.log('Connected to SQLite database file via URL configuration at:', dbPath);
+  console.log('Connected to SQLite database at:', dbPath);
+
+  // Initialize Schema and Seed Data
+  db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      email TEXT UNIQUE,
+      role TEXT,
+      passwordHash TEXT
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS incidents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      created TEXT,
+      title TEXT,
+      description TEXT,
+      status TEXT,
+      severity TEXT
+    )`);
+
+    // Placeholder tables for generic API mapping
+    ['activities', 'analytics', 'appointments', 'finance', 'operations'].forEach(t => {
+      db.run(`CREATE TABLE IF NOT EXISTS ${t} (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT)`);
+    });
+
+    // Seed Default Admin Account for secret login
+    const adminEmail = 'admin@Moducare.com';
+    const adminPassHash = crypto.createHash('sha256').update('Admin123!').digest('hex');
+    
+    db.get('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [adminEmail], (err, row) => {
+      if (!row) {
+        const userId = 'usr_admin_' + Date.now();
+        db.run('INSERT INTO users (id, name, email, role, passwordHash) VALUES (?, ?, ?, ?, ?)',
+          [userId, 'System Admin', adminEmail, 'admin', adminPassHash]);
+        console.log('System: Default admin account seeded (admin@Moducare.com)');
+      }
+    });
+  });
 });
 
 function sendJSON(res, status, obj) {
@@ -86,7 +118,9 @@ function serveIndex(res) {
 
 function readBody(req, cb) {
   let body = '';
+  req.setEncoding('utf8');
   req.on('data', (ch) => (body += ch));
+  req.on('error', (err) => cb(err));
   req.on('end', () => {
     try {
       cb(null, JSON.parse(body || '{}'));
@@ -244,4 +278,3 @@ process.on('SIGINT', () => {
 });
 
 server.listen(PORT, () => console.log(`Server handling SQLite file running at http://localhost:${PORT}`));
-
