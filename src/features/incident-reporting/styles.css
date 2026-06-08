@@ -1,0 +1,23 @@
+.incident-reporting-container {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.incident-wrapper {
+    width: 100%;
+    height: calc(100vh - 160px); 
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--sp-4);
+}
+
+.incident-iframe {
+    width: 100%;
+    flex-grow: 1;
+    border: 1px solid var(--clr-primary-500);
+    border-radius: var(--border-radius-md);
+    background-color: var(--surface-card);
+    box-shadow: var(--shadow-sm);
+}
