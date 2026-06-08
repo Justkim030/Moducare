@@ -3,195 +3,199 @@ const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
-// Load environment variables (.env)
 require('dotenv').config();
 
 const ROOT = process.cwd();
+let dbPath = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('sqlite://')
+  ? path.resolve(ROOT, process.env.DATABASE_URL.replace('sqlite://', ''))
+  : path.join(ROOT, 'src', 'data', 'hospital.db');
 
-// Resolve target database path from .env connection URL
-let dbPath;
-const dbUrl = process.env.DATABASE_URL;
-
-if (dbUrl && dbUrl.startsWith('sqlite://')) {
-  const relativeDbPath = dbUrl.replace('sqlite://', '');
-  dbPath = path.resolve(ROOT, relativeDbPath);
-} else {
-  dbPath = path.join(ROOT, 'src', 'data', 'hospital.db');
-}
-
-// Ensure target directory exists
 const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-// Open Database Connection
 const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Database connection error:', err.message);
-    process.exit(1);
-  }
-  console.log(`Connected to SQLite file at: ${dbPath}`);
-  executeSchemaMigration();
+  if (err) { console.error('Database connection error:', err.message); process.exit(1); }
+  db.run("PRAGMA foreign_keys = ON;", () => executeSchemaMigration());
 });
 
 function executeSchemaMigration() {
   db.serialize(() => {
-    console.log('\n--- Dropping outdated schema tables for clean migration ---');
+    console.log('\n--- Dropping existing database elements for clean migration ---');
+    db.run(`DROP TABLE IF EXISTS external_incidents`);
+    db.run(`DROP TABLE IF EXISTS internal_incidents`);
     db.run(`DROP TABLE IF EXISTS incidents`);
-    db.run(`DROP TABLE IF EXISTS analytics`);
+    db.run(`DROP TABLE IF EXISTS operations`);
     db.run(`DROP TABLE IF EXISTS activities`);
     db.run(`DROP TABLE IF EXISTS finance`);
     db.run(`DROP TABLE IF EXISTS appointments`);
     db.run(`DROP TABLE IF EXISTS patients`);
+    db.run(`DROP TABLE IF EXISTS employees`);
+    db.run(`DROP TABLE IF EXISTS roles`);
+    db.run(`DROP TABLE IF EXISTS departments`);
     db.run(`DROP TABLE IF EXISTS users`);
 
-    console.log('\n--- Creating new normalized schema tables ---');
+    console.log('\n--- Instantiating tables matching locked ER diagram ---');
 
-    // 1. Users Table
+    // 1. Users (Credentials only)
     db.run(`CREATE TABLE users (
       id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
-      role TEXT NOT NULL,
+      phone_number TEXT,
       passwordHash TEXT
     )`);
 
-    // 2. Patients Table (NEW)
+    // 2. Departments
+    db.run(`CREATE TABLE departments (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL
+    )`);
+
+    // 3. Roles
+    db.run(`CREATE TABLE roles (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      department_id TEXT,
+      FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+    )`);
+
+    // 4. Employees (Linked 1:1 to users via user_id; can be NULL)
+    db.run(`CREATE TABLE employees (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      user_id TEXT UNIQUE,
+      role_id TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
+    )`);
+
+    // 5. Patients
     db.run(`CREATE TABLE patients (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
-      dob TEXT,
-      gender TEXT,
-      phone TEXT
+      email TEXT,
+      phone_number TEXT
     )`);
 
-    // 3. Appointments Table (With Foreign Keys)
+    // 6. Appointments
     db.run(`CREATE TABLE appointments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      patient_id TEXT NOT NULL,
-      doctor_id TEXT NOT NULL,
       time TEXT NOT NULL,
+      patient_id TEXT NOT NULL,
       type TEXT,
       status TEXT,
+      employee_id TEXT NOT NULL,
       FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
-      FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     )`);
 
-    // 4. Finance Table (With Foreign Key to Patient)
+    // 7. Finance
     db.run(`CREATE TABLE finance (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      patient_id TEXT NOT NULL,
       type TEXT NOT NULL,
       reference TEXT NOT NULL,
       amount REAL NOT NULL,
       status TEXT NOT NULL,
       date TEXT,
+      due TEXT,
+      employee_id TEXT NOT NULL,
+      patient_id TEXT NOT NULL,
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
       FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
     )`);
 
-    // 5. Activities Table (With Foreign Key to User)
+    // 8. Activities (Correctly mapped to employee_id)
     db.run(`CREATE TABLE activities (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       time TEXT NOT NULL,
-      user_id TEXT NOT NULL,
+      employee_id TEXT NOT NULL,
       action TEXT NOT NULL,
       details TEXT,
       priority TEXT,
       due TEXT,
       status TEXT,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     )`);
 
-    // 6. Analytics Table
-    db.run(`CREATE TABLE analytics (
+    // 9. Operations
+    db.run(`CREATE TABLE operations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      metric TEXT NOT NULL,
-      value REAL NOT NULL,
-      period TEXT NOT NULL
+      employee_id TEXT NOT NULL,
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     )`);
 
-    // 7. Incidents Table
+    // 10. Incidents
     db.run(`CREATE TABLE incidents (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       created TEXT NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       status TEXT NOT NULL,
-      severity TEXT NOT NULL
+      severity TEXT NOT NULL,
+      employee_id TEXT,
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE SET NULL
     )`);
 
-    // Ingest production-ready mock baseline dataset conforming to relations
+    // 11. Internal Incidents (Inheritance subtype)
+    db.run(`CREATE TABLE internal_incidents (
+      incidents_id INTEGER PRIMARY KEY,
+      department_id TEXT,
+      FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE,
+      FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+    )`);
+
+    // 12. External Incidents (Inheritance subtype)
+    db.run(`CREATE TABLE external_incidents (
+      incidents_id INTEGER PRIMARY KEY,
+      FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE
+    )`);
+
     db.serialize(() => {
-      console.log('\n--- Seeding relational data models ---');
+      console.log('\n--- Populating system base seed metrics ---');
 
       // Seed Users
-      const users = [
-        { id: "usr_admin", name: "Alice Admin", email: "alice@acme.org", role: "admin", passwordHash: null },
-        { id: "usr_1779948492660", name: "Daniel Mach Reech", email: "danreech@acme.org", role: "admin", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f" },
-        { id: "usr_1779963783364", name: "silvia korir", email: "korirsilvia44@gmail.com", role: "staff", passwordHash: "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbcbf6c7c0938b8aa8" }
-      ];
-      const stmtUser = db.prepare("INSERT INTO users (id, name, email, role, passwordHash) VALUES (?, ?, ?, ?, ?)");
-      users.forEach(u => stmtUser.run([u.id, u.name, u.email, u.role, u.passwordHash]));
-      stmtUser.finalize();
-      console.log(`✓ Seeded ${users.length} relational users.`);
+      db.run(`INSERT INTO users (id, email, phone_number, passwordHash) VALUES 
+        ('usr_admin', 'alice@acme.org', '+254700000000', null),
+        ('usr_dan', 'danreech@acme.org', '+254711111111', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f')`);
+
+      // Seed Departments & Roles
+      db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services')`);
+      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Systems Engineer', 'dept_tech'), ('role_nurse', 'Triage Practitioner', 'dept_clin')`);
+
+      // Seed Employees
+      db.run(`INSERT INTO employees (id, name, user_id, role_id) VALUES 
+        ('emp_dan', 'Daniel Mach Reech', 'usr_dan', 'role_dev'),
+        ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse')`);
 
       // Seed Patients
-      const patients = [
-        { id: "pat_1", name: "John Smith", dob: "1984-03-12", gender: "Male", phone: "+254711111111" },
-        { id: "pat_2", name: "Mary Jones", dob: "1991-08-24", gender: "Female", phone: "+254722222222" },
-        { id: "pat_3", name: "Peter Lee", dob: "1976-11-05", gender: "Male", phone: "+254733333333" }
-      ];
-      const stmtPat = db.prepare("INSERT INTO patients (id, name, dob, gender, phone) VALUES (?, ?, ?, ?, ?)");
-      patients.forEach(p => stmtPat.run([p.id, p.name, p.dob, p.gender, p.phone]));
-      stmtPat.finalize();
-      console.log(`✓ Seeded ${patients.length} normalized patient profiles.`);
+      db.run(`INSERT INTO patients (id, name, email, phone_number) VALUES 
+        ('pat_1', 'Jane Doe', 'jane@gmail.com', '+254722222222')`);
 
-      // Seed Appointments
-      const appointments = [
-        { patient_id: "pat_1", doctor_id: "usr_1779948492660", time: "2026-06-10T10:00:00.000Z", type: "Consultation", status: "scheduled" },
-        { patient_id: "pat_2", doctor_id: "usr_1779963783364", time: "2026-06-10T11:30:00.000Z", type: "Follow-up", status: "confirmed" },
-        { patient_id: "pat_3", doctor_id: "usr_1779948492660", time: "2026-06-11T09:00:00.000Z", type: "Intake", status: "scheduled" }
-      ];
-      const stmtApp = db.prepare("INSERT INTO appointments (patient_id, doctor_id, time, type, status) VALUES (?, ?, ?, ?, ?)");
-      appointments.forEach(a => stmtApp.run([a.patient_id, a.doctor_id, a.time, a.type, a.status]));
-      stmtApp.finalize();
-      console.log(`✓ Seeded ${appointments.length} linked clinical appointments.`);
+      // Seed Core Relational Elements
+      db.run(`INSERT INTO appointments (time, patient_id, type, status, employee_id) VALUES 
+        ('2026-06-15T10:00:00Z', 'pat_1', 'Consultation', 'scheduled', 'emp_field_worker')`);
 
-      // Seed Finance
-      const finance = [
-        { patient_id: "pat_1", type: "Invoice", reference: "INV-1001", amount: 1200.00, status: "pending", date: "2026-06-01" },
-        { patient_id: "pat_2", type: "Payment", reference: "PAY-2001", amount: 300.00, status: "posted", date: "2026-05-20" }
-      ];
-      const stmtFin = db.prepare("INSERT INTO finance (patient_id, type, reference, amount, status, date) VALUES (?, ?, ?, ?, ?, ?)");
-      finance.forEach(f => stmtFin.run([f.patient_id, f.type, f.reference, f.amount, f.status, f.date]));
-      stmtFin.finalize();
-      console.log(`✓ Seeded ${finance.length} transaction invoices.`);
+      db.run(`INSERT INTO finance (type, reference, amount, status, date, due, employee_id, patient_id) VALUES 
+        ('Invoice', 'INV-2026-001', 4500.00, 'pending', '2026-06-08', '2026-06-22', 'emp_dan', 'pat_1')`);
 
-      // Seed Activities
-      const activities = [
-        { time: "2026-06-08T09:12:00.000Z", user_id: "usr_1779948492660", action: "Updated record", details: "Patient pat_1", priority: "high", due: "2026-06-09T09:00:00.000Z", status: "open" },
-        { time: "2026-06-08T08:58:00.000Z", user_id: "usr_1779963783364", action: "Created shift", details: "Emergency Room Cover", priority: "medium", due: "2026-06-12T18:00:00.000Z", status: "open" }
-      ];
-      const stmtAct = db.prepare("INSERT INTO activities (time, user_id, action, details, priority, due, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-      activities.forEach(a => stmtAct.run([a.time, a.user_id, a.action, a.details, a.priority, a.due, a.status]));
-      stmtAct.finalize();
-      console.log(`✓ Seeded ${activities.length} user action trails.`);
+      db.run(`INSERT INTO activities (time, employee_id, action, details, priority, due, status) VALUES 
+        ('2026-06-08T10:15:00Z', 'emp_field_worker', 'Field Assessment', 'Completed physical check', 'medium', null, 'completed')`);
 
-      // Seed Analytics
-      const analytics = [
-        { metric: "Active Users", value: 123, period: "24h" },
-        { metric: "Appointments Taken", value: 42, period: "24h" }
-      ];
-      const stmtAn = db.prepare("INSERT INTO analytics (metric, value, period) VALUES (?, ?, ?)");
-      analytics.forEach(a => stmtAn.run([a.metric, a.value, a.period]));
-      stmtAn.finalize();
-      console.log(`✓ Seeded ${analytics.length} administrative metrics.`);
+      db.run(`INSERT INTO operations (employee_id) VALUES ('emp_dan')`);
+
+      // Seed Incidents Subtype Inheritances
+      db.run(`INSERT INTO incidents (id, created, title, description, status, severity, employee_id) VALUES 
+        (101, '2026-06-08T09:00:00Z', 'Database Interruption', 'Minor replication gap', 'resolved', 'low', 'emp_dan'),
+        (102, '2026-06-08T11:30:00Z', 'External Power Spike', 'Transformer burst outside gate', 'open', 'critical', 'emp_dan')`);
+
+      db.run(`INSERT INTO internal_incidents (incidents_id, department_id) VALUES (101, 'dept_tech')`);
+      db.run(`INSERT INTO external_incidents (incidents_id) VALUES (102)`);
+
+      console.log('✓ Mock transactional items completely loaded.');
     });
   });
 
   db.close((err) => {
     if (err) console.error(err.message);
-    console.log('\n🚀 Success! Database migrations applied according to your new schema.');
+    console.log('\n🚀 Success! Database migration applied clean and successfully!');
   });
 }
