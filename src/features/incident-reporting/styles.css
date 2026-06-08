@@ -1,0 +1,112 @@
+/* ============================================================
+   Clinical Incident Reporting — Scoped Styles
+   All selectors prefixed .ir- to avoid global conflicts.
+   Uses ModuCare design tokens from design-system.css
+   ============================================================ */
+
+.ir-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3, 12px);
+  margin-bottom: var(--sp-4, 16px);
+}
+
+.ir-toolbar .input { flex: 1; min-width: 180px; max-width: 280px; }
+
+.ir-select {
+  min-width: 150px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: var(--border-radius-sm, 6px);
+  background: var(--surface-card, #fff);
+  color: var(--text-primary, #111);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.ir-clickable-row { transition: background .1s; }
+.ir-clickable-row:hover { background: rgba(0,0,0,.03); }
+
+.ir-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid rgba(0,0,0,.06);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mc-btn--sm { padding: 3px 9px; font-size: .78rem; }
+.mc-btn--sm.active { background: var(--clr-primary-500, #2563eb); color: #fff; border-color: transparent; }
+
+.ir-form-section { margin-bottom: 14px; }
+
+.ir-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ir-label {
+  display: block;
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--text-secondary, #555);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+
+.ir-required { color: var(--clr-danger, #dc2626); }
+
+.ir-field-error {
+  display: block;
+  font-size: .73rem;
+  color: var(--clr-danger, #dc2626);
+  min-height: 15px;
+  margin-top: 2px;
+}
+
+.ir-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: var(--surface-page, #f9f9f9);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 14px;
+  font-size: .85rem;
+}
+
+.ir-detail-grid > div { display: flex; flex-direction: column; gap: 2px; }
+
+.ir-detail-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-secondary, #555);
+  font-weight: 600;
+}
+
+.ir-detail-block {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.ir-detail-block:last-of-type { border-bottom: none; }
+.ir-detail-block p { margin: 4px 0 0; font-size: .9rem; line-height: 1.6; }
+
+.modal-surface {
+  max-width: 620px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  .ir-form-row-2 { grid-template-columns: 1fr; }
+  .ir-detail-grid { grid-template-columns: 1fr; }
+}
