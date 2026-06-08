@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="VLABhV6JhB_R_qaS3sUN" name="Page-1">
-        <mxGraphModel dx="1640" dy="804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1201" dy="837" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -44,13 +44,21 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
+                <mxCell id="64" style="edgeStyle=none;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="14" target="19">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1350" y="570"/>
+                            <mxPoint x="1430" y="570"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
                 <mxCell id="14" value="EMPLOYEE&lt;div&gt;id&lt;/div&gt;&lt;div&gt;user_ID&lt;/div&gt;&lt;div&gt;role_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="1240" y="360" width="110" height="140" as="geometry"/>
                 </mxCell>
                 <mxCell id="49" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="15" target="14" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" value="ROLES&lt;div&gt;id&lt;/div&gt;&lt;div&gt;admin&lt;/div&gt;&lt;div&gt;staff_1&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;staff_1&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;staff_1&lt;/span&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;staff_1&lt;/span&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;staff_1&lt;/span&gt;&lt;span style=&quot;color: rgb(63, 63, 63);&quot;&gt;&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="15" value="ROLES&lt;div&gt;id&lt;/div&gt;&lt;div&gt;name&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="1470" y="360" width="120" height="140" as="geometry"/>
                 </mxCell>
                 <mxCell id="16" value="ANALYTICS&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;metric&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;value&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;period&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-weight: 400;&quot;&gt;employee_ID&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1" parent="1" vertex="1">
@@ -65,14 +73,25 @@
                 <mxCell id="17" value="&lt;b&gt;NAME&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;first name&lt;/div&gt;&lt;div&gt;second name&lt;/div&gt;&lt;div&gt;last_name&lt;/div&gt;&lt;div&gt;email&lt;/div&gt;&lt;div&gt;phone_number&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="800" y="360" width="140" height="140" as="geometry"/>
                 </mxCell>
+                <mxCell id="62" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="18" target="20">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="950" y="630"/>
+                            <mxPoint x="950" y="853"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
                 <mxCell id="18" value="&lt;b&gt;PATIENT&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;name_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="810" y="560" width="120" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="19" value="&lt;b&gt;INCIDENTS&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;internal_incidents_ID&lt;/div&gt;&lt;div&gt;external_incidents_ID&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1410" y="560" width="120" height="140" as="geometry"/>
+                <mxCell id="59" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="19" target="53">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="20" value="&lt;b&gt;FINANCE&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;type&lt;/div&gt;&lt;div&gt;reference&lt;/div&gt;&lt;div&gt;amount&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;due&lt;/div&gt;&lt;div&gt;date&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1047" y="780" width="130" height="145" as="geometry"/>
+                <mxCell id="19" value="&lt;b&gt;INCIDENTS&lt;/b&gt;&lt;div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;id&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;created&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;title&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;description&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;status&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;severity&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;employee_ID&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1370" y="590" width="120" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="&lt;b&gt;FINANCE&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;type&lt;/div&gt;&lt;div&gt;reference&lt;/div&gt;&lt;div&gt;amount&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;date&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;&lt;div&gt;patient_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="780" width="130" height="145" as="geometry"/>
                 </mxCell>
                 <mxCell id="21" value="APPOINTMENTS&lt;div&gt;id&lt;/div&gt;&lt;div&gt;time&lt;/div&gt;&lt;div&gt;patient_ID&lt;/div&gt;&lt;div&gt;type&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="910" y="910" width="110" height="130" as="geometry"/>
@@ -117,22 +136,30 @@
                 <mxCell id="48" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.405;entryY=0.01;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="14" target="20" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="1300" y="730"/>
-                            <mxPoint x="1100" y="730"/>
+                            <mxPoint x="1295" y="730"/>
+                            <mxPoint x="1103" y="730"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="53" value="&lt;b&gt;EXTERNAL_INCIDENTS&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;created&lt;/div&gt;&lt;div&gt;title&lt;/div&gt;&lt;div&gt;description&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;severity&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1550" y="560" width="140" height="140" as="geometry"/>
+                <mxCell id="53" value="&lt;b&gt;EXTERNAL_INCIDENTS&lt;/b&gt;&lt;div&gt;incidents_ID&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1550" y="602.5" width="140" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="54" value="&lt;b&gt;INCIDENTS&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;created&lt;/div&gt;&lt;div&gt;title&lt;/div&gt;&lt;div&gt;description&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;severity&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1540" y="782.5" width="110" height="140" as="geometry"/>
+                <mxCell id="55" value="&lt;b&gt;INTERNAL_INCIDENTS&lt;/b&gt;&lt;div&gt;incidents_ID&lt;/div&gt;&lt;div&gt;department_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1290" y="820" width="140" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="55" value="&lt;b&gt;INTERNAL_INCIDENTS&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;created&lt;/div&gt;&lt;div&gt;title&lt;/div&gt;&lt;div&gt;description&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;severity&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1200" y="780" width="140" height="140" as="geometry"/>
+                <mxCell id="60" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="57" target="55">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="56" value="&lt;b&gt;INTERNAL_INCIDENTS&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;created&lt;/div&gt;&lt;div&gt;title&lt;/div&gt;&lt;div&gt;description&lt;/div&gt;&lt;div&gt;status&lt;/div&gt;&lt;div&gt;severity&lt;/div&gt;&lt;div&gt;employee_ID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1380" y="780" width="140" height="140" as="geometry"/>
+                <mxCell id="57" value="&lt;b&gt;DEPARTMENTS&lt;/b&gt;&lt;div&gt;id&lt;/div&gt;&lt;div&gt;name&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1510" y="820" width="140" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="61" style="edgeStyle=none;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.584;entryY=0.992;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="55" target="19">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1360" y="780"/>
+                            <mxPoint x="1440" y="780"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
             </root>
         </mxGraphModel>
