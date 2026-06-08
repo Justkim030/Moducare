@@ -2,7 +2,7 @@
   <div class="flex justify-between items-center mb-sp-4">
     <div>
       <h1 class="text-xl font-bold">Clinical Incident Reporting</h1>
-      <p class="text-secondary">Hospital Patient Safety & Operational Quality Assurance Log</p>
+      <p class="text-secondary">Hospital Patient Safety &amp; Operational Quality Assurance Log</p>
     </div>
     <button class="btn btn-primary" id="btn-new-incident">🚨 Log New Incident</button>
   </div>
@@ -26,21 +26,50 @@
     </div>
   </div>
 
+  <div class="ir-toolbar">
+    <input type="search" class="input ir-search" id="ir-search" placeholder="Search by title, type, reporter, patient ID…" />
+    <select class="ir-select" id="ir-filter-category">
+      <option value="">All Categories</option>
+      <option>Patient Safety (Falls, Medication Error)</option>
+      <option>Clinical Near-Miss</option>
+      <option>Equipment &amp; Facilities Malfunction</option>
+      <option>Infection Control Breach</option>
+      <option>Staff Safety / Needle Stick</option>
+      <option>Patient Complaint / Conduct</option>
+    </select>
+    <select class="ir-select" id="ir-filter-severity">
+      <option value="">All Severity</option>
+      <option value="S1">S1 – Catastrophic</option>
+      <option value="S2">S2 – Major</option>
+      <option value="S3">S3 – Moderate</option>
+      <option value="S4">S4 – Minor</option>
+      <option value="S5">S5 – Near-Miss</option>
+    </select>
+    <select class="ir-select" id="ir-filter-status">
+      <option value="">All Statuses</option>
+      <option>Reported</option>
+      <option>Under Review</option>
+      <option>Action Taken</option>
+      <option>Closed</option>
+    </select>
+    <button class="mc-btn" id="ir-export-btn">Export CSV</button>
+  </div>
+
   <div class="card p-0">
     <table class="table" id="incident-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Date/Time</th>
-          <th>Category</th>
-          <th>Severity</th>
-          <th>Reporter</th>
-          <th>Status</th>
+          <th data-sort="id">ID</th>
+          <th data-sort="date">Date/Time</th>
+          <th data-sort="category">Category</th>
+          <th data-sort="severity">Severity</th>
+          <th data-sort="reporterName">Reporter</th>
+          <th data-sort="status">Status</th>
         </tr>
       </thead>
-      <tbody id="incident-table-body">
-        </tbody>
+      <tbody id="incident-table-body"></tbody>
     </table>
+    <div class="ir-pagination" id="ir-pagination"></div>
   </div>
 </div>
 
