@@ -5,14 +5,11 @@ const path = require('path');
 const authController = require('./controllers/authController');
 const db = require('./config/db');
 
-// Load environment variables
+// Load environment variables for PORT and DATABASE_URL
 require('dotenv').config();
 
 const PORT = process.env.PORT || 8081;
 const ROOT = process.cwd();
-
-// Fallback to 'api' if the env variable isn't defined yet
-const API_PREFIX = process.env.API_SECRET_PREFIX || 'api';
 
 const mime = {
   '.html': 'text/html',
@@ -30,6 +27,7 @@ const mime = {
 };
 
 function serveFile(filePath, res) {
+  // Directory Traversal Defense Check
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     return res.end('Access denied.');
@@ -64,35 +62,29 @@ function serveIndex(res) {
 }
 
 const server = http.createServer((req, res) => {
+  // Clear trace fingerprint headers
   res.removeHeader('Server');
   res.removeHeader('X-Powered-By');
 
   const url = decodeURIComponent(req.url.split('?')[0]);
 
-  // Dynamically extract the first segment of the URL path
-  const urlSegments = url.split('/').filter(Boolean); 
-  const currentPrefix = urlSegments[0]; // e.g., if url is /api/login, this is 'api'
-
-  // Match against your completely hidden environment token
-  if (currentPrefix === API_PREFIX) {
-    const actionRoute = `/${urlSegments.slice(1).join('/')}`; // Extracts 'register' or 'login'
-
-    if (actionRoute === '/register' && req.method === 'POST') {
+  // Clean, explicit API Route Gates
+  if (url.startsWith('/api/')) {
+    if (url === '/api/register' && req.method === 'POST') {
       return authController.handleRegister(req, res);
     }
     
-    if (actionRoute === '/login' && req.method === 'POST') {
+    if (url === '/api/login' && req.method === 'POST') {
       return authController.handleLogin(req, res);
     }
     
-    if (actionRoute === '/health' && req.method === 'GET') {
+    if (url === '/api/health' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ ok: true }));
     }
 
-    // Hide existence of any other endpoint
     res.writeHead(404, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ error: 'Endpoint hidden or unavailable.' }));
+    return res.end(JSON.stringify({ error: 'Endpoint unavailable.' }));
   }
 
   // Serve static UI assets directly from root folder path
@@ -108,6 +100,9 @@ process.on('SIGINT', () => {
 });
 
 server.listen(PORT, () => {
-  console.log(` Secure ModuCare Application Engine active.`);
-  console.log(` Masked Gateway Active: /${API_PREFIX}/<route>`);
+  console.log(`\n======================================================`);
+  console.log(`🚀 Secure ModuCare Application Engine active.`);
+  console.log(`📂 Serving plain assets directly from root directory.`);
+  console.log(`👉 Access dashboard at: http://localhost:${PORT}`);
+  console.log(`======================================================\n`);
 });
