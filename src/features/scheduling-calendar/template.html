@@ -1,0 +1,97 @@
+<section class="feature-scheduling">
+  
+  <div class="sched-header">
+    <div>
+      <h2 class="sched-title">Scheduling &amp; Calendar</h2>
+      <p class="sched-subtitle">Manage staff schedules, shifts, client appointments, and organization-wide events.</p>
+    </div>
+    <button class="mc-btn icon-btn" id="sched-new-evt-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Event
+    </button>
+  </div>
+
+  <div class="sched-controls">
+    <div class="sched-tabs">
+      <button class="sched-tab-btn active" data-view="week">Week View</button>
+      <button class="sched-tab-btn" data-view="month">Month View</button>
+      <button class="sched-tab-btn" data-view="day">Day View</button>
+    </div>
+
+    <div class="sched-search-wrapper">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" placeholder="Search staff or event types..." />
+    </div>
+  </div>
+
+  <div class="sched-calendar-card">
+    <div class="sched-calendar-grid">
+      
+      <div class="sched-grid-cell">
+        <div class="sched-day-header" style="visibility: hidden;">Time</div>
+        <div class="sched-time-lbl">09:00 AM</div>
+      </div>
+
+      <div class="sched-grid-cell">
+        <div class="sched-day-header">Mon 21</div>
+        <div class="sched-event blue">
+          <strong>A. Johnson</strong><br/>General Checkup
+        </div>
+      </div>
+
+      <div class="sched-grid-cell">
+        <div class="sched-day-header">Tue 22</div>
+        <div class="sched-event green">
+          <strong>Shift: Nursing</strong><br/>Ward 4 Monitoring
+        </div>
+      </div>
+
+      <div class="sched-grid-cell active-day">
+        <div class="sched-day-header">Wed 23</div>
+        <span class="sched-slot-hint">Available Slot</span>
+      </div>
+
+      <div class="sched-grid-cell">
+        <div class="sched-day-header">Thu 24</div>
+        <div class="sched-event orange">
+          <strong>Surgery Prep</strong><br/>Team Meeting
+        </div>
+        <div class="sched-event pink">
+          <strong>EMERGENCY</strong><br/>Full Staff
+        </div>
+      </div>
+
+      <div class="sched-grid-cell">
+        <div class="sched-day-header">Fri 25</div>
+        <div class="sched-event blue">
+          <strong>K. Miller</strong><br/>Consultation
+        </div>
+      </div>
+
+      <div class="sched-grid-cell">
+        <div class="sched-day-header">Sat 26</div>
+      </div>
+
+      <div class="sched-grid-cell">
+        <div class="sched-day-header">Sun 27</div>
+      </div>
+
+    </div>
+
+    <div class="sched-legend">
+      <div class="sched-legend-item">
+        <span class="sched-dot blue"></span> Patient Appointment
+      </div>
+      <div class="sched-legend-item">
+        <span class="sched-dot green"></span> Staff Shift
+      </div>
+      <div class="sched-legend-item">
+        <span class="sched-dot orange"></span> Administration
+      </div>
+      <div class="sched-legend-item">
+        <span class="sched-dot pink"></span> Critical/Urgent
+      </div>
+    </div>
+  </div>
+
+</section>
