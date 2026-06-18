@@ -15,31 +15,45 @@
     requireAuth();
   </script>
 
-  <!-- 1. HEADER (NAVBAR) - Moved Logo Here -->
+  <!-- 1. HEADER (NAVBAR) -->
   <header class="mc-header" role="banner">
     <div class="mc-header-left">
       <div class="mc-brand" tabindex="0">ModuCare</div>
     </div>
+    
     <div class="mc-search" role="search">
       <label for="global-search" class="visually-hidden">Search</label>
       <input id="global-search" type="search" placeholder="Search reports, people, tickets" aria-label="Global search">
     </div>
+
     <div class="mc-header-actions">
       <button class="mc-btn icon" aria-label="Notifications" id="notif-btn">🔔</button>
+      
+      <!-- NEW PROFILE CIRCLE DROPDOWN -->
       <div class="mc-profile" id="profile" tabindex="0" aria-haspopup="menu" aria-label="User menu">
-        <button class="mc-btn" id="profile-btn">User ▾</button>
+        <div class="mc-avatar-circle" id="profile-btn" role="button" aria-label="Open user profile menu">
+          <span>U</span> <!-- Initial / Avatar Placeholder -->
+        </div>
         <ul class="mc-profile-menu" role="menu" aria-label="Profile menu">
-          <li role="none"><button role="menuitem" class="mc-btn" id="profile-signout">Sign out</button></li>
+          <li role="none"><a href="/profile" class="mc-profile-item" role="menuitem">👤 View Profile</a></li>
+          <li role="none"><a href="/settings" class="mc-profile-item" role="menuitem">⚙️ Settings</a></li>
+          <li class="menu-divider" role="none"></li>
+          <li role="none"><button role="menuitem" class="mc-profile-item danger" id="profile-signout">🚪 Sign out</button></li>
         </ul>
       </div>
     </div>
   </header>
 
-  <!-- 2. WRAPPER FOR BOTH SIDEBAR AND CONTENT -->
+  <!-- 2. MAIN APP CONTAINER -->
   <div class="mc-app" id="mc-app">
     
     <!-- SIDEBAR -->
     <aside class="mc-sidebar" role="navigation" aria-label="Main navigation">
+      <div class="mc-sidebar-header">
+        <span class="mc-sidebar-title">Navigation</span>
+        <button class="mc-menu-toggle" id="sidebar-menu-btn" aria-label="Toggle Navigation Layout">☰</button>
+      </div>
+
       <nav>
         <ul class="mc-nav-list">
           <li class="mc-nav-item" id="nav-dashboard-item">
@@ -53,15 +67,19 @@
           </li>
           <li><a href="/staff" data-route class="mc-nav-link">Staff</a></li>
           <li><a href="/operations" data-route class="mc-nav-link mc-nav-operations">Operations</a></li>
-          <li><a href="/finance" data-route class="mc-nav-link mc-nav-finance">Finance</a></li>
+          
+          <!-- ROUTE FIXED: Restored layout target parameters safely -->
+          <li><a href="/finance-billing" data-route class="mc-nav-link mc-nav-finance">Finance</a></li>
+          <li><a href="/scheduling-calendar" data-route class="mc-nav-link mc-nav-scheduling">Scheduling & Calendar</a></li>
           <li><a href="/analytics" data-route class="mc-nav-link mc-nav-analytics">Analytics</a></li>
           <li><a href="/admin" data-route class="mc-nav-link mc-nav-admin" data-admin-only>Admin</a></li>
+          <li><a href="/communications" data-route class="mc-nav-link mc-nav-communications" data-admin-only>Communications</a></li>
           <li><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incident Reporting</a></li>
         </ul>
       </nav>
     </aside>
 
-    <!-- MAIN CONTENT PAGE (Now appropriately contained) -->
+    <!-- MAIN VIEW PANEL -->
     <div class="mc-main">
       <main id="app-content" class="mc-content" role="main" tabindex="0" aria-live="polite">
         <!-- Feature content will be injected here -->
@@ -73,10 +91,24 @@
 
   <script type="module" src="/src/js/router.js"></script>
   <script type="module" src="/js/app.js"></script>
+  
   <script>
+    // Handle dashboard nested menu toggles
     document.getElementById('dashboard-toggle')?.addEventListener('click', function(e) {
       e.preventDefault();
       document.getElementById('nav-dashboard-item').classList.toggle('expanded');
+    });
+
+    // Handle profile avatar layout popups
+    const profileBtn = document.getElementById('profile-btn');
+    const profileMenu = document.getElementById('profile');
+    profileBtn?.addEventListener('click', function() {
+      profileMenu.classList.toggle('menu-active');
+    });
+
+    // Handle Sidebar manual collapsing via internal Hamburger menu toggle button
+    document.getElementById('sidebar-menu-btn')?.addEventListener('click', function() {
+      document.querySelector('.mc-sidebar').classList.toggle('collapsed');
     });
   </script>
 </body>
