@@ -5,7 +5,7 @@
  * CSS    : Shared scaffold styles in /css/components.css
  *          Add /features/communications/communications.css when implementing.
  */
-import { showToast } from '../../js/utils.js';
+import { showToast } from '../../../js/utils.js';
 
 export function render(container) {
   container.innerHTML = buildShell();
