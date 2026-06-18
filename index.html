@@ -8,14 +8,38 @@
   <link rel="stylesheet" href="/src/css/main.css">
   <link rel="stylesheet" href="/css/design-system.css">
   <meta name="description" content="ModuCare modular management system - admin shell">
+</head>
 <body>
   <script type="module">
     import { requireAuth } from '/js/auth.js';
     requireAuth();
   </script>
-  <div class="mc-app" id="mc-app">
-    <aside class="mc-sidebar" role="navigation" aria-label="Main navigation">
+
+  <!-- 1. HEADER (NAVBAR) - Moved Logo Here -->
+  <header class="mc-header" role="banner">
+    <div class="mc-header-left">
       <div class="mc-brand" tabindex="0">ModuCare</div>
+    </div>
+    <div class="mc-search" role="search">
+      <label for="global-search" class="visually-hidden">Search</label>
+      <input id="global-search" type="search" placeholder="Search reports, people, tickets" aria-label="Global search">
+    </div>
+    <div class="mc-header-actions">
+      <button class="mc-btn icon" aria-label="Notifications" id="notif-btn">🔔</button>
+      <div class="mc-profile" id="profile" tabindex="0" aria-haspopup="menu" aria-label="User menu">
+        <button class="mc-btn" id="profile-btn">User ▾</button>
+        <ul class="mc-profile-menu" role="menu" aria-label="Profile menu">
+          <li role="none"><button role="menuitem" class="mc-btn" id="profile-signout">Sign out</button></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. WRAPPER FOR BOTH SIDEBAR AND CONTENT -->
+  <div class="mc-app" id="mc-app">
+    
+    <!-- SIDEBAR -->
+    <aside class="mc-sidebar" role="navigation" aria-label="Main navigation">
       <nav>
         <ul class="mc-nav-list">
           <li class="mc-nav-item" id="nav-dashboard-item">
@@ -33,39 +57,25 @@
           <li><a href="/analytics" data-route class="mc-nav-link mc-nav-analytics">Analytics</a></li>
           <li><a href="/admin" data-route class="mc-nav-link mc-nav-admin" data-admin-only>Admin</a></li>
           <li><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incident Reporting</a></li>
-          <!-- Sign In intentionally hidden from main UI for security; use secret login -->
         </ul>
       </nav>
-  </aside>
+    </aside>
 
-  <div class="mc-main">
-      <header class="mc-header" role="banner">
-        <div class="mc-search" role="search">
-          <label for="global-search" class="visually-hidden">Search</label>
-          <input id="global-search" type="search" placeholder="Search reports, people, tickets" aria-label="Global search">
-        </div>
-        <div class="mc-header-actions">
-          <button class="mc-btn icon" aria-label="Notifications" id="notif-btn">🔔</button>
-          <div class="mc-profile" id="profile" tabindex="0" aria-haspopup="menu" aria-label="User menu">
-            <button class="mc-btn" id="profile-btn">User ▾</button>
-            <ul class="mc-profile-menu" role="menu" aria-label="Profile menu">
-              <li role="none"><button role="menuitem" class="mc-btn" id="profile-signout">Sign out</button></li>
-            </ul>
-          </div>
-        </div>
-      </header>
+    <!-- MAIN CONTENT PAGE (Now appropriately contained) -->
+    <div class="mc-main">
       <main id="app-content" class="mc-content" role="main" tabindex="0" aria-live="polite">
         <!-- Feature content will be injected here -->
       </main>
       <footer class="mc-footer" role="contentinfo">ModuCare — Internal Use</footer>
     </div>
+
   </div>
+
   <script type="module" src="/src/js/router.js"></script>
   <script type="module" src="/js/app.js"></script>
   <script>
-    // Simple toggle for the dashboard dropdown
     document.getElementById('dashboard-toggle')?.addEventListener('click', function(e) {
-      // Toggle the 'expanded' class on the parent LI
+      e.preventDefault();
       document.getElementById('nav-dashboard-item').classList.toggle('expanded');
     });
   </script>
