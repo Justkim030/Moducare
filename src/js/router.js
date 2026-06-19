@@ -6,35 +6,63 @@ const outlet = document.getElementById('app-content');
 const head = document.head;
 let activeFeature = null; // holds returned instance with optional destroy()
 
+// List of routes that are dedicated to auth screens and should hide the app shell
+const AUTH_ROUTES = ['login', 'secret-login'];
+
 function routeNameFromPath(path){
   const p = path.replace(/^\/+/,'').split('/')[0];
   return p || 'dashboard';
 }
 
+/**
+ * Dynamically toggles the structural app layout shell visibility
+ */
+function toggleAppShellVisibility(isAuthPage) {
+  const header = document.querySelector('.mc-header');
+  const sidebar = document.querySelector('.mc-sidebar');
+  const footer = document.querySelector('.mc-footer');
+  const appContainer = document.getElementById('mc-app');
+
+  if (isAuthPage) {
+    if (header) header.style.display = 'none';
+    if (sidebar) sidebar.style.display = 'none';
+    if (footer) footer.style.display = 'none';
+    if (appContainer) {
+      appContainer.style.width = '100vw';
+      appContainer.style.height = '100vh';
+      appContainer.style.display = 'block';
+    }
+  } else {
+    if (header) header.style.display = 'flex';
+    if (sidebar) sidebar.style.display = 'block';
+    if (footer) footer.style.display = 'block';
+    if (appContainer) {
+      appContainer.style.width = ''; 
+      appContainer.style.height = '';
+      appContainer.style.display = 'flex'; 
+    }
+  }
+}
+
 function updateActiveLinks(path) {
-  // Clear previous states
   document.querySelectorAll('.mc-nav-link').forEach(link => link.classList.remove('active'));
   
-  // Highlight sub-link if exact match
   const exactMatch = document.querySelector(`.mc-nav-link[href="${path}"]`);
   if (exactMatch) {
     exactMatch.classList.add('active');
-    // Auto-expand parent if it's a sub-item
     if (exactMatch.classList.contains('sub')) {
       document.getElementById('nav-dashboard-item')?.classList.add('expanded');
     }
   } else {
-    // Fallback to highlighting the main module link
     const feature = routeNameFromPath(path);
     document.querySelector(`.mc-nav-link[href="/${feature}"]`)?.classList.add('active');
   }
 }
 
 async function loadFeature(name){
-  // remove any previously injected feature stylesheet for cleanliness
   const prev = document.querySelector('link[data-feature-styles]');
   if (prev) prev.remove();
-  // if previous feature exposed a destroy hook, call it to remove listeners/subscriptions
+  
   try{
     if (activeFeature && typeof activeFeature.destroy === 'function'){
       activeFeature.destroy();
@@ -47,7 +75,6 @@ async function loadFeature(name){
     const tmplPromise = fetch(`/src/features/${name}/template.html`).then(r=>r.ok? r.text(): Promise.reject(r.status));
     const cssHref = `/src/features/${name}/styles.css`;
 
-    // prefer loading css if available (non-blocking)
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = cssHref;
@@ -57,19 +84,26 @@ async function loadFeature(name){
 
     const [mod, tmpl] = await Promise.all([modPromise, tmplPromise]);
 
-    // RBAC: prevent unauthorised access to admin area
+    /* ── 🔓 TEMPORARILY DISABLED FOR TESTING ALL DASHBOARD MODULES ──
     const user = State.getUser();
     if (name === 'admin' && (!user || user.role !== 'admin')) {
       showForbidden();
       return;
     }
-    outlet.innerHTML = tmpl;
-    if (mod && typeof mod.init === 'function') {
-      // allow module to return a cleanup object e.g. { destroy() { ... } }
-      try{
-        const inst = await mod.init(outlet, State);
-        if (inst && typeof inst.destroy === 'function') activeFeature = inst;
-      }catch(e){ console.error('Feature init error', e); }
+    ── Remove or uncomment this guard when ready for production ── */
+
+    const targetOutlet = AUTH_ROUTES.includes(name) 
+      ? document.getElementById('mc-app') 
+      : outlet;
+
+    if (targetOutlet) {
+      targetOutlet.innerHTML = tmpl;
+      if (mod && typeof mod.init === 'function') {
+        try{
+          const inst = await mod.init(targetOutlet, State);
+          if (inst && typeof inst.destroy === 'function') activeFeature = inst;
+        }catch(e){ console.error('Feature init error', e); }
+      }
     }
   }catch(err){
     show404(name);
@@ -92,16 +126,19 @@ function navigate(path){
 
 function loadRoute(path){
   const name = routeNameFromPath(path);
+  
+  const isAuthPage = AUTH_ROUTES.includes(name);
+  toggleAppShellVisibility(isAuthPage);
+
   updateActiveLinks(path);
   loadFeature(name);
 }
 
-// Intercept clicks on internal nav links
 document.addEventListener('click', (e)=>{
   const a = e.target.closest('a[data-route]');
   if (!a) return;
   const href = a.getAttribute('href');
-  if (!href.startsWith('http') && href.startsWith('/')){
+  if (href && !href.startsWith('http') && href.startsWith('/')){
     e.preventDefault();
     navigate(href);
   }
@@ -109,42 +146,32 @@ document.addEventListener('click', (e)=>{
 
 window.addEventListener('popstate', ()=> loadRoute(location.pathname));
 
-// initial bootstrap
-document.addEventListener('DOMContentLoaded', ()=>{
-  // keyboard: allow Enter on brand to go home
+document.addEventListener('DOMContentLoaded', () => {
   const brand = document.querySelector('.mc-brand');
   if (brand) brand.addEventListener('keydown', (e)=>{ if (e.key==='Enter') navigate('/dashboard'); });
 
-  // Toggle admin nav visibility based on State
-  // Initialize State from any existing session (login via login.html)
   try{
     const sess = getSession();
     if (sess){ if (sess.role) sess.role = sess.role.toLowerCase(); State.setUser(sess); }
   }catch(e){ /* ignore */ }
+
   const adminLink = document.querySelector('.mc-nav-admin');
   const opsLink = document.querySelector('.mc-nav-operations');
   const finLink = document.querySelector('.mc-nav-finance');
   const analyticsLink = document.querySelector('.mc-nav-analytics');
-  State.subscribe(s=>{
-    if (adminLink) {
-      if (s.user && s.user.role === 'admin') adminLink.classList.add('visible'); else adminLink.classList.remove('visible');
-    }
-    // example role mappings — teams can adapt as needed
-    if (opsLink){
-      const ok = s.user && ['admin','staff','ops'].includes(s.user.role);
-      opsLink.classList.toggle('visible', !!ok);
-    }
-    if (finLink){
-      const ok = s.user && ['admin','finance'].includes(s.user.role);
-      finLink.classList.toggle('visible', !!ok);
-    }
-    if (analyticsLink){
-      const ok = s.user && ['admin','analyst'].includes(s.user.role);
-      analyticsLink.classList.toggle('visible', !!ok);
-    }
-  });
 
-  // Secret admin shortcut: Ctrl+Alt+L (or Ctrl+Shift+L on Mac)
+  // Force sidebar visibility highlighters to remain active during testing regardless of current session roles
+  if (adminLink) adminLink.classList.add('visible');
+  if (opsLink) opsLink.classList.add('visible');
+  if (finLink) finLink.classList.add('visible');
+  if (analyticsLink) analyticsLink.classList.add('visible');
+
+  /* State subscription rules can remain attached without muting visibility highlights
+  State.subscribe(s=>{
+    // Subscription hooks...
+  });
+  */
+
   document.addEventListener('keydown',(e)=>{
     const mac = navigator.platform.toUpperCase().includes('MAC');
     const trigger = mac ? (e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='l') : (e.ctrlKey && e.altKey && e.key.toLowerCase()==='l');
