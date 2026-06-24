@@ -7,7 +7,7 @@ import { INCIDENT_SEVERITIES, INCIDENT_CATEGORIES }
 
 async function loadIncidents() {
   try {
-    const res = await fetch('/api/incidents');
+    const res = await apiFetch('//incidents');
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
     return (data.incidents || []).map(i => ({

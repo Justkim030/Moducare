@@ -1,161 +1,162 @@
 /**
  * ModuCare MS — Communications Module
- * Modular application component rendering active threads and contextual feeds.
+ * Features: Secure messaging, referral coordination
  */
-import { showToast, escapeHTML } from '../../../js/utils.js';
+import { showToast, formatDate, escapeHTML, apiFetch } from '../../../js/utils.js';
+import { hasRole } from '../../../js/auth.js';
 
 let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const l = document.createElement('link');
-  l.rel = 'stylesheet'; 
-  l.href = 'features/communications/comm.css';
-  document.head.appendChild(l); 
+  l.rel = 'stylesheet';
+  l.href = 'src/features/communications/styles.css';
+  document.head.appendChild(l);
   _cssLoaded = true;
 }
-
-// Thread Database Mock Cache
-const THREADS = [
-  { id: 't1', sender: 'Dr. Robert Chen', initials: 'DR', subject: 'Patient Discharge Coordination Protocol', dept: 'Radiology Dept', tag: 'MANDATORY ACTION', tagClass: 'comm-tag--mandatory', time: '10:42 AM', body: "Please initiate the discharge protocol for 2:00 PM today. Ensure she has her follow-up appointment scheduled with Cardiology for next Tuesday. I've already signed the prescription orders in the system." },
-  { id: 't2', sender: 'Nurse Clara Vance', initials: 'CV', subject: 'ICU Shift Handover Log Updates', dept: 'Critical Care Unit', tag: 'FACILITY UPDATE', tagClass: 'comm-tag--facility', time: '09:15 AM', body: "Bed 4 and Bed 7 stabilized post-op. Detailed telemetry trends metrics and medical charts have been saved into the central system portal directory." },
-  { id: 't3', sender: 'Admin Sarah Jenkins', initials: 'SJ', subject: 'Q3 Compliance Audit Review Schedule', dept: 'Administration', tag: 'SYSTEM RUNTIME', tagClass: 'comm-tag--system', time: 'Yesterday', body: "The annual corporate quality framework baseline evaluation takes place next Tuesday morning. Please ensure your operational logs are fully compiled." }
-];
-
-let _activeThreadId = 't1';
 
 export function render(container) {
   injectCSS();
   container.innerHTML = buildShell();
-  renderThreads(container);
-  renderActiveMessage(container);
   bindEvents(container);
+  refreshList(container);
+}
+
+export async function init(container, State) {
+  injectCSS();
+  render(container);
+  return { destroy() {} };
 }
 
 function buildShell() {
   return `
-  <section class="feature-communications">
-    
+  <div class="comm-layout">
     <div class="comm-header">
-      <div>
-        <h2 class="comm-title">Communications Hub</h2>
-        <p class="comm-subtitle">Internal messaging, announcements, and department-wide notifications across the organization.</p>
-      </div>
-      <button class="mc-btn icon-btn" id="comm-new-msg-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Message
-      </button>
+      <h1>💬 Communications</h1>
+      <button class="mc-btn btn-primary" id="new-comm-btn">+ New Message</button>
     </div>
+    <div id="comm-list"></div>
 
-    <div class="comm-workspace-grid">
-      
-      <div class="comm-sidebar-panel">
-        <div class="comm-panel-title">Active Correspondence</div>
-        <div class="comm-threads-list" id="comm-threads-target"></div>
-      </div>
-
-      <div class="comm-chat-panel" id="comm-chat-viewport"></div>
-
-    </div>
-  </section>`;
-}
-
-function renderThreads(container) {
-  const target = container.querySelector('#comm-threads-target');
-  if (!target) return;
-
-  target.innerHTML = THREADS.map(t => {
-    const isActive = t.id === _activeThreadId ? 'active' : '';
-    return `
-    <div class="comm-thread-item ${isActive}" data-id="${t.id}">
-      <div class="comm-thread-top">
-        <span class="comm-thread-sender">${escapeHTML(t.sender)}</span>
-        <span class="comm-thread-time">${t.time}</span>
-      </div>
-      <div class="comm-thread-subject">${escapeHTML(t.subject)}</div>
-      <div class="comm-thread-dept">
-        <span>${escapeHTML(t.dept)}</span>
-        <span class="comm-tag ${t.tagClass}">${escapeHTML(t.tag)}</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  // Rebind tracking list listeners
-  target.querySelectorAll('.comm-thread-item').forEach(item => {
-    item.onclick = (e) => {
-      _activeThreadId = e.currentTarget.dataset.id;
-      container.querySelectorAll('.comm-thread-item').forEach(i => i.classList.remove('active'));
-      e.currentTarget.classList.add('active');
-      renderActiveMessage(container);
-    };
-  });
-}
-
-function renderActiveMessage(container) {
-  const viewport = container.querySelector('#comm-chat-panel');
-  const thread = THREADS.find(t => t.id === _activeThreadId) || THREADS[0];
-  if (!viewport) return;
-
-  viewport.innerHTML = `
-    <div class="comm-chat-header">
-      <div class="comm-avatar">${escapeHTML(thread.initials)}</div>
-      <div class="comm-chat-meta">
-        <h4>${escapeHTML(thread.subject)}</h4>
-        <p>Originator: ${escapeHTML(thread.sender)} &bull; ${escapeHTML(thread.dept)}</p>
-      </div>
-      <span class="comm-tag ${thread.tagClass}">${escapeHTML(thread.tag)}</span>
-    </div>
-
-    <div class="comm-chat-feed" id="comm-feed-scroll">
-      <div class="comm-bubble-wrapper">
-        <div class="comm-msg-bubble">
-          <p class="comm-msg-text">${escapeHTML(thread.body)}</p>
-          <div class="comm-msg-footer">Sent at ${thread.time} &bull; Certified Secure Entry</div>
+    <div id="comm-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card" style="max-width: 600px;">
+        <div class="modal-header">
+          <h2>New Message</h2>
+          <button class="modal-close" id="close-comm-modal">&times;</button>
         </div>
+        <form id="comm-form" class="comm-form">
+          <div class="form-row">
+            <div class="input-group">
+              <label class="input-label">Patient *</label>
+              <select id="comm-patient" class="input" required>
+                <option value="">-- Select Patient --</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Channel</label>
+              <select id="comm-channel" class="input">
+                <option value="sms">SMS</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">Email</option>
+                <option value="in-app">In-App</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Subject</label>
+            <input type="text" id="comm-subject" class="input" placeholder="Message subject">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Message</label>
+            <textarea id="comm-body" class="input" rows="4" placeholder="Type your message..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="mc-btn-secondary" id="cancel-comm">Cancel</button>
+            <button type="submit" class="mc-btn btn-primary">Send Message</button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>`;
+}
 
-    <div class="comm-reply-dock">
-      <div class="comm-input-wrapper">
-        <input type="text" id="comm-reply-input" placeholder="Type a secure system reply notice statement..." />
-        <button class="comm-btn-send" id="comm-send-msg-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19l7-7-7-7M5 12h14"/></svg>
-        </button>
-      </div>
+async function refreshList(container) {
+  const list = container.querySelector('#comm-list');
+  if (!list) return;
+  const data = await apiFetch('/notifications');
+  const comms = data.notifications || [];
+  if (comms.length === 0) {
+    list.innerHTML = `<div class="empty-state"><h3>No messages</h3><p>Start a new conversation.</p></div>`;
+    return;
+  }
+  list.innerHTML = `
+    <div class="comm-table-wrap">
+      <table class="mc-table comm-table">
+        <thead>
+          <tr>
+            <th>Sent</th>
+            <th>Patient</th>
+            <th>Channel</th>
+            <th>Subject</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${comms.map(c => `
+            <tr>
+              <td>${formatDate(c.sent_at)}</td>
+              <td>${escapeHTML(c.patient_name || 'Unknown')}</td>
+              <td>${escapeHTML(c.channel)}</td>
+              <td>${escapeHTML(c.subject || '—')}</td>
+              <td>${c.read_at ? 'Read' : 'Sent'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
     </div>`;
-
-  // Bind local delivery engines inside the newly drawn view ports
-  bindReplyActions(viewport);
 }
 
-function bindReplyActions(viewport) {
-  const sendBtn = viewport.querySelector('#comm-send-msg-btn');
-  const inputField = viewport.querySelector('#comm-reply-input');
-  const scrollFeed = viewport.querySelector('#comm-feed-scroll');
+async function bindEvents(container) {
+  const modal = container.querySelector('#comm-modal');
+  const form = container.querySelector('#comm-form');
 
-  const executeSend = () => {
-    const val = inputField?.value.trim();
-    if (!val) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'comm-bubble-wrapper outgoing';
-    wrapper.innerHTML = `
-      <div class="comm-msg-bubble outgoing">
-        <p class="comm-msg-text">${val}</p>
-        <div class="comm-msg-footer">Just Now &bull; Self Account</div>
-      </div>`;
-
-    scrollFeed?.appendChild(wrapper);
-    inputField.value = '';
-    if (scrollFeed) scrollFeed.scrollTop = scrollFeed.scrollHeight;
-    showToast('Secure correspondence node successfully dispatched.', 'success');
-  };
-
-  sendBtn?.addEventListener('click', executeSend);
-  inputField?.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSend(); });
-}
-
-function bindEvents(container) {
-  container.querySelector('#comm-new-msg-btn')?.addEventListener('click', () => {
-    showToast('Message composer drawer overlay state active.', 'info');
+  container.querySelector('#new-comm-btn')?.addEventListener('click', async () => {
+    await populatePatients(container);
+    modal.style.display = 'flex';
   });
+
+  container.querySelector('#close-comm-modal')?.addEventListener('click', () => { modal.style.display = 'none'; });
+  container.querySelector('#cancel-comm')?.addEventListener('click', () => { modal.style.display = 'none'; });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      patient_id: container.querySelector('#comm-patient')?.value,
+      type: 'general',
+      channel: container.querySelector('#comm-channel')?.value,
+      subject: container.querySelector('#comm-subject')?.value,
+      body: container.querySelector('#comm-body')?.value,
+    };
+    try {
+      await apiFetch('/notifications', { method: 'POST', body: JSON.stringify(payload) });
+      showToast('Message sent', 'success');
+      modal.style.display = 'none';
+      form.reset();
+      refreshList(container);
+    } catch (err) {
+      showToast(err.message || 'Failed to send message', 'error');
+    }
+  });
+}
+
+async function populatePatients(container) {
+  const select = container.querySelector('#comm-patient');
+  if (!select) return;
+  try {
+    const data = await apiFetch('/patients');
+    const patients = data.patients || [];
+    select.innerHTML = '<option value="">-- Select Patient --</option>' +
+      patients.map(p => `<option value="${escapeHTML(p.id)}">${escapeHTML(p.name)} (${escapeHTML(p.email || 'no email')})</option>`).join('');
+  } catch {
+    showToast('Failed to load patients', 'error');
+  }
 }

@@ -26,6 +26,15 @@ const MODULE_MIN_ROLE = {
   'client-portal': 'lead',
   'integrations': 'director',
   'system-admin': 'admin',
+  encounters: 'staff',
+  'lab-orders': 'staff',
+  pharmacy: 'staff',
+  appointments: 'staff',
+  notifications: 'staff',
+  documents: 'staff',
+  communications: 'staff',
+  audit: 'supervisor',
+  inventory: 'staff',
 };
 
 function getRequiredRole(name) {

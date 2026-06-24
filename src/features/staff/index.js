@@ -34,7 +34,7 @@ async function loadStaff() {
     'admin': 'admin'
   };
   try {
-    const res = await fetch('/api/users');
+    const res = await apiFetch('//users');
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
     window.__STAFF_DATA = (data.users || []).map(u => ({

@@ -17,7 +17,7 @@ async function loadUsers(mount) {
   empty?.classList.add('hidden');
 
   try {
-    const res = await fetch('/api/users');
+    const res = await apiFetch('//users');
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
 
@@ -101,7 +101,7 @@ async function openEditModal(mount, id) {
   const body = mount.querySelector('#modal-body');
   let user = null;
   try {
-    const res = await fetch('/api/users');
+    const res = await apiFetch('//users');
     const data = await res.json();
     if (res.ok && data.ok) user = (data.users || []).find(u => u.id === id);
   } catch (e) { user = null; }
@@ -169,7 +169,7 @@ async function createUser(mount) {
   if (!valid) return;
 
   try {
-    const res = await fetch('/api/users', {
+    const res = await apiFetch('//users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password: pass, phone_number: phone, role_id: role })

@@ -17,7 +17,7 @@ function handleList(req, res) {
   const params = new URLSearchParams(q);
   const search = (params.get('q') || '').toLowerCase();
 
-  let sql = `SELECT p.id, p.name, p.email, p.phone_number, COUNT(a.id) as appointment_count FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id`;
+  let sql = `SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.address, p.county, p.hiv_status, COUNT(a.id) as appointment_count FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id`;
   const args = [];
   if (search) {
     sql += ` WHERE LOWER(p.name) LIKE ? OR LOWER(p.email) LIKE ? OR LOWER(p.phone_number) LIKE ?`;
@@ -35,6 +35,11 @@ function handleList(req, res) {
       name: r.name,
       email: r.email,
       phone_number: r.phone_number,
+      dob: r.dob,
+      gender: r.gender,
+      address: r.address,
+      county: r.county,
+      hiv_status: r.hiv_status,
       appointment_count: r.appointment_count || 0,
     }));
     return sendSecureJSON(res, 200, { ok: true, patients });
@@ -43,7 +48,7 @@ function handleList(req, res) {
 
 function handleGet(req, res) {
   const id = req.url.split('/').pop();
-  db.get(`SELECT p.id, p.name, p.email, p.phone_number, a.time, a.type, a.status, e.name as doctor FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id LEFT JOIN employees e ON e.id = a.employee_id WHERE p.id = ? ORDER BY a.time DESC LIMIT 20`, [id], (err, row) => {
+  db.get(`SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.address, p.county, p.next_of_kin, p.next_of_kin_phone, p.ampkh_id, p.national_id, p.insurance_id, p.hiv_status, a.time, a.type, a.status, e.name as doctor FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id LEFT JOIN employees e ON e.id = a.employee_id WHERE p.id = ? ORDER BY a.time DESC LIMIT 20`, [id], (err, row) => {
     if (err) {
       console.error(`[SECURE EXCEPTION] Patient Detail Error: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
@@ -80,6 +85,16 @@ function handleCreate(req, res) {
         name: sanitizeString(name),
         email: email ? sanitizeString(email) : null,
         phone_number: phone_number ? sanitizeString(phone_number) : null,
+        dob: dob || null,
+        gender: gender ? sanitizeString(gender) : null,
+        address: address ? sanitizeString(address) : null,
+        county: county ? sanitizeString(county) : null,
+        next_of_kin: next_of_kin ? sanitizeString(next_of_kin) : null,
+        next_of_kin_phone: next_of_kin_phone ? sanitizeString(next_of_kin_phone) : null,
+        ampkh_id: ampkh_id ? sanitizeString(ampkh_id) : null,
+        national_id: national_id ? sanitizeString(national_id) : null,
+        insurance_id: insurance_id ? sanitizeString(insurance_id) : null,
+        hiv_status: hiv_status ? sanitizeString(hiv_status) : 'unknown',
       };
 
       const patientId = id || ('pat_' + Date.now());
@@ -88,8 +103,8 @@ function handleCreate(req, res) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Invalid patient ID format.' });
       }
 
-      db.run(`INSERT INTO patients (id, name, email, phone_number) VALUES (?, ?, ?, ?)`,
-        [patientId, sanitized.name, sanitized.email, sanitized.phone_number],
+      db.run(`INSERT INTO patients (id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [patientId, sanitized.name, sanitized.email, sanitized.phone_number, sanitized.dob, sanitized.gender, sanitized.address, sanitized.county, sanitized.next_of_kin, sanitized.next_of_kin_phone, sanitized.ampkh_id, sanitized.national_id, sanitized.insurance_id, sanitized.hiv_status],
         function (err) {
           if (err) {
             console.error(`[SECURE EXCEPTION] Patient Create Trace: ${err.message}`);
@@ -97,7 +112,7 @@ function handleCreate(req, res) {
           }
           return sendSecureJSON(res, 201, {
             ok: true,
-            patient: { id: patientId, name: sanitized.name, email: sanitized.email, phone_number: sanitized.phone_number },
+            patient: { id: patientId, ...sanitized },
           });
         }
       );
@@ -114,7 +129,7 @@ function handleUpdate(req, res) {
   req.on('end', () => {
     try {
       const p = JSON.parse(body || '{}');
-      const { name, email, phone_number } = p;
+      const { name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status } = p;
 
       const fields = [];
       const values = [];
@@ -135,6 +150,17 @@ function handleUpdate(req, res) {
         }
         fields.push('phone_number = ?');
         values.push(sanitizeString(phone_number));
+      }
+      const optionalText = ['dob', 'gender', 'address', 'county', 'next_of_kin', 'next_of_kin_phone', 'ampkh_id', 'national_id', 'insurance_id'];
+      optionalText.forEach(k => {
+        if (p[k] !== undefined) {
+          fields.push(`${k} = ?`);
+          values.push(sanitizeString(p[k]));
+        }
+      });
+      if (hiv_status !== undefined) {
+        fields.push('hiv_status = ?');
+        values.push(sanitizeString(hiv_status));
       }
       values.push(id);
 

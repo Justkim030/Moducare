@@ -29,7 +29,7 @@ window.__TIMESHEETS_DATA = [];
 
 async function loadTimesheets() {
   try {
-    const res = await fetch('/api/finance');
+    const res = await apiFetch('//finance');
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
     window.__TIMESHEETS_DATA = (data.records || []).map(r => {
