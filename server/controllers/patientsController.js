@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { validateRequired, validateEmail, validatePhone, sanitizeString, validateUUID } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -62,14 +63,33 @@ function handleCreate(req, res) {
       const p = JSON.parse(body || '{}');
       const { id, name, email, phone_number } = p;
 
-      if (!name) {
-        return sendSecureJSON(res, 400, { ok: false, error: 'Patient name is required.' });
+      const missing = validateRequired([name]);
+      if (missing.length > 0) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Missing required fields: ' + missing.join(', ') });
       }
+
+      if (email && !validateEmail(email)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
+      }
+
+      if (phone_number && !validatePhone(phone_number)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid phone number format. Use +2547XXXXXXXX or 07XXXXXXXX.' });
+      }
+
+      const sanitized = {
+        name: sanitizeString(name),
+        email: email ? sanitizeString(email) : null,
+        phone_number: phone_number ? sanitizeString(phone_number) : null,
+      };
 
       const patientId = id || ('pat_' + Date.now());
 
+      if (id && !validateUUID(id)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid patient ID format.' });
+      }
+
       db.run(`INSERT INTO patients (id, name, email, phone_number) VALUES (?, ?, ?, ?)`,
-        [patientId, name, email || null, phone_number || null],
+        [patientId, sanitized.name, sanitized.email, sanitized.phone_number],
         function (err) {
           if (err) {
             console.error(`[SECURE EXCEPTION] Patient Create Trace: ${err.message}`);
@@ -77,7 +97,7 @@ function handleCreate(req, res) {
           }
           return sendSecureJSON(res, 201, {
             ok: true,
-            patient: { id: patientId, name, email, phone_number },
+            patient: { id: patientId, name: sanitized.name, email: sanitized.email, phone_number: sanitized.phone_number },
           });
         }
       );
@@ -98,9 +118,24 @@ function handleUpdate(req, res) {
 
       const fields = [];
       const values = [];
-      if (name !== undefined) { fields.push('name = ?'); values.push(name); }
-      if (email !== undefined) { fields.push('email = ?'); values.push(email); }
-      if (phone_number !== undefined) { fields.push('phone_number = ?'); values.push(phone_number); }
+      if (name !== undefined) {
+        fields.push('name = ?');
+        values.push(sanitizeString(name));
+      }
+      if (email !== undefined) {
+        if (!validateEmail(email)) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
+        }
+        fields.push('email = ?');
+        values.push(sanitizeString(email));
+      }
+      if (phone_number !== undefined) {
+        if (!validatePhone(phone_number)) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Invalid phone number format.' });
+        }
+        fields.push('phone_number = ?');
+        values.push(sanitizeString(phone_number));
+      }
       values.push(id);
 
       db.run(`UPDATE patients SET ${fields.join(', ')} WHERE id = ?`, values, function (err) {

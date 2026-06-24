@@ -1,8 +1,8 @@
-﻿/**
+/**
  * Clinical Incident Reporting â€” Feature Controller
  * ModuCare module contract: export async function init(mount, State)
  */
-import { showToast } from '../../../../js/utils.js';
+import { showToast, escapeHTML } from '../../../../js/utils.js';
 import { INCIDENT_SEVERITIES, INCIDENT_CATEGORIES }
 
 async function loadIncidents() {

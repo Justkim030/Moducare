@@ -92,6 +92,19 @@ export function getInitials(name = '') {
 }
 
 /**
+ * Escape HTML special characters to prevent XSS.
+ * @param {string} str
+ * @returns {string}
+ */
+export function escapeHTML(str = '') {
+  return String(str).replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Capitalize first letter.
  */
 export function capitalize(str = '') {

@@ -1,4 +1,4 @@
-import { showToast } from '../../../js/utils.js';
+import { showToast, escapeHTML } from '../../../js/utils.js';
 
 export async function init(mount, State) {
   mount.querySelector('#btn-new-user')?.addEventListener('click', () => openCreateModal(mount));
@@ -32,7 +32,7 @@ async function loadUsers(mount) {
     wrap.innerHTML = users.map(u => `
       <tr data-id="${u.id}">
         <td class="name font-weight-500">${u.name || '—'}</td>
-        <td class="email text-secondary">${u.email}</td>
+        <td class="email text-secondary">${escapeHTML(u.email)}</td>
         <td><span class="badge badge-primary">${u.role || 'staff'}</span></td>
         <td class="text-secondary">${u.phone_number || '—'}</td>
         <td class="text-right">

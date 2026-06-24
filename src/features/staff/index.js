@@ -1,11 +1,11 @@
-﻿/**
+/**
  * ModuCare MS â€” HR & Staff Module
  * Features: Staff directory grid/table, search & filter,
  *           add staff modal, role badges, status management
  *
  * Entry point: called by router via render(container)
  */
-import { showToast, formatDate, getInitials } from '../../../js/utils.js';
+import { showToast, formatDate, getInitials, escapeHTML } from '../../../js/utils.js';
 import { hasRole } from '../../../js/auth.js';
 
 // â”€â”€ Inject scoped CSS once â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -304,18 +304,18 @@ function staffRow(s) {
     <td><div class="flex items-center gap-3">
       <div class="avatar avatar-md" style="background:var(--clr-primary-100);color:var(--clr-primary-600)">${s.initials}</div>
       <div>
-        <div style="font-weight:600;color:var(--text-primary)">${s.name}</div>
-        <div style="font-size:0.8125rem;color:var(--text-secondary)">${s.email}</div>
+        <div style="font-weight:600;color:var(--text-primary)">${escapeHTML(s.name)}</div>
+        <div style="font-size:0.8125rem;color:var(--text-secondary)">${escapeHTML(s.email)}</div>
       </div>
     </div></td>
-    <td class="text-secondary">${s.department}</td>
+    <td class="text-secondary">${escapeHTML(s.department)}</td>
     <td><span class="badge ${r.badge}">${r.label}</span></td>
     <td><span class="badge ${st.badge}"><span class="status-dot ${st.dot}"></span>${st.label}</span></td>
-    <td class="text-secondary">${s.location}</td>
+    <td class="text-secondary">${escapeHTML(s.location)}</td>
     <td class="text-secondary text-sm">${formatDate(s.joined)}</td>
     <td>
       <div class="flex gap-1 justify-end">
-        <button class="btn btn-ghost btn-sm btn-icon" data-tip="View Profile" onclick="alert('Profile view for ${s.name} â€” build in /src/features/staff/components/')">
+        <button class="btn btn-ghost btn-sm btn-icon" data-tip="View Profile" onclick="alert('Profile view for ${escapeHTML(s.name)} â€” build in /src/features/staff/components/')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
         <button class="btn btn-ghost btn-sm btn-icon" data-tip="Edit">
@@ -334,14 +334,14 @@ function staffCard(s) {
       <div class="avatar avatar-xl" style="background:var(--clr-primary-100);color:var(--clr-primary-600);font-size:1.25rem">${s.initials}</div>
       <span class="badge ${st.badge}" style="margin-left:auto"><span class="status-dot ${st.dot}"></span>${st.label}</span>
     </div>
-    <div class="staff-card__name">${s.name}</div>
-    <div class="staff-card__dept">${s.department}</div>
+    <div class="staff-card__name">${escapeHTML(s.name)}</div>
+    <div class="staff-card__dept">${escapeHTML(s.department)}</div>
     <span class="badge ${r.badge}">${r.label}</span>
     <div class="staff-card__meta">
-      <span>ðŸ“ ${s.location}</span>
+      <span>ðŸ“ ${escapeHTML(s.location)}</span>
       <span>ðŸ“… ${formatDate(s.joined)}</span>
     </div>
-    <div class="staff-card__email">${s.email}</div>
+    <div class="staff-card__email">${escapeHTML(s.email)}</div>
   </div>`;
 }
 

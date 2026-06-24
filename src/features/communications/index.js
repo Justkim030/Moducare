@@ -2,7 +2,7 @@
  * ModuCare MS — Communications Module
  * Modular application component rendering active threads and contextual feeds.
  */
-import { showToast } from '../../../js/utils.js';
+import { showToast, escapeHTML } from '../../../js/utils.js';
 
 let _cssLoaded = false;
 function injectCSS() {
@@ -68,13 +68,13 @@ function renderThreads(container) {
     return `
     <div class="comm-thread-item ${isActive}" data-id="${t.id}">
       <div class="comm-thread-top">
-        <span class="comm-thread-sender">${t.sender}</span>
+        <span class="comm-thread-sender">${escapeHTML(t.sender)}</span>
         <span class="comm-thread-time">${t.time}</span>
       </div>
-      <div class="comm-thread-subject">${t.subject}</div>
+      <div class="comm-thread-subject">${escapeHTML(t.subject)}</div>
       <div class="comm-thread-dept">
-        <span>${t.dept}</span>
-        <span class="comm-tag ${t.tagClass}">${t.tag}</span>
+        <span>${escapeHTML(t.dept)}</span>
+        <span class="comm-tag ${t.tagClass}">${escapeHTML(t.tag)}</span>
       </div>
     </div>`;
   }).join('');
@@ -97,18 +97,18 @@ function renderActiveMessage(container) {
 
   viewport.innerHTML = `
     <div class="comm-chat-header">
-      <div class="comm-avatar">${thread.initials}</div>
+      <div class="comm-avatar">${escapeHTML(thread.initials)}</div>
       <div class="comm-chat-meta">
-        <h4>${thread.subject}</h4>
-        <p>Originator: ${thread.sender} &bull; ${thread.dept}</p>
+        <h4>${escapeHTML(thread.subject)}</h4>
+        <p>Originator: ${escapeHTML(thread.sender)} &bull; ${escapeHTML(thread.dept)}</p>
       </div>
-      <span class="comm-tag ${thread.tagClass}">${thread.tag}</span>
+      <span class="comm-tag ${thread.tagClass}">${escapeHTML(thread.tag)}</span>
     </div>
 
     <div class="comm-chat-feed" id="comm-feed-scroll">
       <div class="comm-bubble-wrapper">
         <div class="comm-msg-bubble">
-          <p class="comm-msg-text">${thread.body}</p>
+          <p class="comm-msg-text">${escapeHTML(thread.body)}</p>
           <div class="comm-msg-footer">Sent at ${thread.time} &bull; Certified Secure Entry</div>
         </div>
       </div>

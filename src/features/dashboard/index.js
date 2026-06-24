@@ -2,7 +2,7 @@
  * Dashboard Feature Logic
  * Handles sub-view routing and role-based card generation.
  */
-import { apiFetch } from '../../../js/utils.js';
+import { apiFetch, escapeHTML } from '../../../js/utils.js';
 import { getDashboardProfile } from '../../../js/auth.js';
 
 export async function init(mount, State) {
@@ -30,10 +30,10 @@ function renderRoleCards(mount, cards) {
   const grid = mount.querySelector('#role-cards');
   if (!grid) return;
   grid.innerHTML = cards.map(card => `
-    <a href="${card.route}" data-route class="role-card" title="${card.title}">
+    <a href="${card.route}" data-route class="role-card" title="${escapeHTML(card.title)}">
       <span class="role-card__icon">${card.icon}</span>
-      <span class="role-card__title">${card.title}</span>
-      <span class="role-card__metric">${card.metric}</span>
+      <span class="role-card__title">${escapeHTML(card.title)}</span>
+      <span class="role-card__metric">${escapeHTML(card.metric)}</span>
     </a>
   `).join('');
 }
@@ -60,7 +60,7 @@ async function loadDashboardData(mount) {
             <tr>
               <td>${new Date(a.time || a.created).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
               <td>${a.user || 'System'}</td>
-              <td>${a.action}</td>
+              <td>${escapeHTML(a.action)}</td>
               <td><span class="mc-muted">${a.details || ''}</span></td>
             </tr>`).join('')
         : '<tr><td colspan="4" class="mc-muted">No recent activity found.</td></tr>';

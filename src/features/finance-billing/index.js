@@ -1,9 +1,9 @@
-﻿/**
+/**
  * ModuCare MS â€” Finance & Billing Module
  * Overhauled Layout: Modern structural grids, high-density telemetry data cards,
  * side-by-side workspace split panels, and contextual grid states.
  */
-import { showToast, formatDate, formatCurrency, hoursToBillingUnits } from '../../../js/utils.js';
+import { showToast, formatDate, formatCurrency, hoursToBillingUnits, escapeHTML } from '../../../js/utils.js';
 
 let _cssLoaded = false;
 function injectCSS() {
@@ -210,7 +210,7 @@ function renderEntry(content, container) {
                   ${t.approved ? 'Cleared' : 'Pending'}
                 </span>
               </div>
-              <div class="finance-recent-staff">${t.staff} &bull; ${formatDate(t.date)}</div>
+              <div class="finance-recent-staff">${escapeHTML(t.staff)} &bull; ${formatDate(t.date)}</div>
               <div class="finance-recent-amounts">
                 <span>${t.hours.toFixed(2)} hrs</span>
                 <span>${formatCurrency(calcAmount(t))}</span>
@@ -315,7 +315,7 @@ function renderLog(content) {
             const amt   = calcAmount(t);
             return `
             <tr>
-              <td style="font-weight: 600; color: #fff;">${t.staff}</td>
+              <td style="font-weight: 600; color: #fff;">${escapeHTML(t.staff)}</td>
               <td style="color: var(--text-tertiary);">${formatDate(t.date)}</td>
               <td><span style="color: var(--clr-accent-500); font-weight: 500;">${t.type}</span></td>
               <td style="text-align: right; font-family: monospace;">${t.hours.toFixed(2)}</td>

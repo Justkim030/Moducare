@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { sanitizeString } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -82,8 +83,13 @@ function handleCreate(req, res) {
       }
 
       const now = new Date().toISOString();
+      const sanitized = {
+        title: sanitizeString(title),
+        description: description ? sanitizeString(description) : '',
+      };
+
       db.run(`INSERT INTO incidents (created, title, description, status, severity, employee_id) VALUES (?, ?, ?, ?, ?, ?)`,
-        [now, title, description || '', status || 'Reported', severity || 'S3', employee_id || null],
+        [now, sanitized.title, sanitized.description, status || 'Reported', severity || 'S3', employee_id || null],
         function (err) {
           if (err) {
             console.error(`[SECURE EXCEPTION] Incident Create Trace: ${err.message}`);
@@ -91,7 +97,7 @@ function handleCreate(req, res) {
           }
           return sendSecureJSON(res, 201, {
             ok: true,
-            incident: { id: this.lastID, created: now, title, description, status, severity, employee_id },
+            incident: { id: this.lastID, created: now, title: sanitized.title, description: sanitized.description, status, severity, employee_id },
           });
         }
       );
@@ -112,8 +118,8 @@ function handleUpdate(req, res) {
 
       const fields = [];
       const values = [];
-      if (title !== undefined) { fields.push('title = ?'); values.push(title); }
-      if (description !== undefined) { fields.push('description = ?'); values.push(description); }
+      if (title !== undefined) { fields.push('title = ?'); values.push(sanitizeString(title)); }
+      if (description !== undefined) { fields.push('description = ?'); values.push(sanitizeString(description)); }
       if (status !== undefined) { fields.push('status = ?'); values.push(status); }
       if (severity !== undefined) { fields.push('severity = ?'); values.push(severity); }
       if (employee_id !== undefined) { fields.push('employee_id = ?'); values.push(employee_id); }

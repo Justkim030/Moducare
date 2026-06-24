@@ -3,7 +3,7 @@
  * Features: Kanban-style task board, task list, status pipeline,
  *           new task form, priority levels, assignment
  */
-import { showToast, formatDate } from '../../../js/utils.js';
+import { showToast, formatDate, escapeHTML } from '../../../js/utils.js';
 import { hasRole }               from '../../../js/auth.js';
 
 let _cssLoaded = false;
@@ -207,13 +207,13 @@ function taskCard(t) {
       <span class="badge" style="background:${p.bg};color:${p.color};font-size:0.6875rem">${p.label}</span>
       ${overdue?`<span class="badge badge-danger" style="font-size:0.6875rem">Overdue</span>`:''}
     </div>
-    <div class="task-card__title">${t.title}</div>
+    <div class="task-card__title">${escapeHTML(t.title)}</div>
     <div class="task-card__meta">
-      <span>📂 ${t.dept}</span>
+      <span>📂 ${escapeHTML(t.dept)}</span>
       ${t.due?`<span>📅 ${formatDate(t.due)}</span>`:''}
     </div>
-    ${t.assignee?`<div class="task-card__assignee"><div class="avatar avatar-sm">${t.assignee.split(' ').map(p=>p[0]).join('')}</div><span>${t.assignee}</span></div>`:''}
-    ${t.tags.length?`<div class="task-card__tags">${t.tags.map(tag=>`<span class="badge badge-neutral" style="font-size:0.6875rem">${tag}</span>`).join('')}</div>`:''}
+    ${t.assignee?`<div class="task-card__assignee"><div class="avatar avatar-sm">${t.assignee.split(' ').map(p=>p[0]).join('')}</div><span>${escapeHTML(t.assignee)}</span></div>`:''}
+    ${t.tags.length?`<div class="task-card__tags">${t.tags.map(tag=>`<span class="badge badge-neutral" style="font-size:0.6875rem">${escapeHTML(tag)}</span>`).join('')}</div>`:''}
   </div>`;
 }
 
@@ -222,10 +222,10 @@ function taskRow(t) {
   const s  = STATUSES.find(x=>x.id===t.status)||STATUSES[0];
   const overdue = t.due && new Date(t.due)<new Date() && t.status!=='completed';
   return `<tr>
-    <td style="font-weight:500;max-width:280px">${t.title}
+    <td style="font-weight:500;max-width:280px">${escapeHTML(t.title)}
       ${overdue?`<span class="badge badge-danger" style="font-size:0.6875rem;margin-left:6px">Overdue</span>`:''}
     </td>
-    <td class="text-secondary">${t.dept}</td>
+    <td class="text-secondary">${escapeHTML(t.dept)}</td>
     <td><span class="badge" style="background:${p.bg};color:${p.color}">${p.label}</span></td>
     <td><span class="badge" style="background:${s.bg};color:${s.color}">${s.label}</span></td>
     <td class="text-secondary">${t.assignee||'—'}</td>

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const { validateEmail, validateRequired } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -33,6 +34,10 @@ async function handleLogin(req, res) {
 
       if (!email || !password) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Credentials missing' });
+      }
+
+      if (!validateEmail(email)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
       }
 
       const query = `
@@ -80,8 +85,17 @@ async function handleRegister(req, res) {
       const p = JSON.parse(body || '{}');
       const { name, email, password, phone_number, role_id } = p;
 
-      if (!email || !password || !name) {
-        return sendSecureJSON(res, 400, { ok: false, error: 'Registration requirements incomplete.' });
+      const missing = validateRequired([name, email, password]);
+      if (missing.length > 0) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Missing fields: ' + missing.join(', ') });
+      }
+
+      if (!validateEmail(email)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
+      }
+
+      if (password.length < 8) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Password must be at least 8 characters.' });
       }
 
       const passwordHash = await hashPassword(password);

@@ -1,4 +1,4 @@
-import { showToast } from '../../../js/utils.js';
+import { showToast, escapeHTML } from '../../../js/utils.js';
 
 export async function init(mount) {
   mount.querySelector('#btn-new-patient')?.addEventListener('click', () => openCreateModal(mount));
@@ -35,7 +35,7 @@ async function renderTable(mount, query = '') {
     body.innerHTML = patients.map(p => `
       <tr>
         <td class="font-mono text-sm">${p.id}</td>
-        <td class="font-weight-500">${p.name}</td>
+        <td class="font-weight-500">${escapeHTML(p.name)}</td>
         <td class="text-secondary">${p.email || '—'}</td>
         <td class="text-secondary">${p.phone_number || '—'}</td>
         <td><span class="badge badge-neutral">${p.appointment_count}</span></td>
@@ -148,7 +148,7 @@ async function openViewModal(mount, id) {
   body.innerHTML = `
     <div class="ir-detail-grid">
       <div><span class="ir-detail-label">ID</span><span>${patient.id}</span></div>
-      <div><span class="ir-detail-label">Name</span><span>${patient.name}</span></div>
+      <div><span class="ir-detail-label">Name</span><span>${escapeHTML(patient.name)}</span></div>
       <div><span class="ir-detail-label">Email</span><span>${patient.email || '—'}</span></div>
       <div><span class="ir-detail-label">Phone</span><span>${patient.phone_number || '—'}</span></div>
       <div><span class="ir-detail-label">Last Appointment</span><span>${patient.time ? new Date(patient.time).toLocaleString() : '—'}</span></div>

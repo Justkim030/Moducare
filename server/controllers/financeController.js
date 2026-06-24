@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { validateRequired, validateUUID } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -75,12 +76,26 @@ function handleCreate(req, res) {
       const p = JSON.parse(body || '{}');
       const { type, reference, amount, status, date, due, employee_id, patient_id } = p;
 
-      if (!type || !amount || !employee_id) {
-        return sendSecureJSON(res, 400, { ok: false, error: 'Type, amount, and staff are required.' });
+      const missing = validateRequired([type, amount, employee_id]);
+      if (missing.length > 0) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Missing required fields: ' + missing.join(', ') });
+      }
+
+      const numAmount = parseFloat(amount);
+      if (isNaN(numAmount) || numAmount <= 0) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Amount must be a positive number.' });
+      }
+
+      if (!validateUUID(employee_id)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid employee ID format.' });
+      }
+
+      if (patient_id && !validateUUID(patient_id)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid patient ID format.' });
       }
 
       db.run(`INSERT INTO finance (type, reference, amount, status, date, due, employee_id, patient_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [type, reference || '', amount, status || 'pending', date || new Date().toISOString().split('T')[0], due || '', employee_id, patient_id || ''],
+        [type, reference || '', numAmount, status || 'pending', date || new Date().toISOString().split('T')[0], due || '', employee_id, patient_id || ''],
         function (err) {
           if (err) {
             console.error(`[SECURE EXCEPTION] Finance Create Trace: ${err.message}`);
@@ -88,7 +103,7 @@ function handleCreate(req, res) {
           }
           return sendSecureJSON(res, 201, {
             ok: true,
-            record: { id: this.lastID, type, reference, amount, status, date, due, employee_id, patient_id },
+            record: { id: this.lastID, type, reference, amount: numAmount, status, date, due, employee_id, patient_id },
           });
         }
       );
@@ -111,7 +126,14 @@ function handleUpdate(req, res) {
       const values = [];
       if (type !== undefined) { fields.push('type = ?'); values.push(type); }
       if (reference !== undefined) { fields.push('reference = ?'); values.push(reference); }
-      if (amount !== undefined) { fields.push('amount = ?'); values.push(amount); }
+      if (amount !== undefined) {
+        const numAmount = parseFloat(amount);
+        if (isNaN(numAmount) || numAmount <= 0) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Amount must be a positive number.' });
+        }
+        fields.push('amount = ?');
+        values.push(numAmount);
+      }
       if (status !== undefined) { fields.push('status = ?'); values.push(status); }
       if (date !== undefined) { fields.push('date = ?'); values.push(date); }
       if (due !== undefined) { fields.push('due = ?'); values.push(due); }

@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { validateUUID } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -86,6 +87,19 @@ function handleCreate(req, res) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Time, patient, and doctor are required.' });
       }
 
+      const timeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
+      if (!timeRegex.test(time)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid time format. Use ISO format (e.g. 2024-01-15T10:00).' });
+      }
+
+      if (!validateUUID(patient_id)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid patient ID format.' });
+      }
+
+      if (!validateUUID(employee_id)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid employee ID format.' });
+      }
+
       db.run(`INSERT INTO appointments (time, type, status, patient_id, employee_id) VALUES (?, ?, ?, ?, ?)`,
         [time, type || 'Consultation', status || 'scheduled', patient_id, employee_id],
         function (err) {
@@ -116,11 +130,30 @@ function handleUpdate(req, res) {
 
       const fields = [];
       const values = [];
-      if (time !== undefined) { fields.push('time = ?'); values.push(time); }
+      if (time !== undefined) {
+        const timeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
+        if (!timeRegex.test(time)) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Invalid time format. Use ISO format (e.g. 2024-01-15T10:00).' });
+        }
+        fields.push('time = ?');
+        values.push(time);
+      }
       if (type !== undefined) { fields.push('type = ?'); values.push(type); }
       if (status !== undefined) { fields.push('status = ?'); values.push(status); }
-      if (patient_id !== undefined) { fields.push('patient_id = ?'); values.push(patient_id); }
-      if (employee_id !== undefined) { fields.push('employee_id = ?'); values.push(employee_id); }
+      if (patient_id !== undefined) {
+        if (!validateUUID(patient_id)) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Invalid patient ID format.' });
+        }
+        fields.push('patient_id = ?');
+        values.push(patient_id);
+      }
+      if (employee_id !== undefined) {
+        if (!validateUUID(employee_id)) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Invalid employee ID format.' });
+        }
+        fields.push('employee_id = ?');
+        values.push(employee_id);
+      }
       values.push(id);
 
       db.run(`UPDATE appointments SET ${fields.join(', ')} WHERE id = ?`, values, function (err) {

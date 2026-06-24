@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const { validateEmail, sanitizeString } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -17,6 +18,12 @@ async function hashPassword(password) {
 }
 
 function handleList(req, res) {
+  // Defense-in-depth: verify admin role even if middleware is bypassed
+  const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
+  if (!req.user || !req.user.role_id || !ADMIN_ROLES.includes(req.user.role_id)) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   db.all(`SELECT u.id, u.email, u.phone_number, e.name, r.name as role_name, r.id as role_id FROM users u LEFT JOIN employees e ON e.user_id = u.id LEFT JOIN roles r ON r.id = e.role_id`, (err, rows) => {
     if (err) {
       console.error(`[SECURE EXCEPTION] Users List Database Error: ${err.message}`);
@@ -46,6 +53,14 @@ async function handleCreate(req, res) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Email and password are required.' });
       }
 
+      if (!validateEmail(email)) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
+      }
+
+      if (password.length < 8) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'Password must be at least 8 characters.' });
+      }
+
       const passwordHash = await hashPassword(password);
       const userId = 'usr_' + Date.now();
       const employeeId = 'emp_' + Date.now();
@@ -61,7 +76,7 @@ async function handleCreate(req, res) {
             }
 
             db.run('INSERT INTO employees (id, name, user_id, role_id) VALUES (?, ?, ?, ?)',
-              [employeeId, name || '', userId, assignedRole],
+              [employeeId, sanitizeString(name) || '', userId, assignedRole],
               function (empErr) {
                 if (empErr) {
                   console.error(`[SECURE EXCEPTION] Employee Create Trace: ${empErr.message}`);
@@ -70,7 +85,7 @@ async function handleCreate(req, res) {
 
                 return sendSecureJSON(res, 201, {
                   ok: true,
-                  user: { id: userId, email, name: name || '', role: assignedRole },
+                  user: { id: userId, email, name: sanitizeString(name) || '', role: assignedRole },
                 });
               }
             );
@@ -95,10 +110,25 @@ async function handleUpdate(req, res) {
 
       const fields = [];
       const values = [];
-      if (name !== undefined) { fields.push('e.name = ?'); values.push(name); }
-      if (email !== undefined) { fields.push('u.email = ?'); values.push(email); }
-      if (role_id !== undefined) { fields.push('e.role_id = ?'); values.push(role_id); }
+      if (name !== undefined) {
+        fields.push('e.name = ?');
+        values.push(sanitizeString(name));
+      }
+      if (email !== undefined) {
+        if (!validateEmail(email)) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
+        }
+        fields.push('u.email = ?');
+        values.push(email);
+      }
+      if (role_id !== undefined) {
+        fields.push('e.role_id = ?');
+        values.push(role_id);
+      }
       if (password !== undefined) {
+        if (password.length < 8) {
+          return sendSecureJSON(res, 400, { ok: false, error: 'Password must be at least 8 characters.' });
+        }
         const hash = await hashPassword(password);
         fields.push('u.passwordHash = ?');
         values.push(hash);
