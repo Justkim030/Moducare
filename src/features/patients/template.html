@@ -1,0 +1,43 @@
+<section class="feature-patients">
+  <header class="patients-header">
+    <div>
+      <h1>Patient Management</h1>
+      <p class="patients-subtitle">Register, search, and review patient records.</p>
+    </div>
+    <button class="mc-btn" id="btn-new-patient">+ Register Patient</button>
+  </header>
+
+  <div class="patients-toolbar">
+    <input type="search" id="patient-search" class="input" placeholder="Search by name, email, or phone..." />
+    <span id="patient-count" class="mc-muted"></span>
+  </div>
+
+  <div class="card p-0">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Appointments</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="patient-table-body">
+        <tr><td colspan="6" class="mc-muted">Loading patients...</td></tr>
+      </tbody>
+    </table>
+    <div id="patient-empty" class="empty-state hidden">No patients found.</div>
+  </div>
+
+  <div id="patient-modal-root" class="mc-modal-backdrop hidden">
+    <div class="card p-sp-6 modal-surface">
+      <div class="flex justify-between items-center mb-sp-4">
+        <h3 id="modal-title" class="text-lg font-bold">Register Patient</h3>
+        <button class="btn btn-icon" id="modal-close">✕</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+</section>

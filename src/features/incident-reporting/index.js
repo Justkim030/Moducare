@@ -1,11 +1,32 @@
-/**
- * Clinical Incident Reporting — Feature Controller
+﻿/**
+ * Clinical Incident Reporting â€” Feature Controller
  * ModuCare module contract: export async function init(mount, State)
  */
-import { MOCK_INCIDENTS, INCIDENT_SEVERITIES, INCIDENT_CATEGORIES } from './data/incidents.js';
+import { showToast } from '../../../../js/utils.js';
+import { INCIDENT_SEVERITIES, INCIDENT_CATEGORIES }
+
+async function loadIncidents() {
+  try {
+    const res = await fetch('/api/incidents');
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
+    return (data.incidents || []).map(i => ({
+      id: i.id,
+      date: i.created ? i.created.split('T')[0] : i.date,
+      title: i.title || '',
+      description: i.description || '',
+      status: i.status,
+      severity: i.severity,
+      reportedBy: i.reporter_name || ''
+    }));
+  } catch (e) {
+    showToast('Failed to load incidents', 'error');
+    return [];
+  }
+} from './data/incidents.js';
 
 export async function init(mount, State) {
-  let incidents    = [...MOCK_INCIDENTS];
+  let incidents = await loadIncidents();
   let searchQuery  = '';
   let filterCat    = '';
   let filterSev    = '';
@@ -29,7 +50,7 @@ export async function init(mount, State) {
   const pagination   = mount.querySelector('#ir-pagination');
 
   function fmtDate(d) {
-    if (!d) return '—';
+    if (!d) return 'â€”';
     return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
@@ -104,11 +125,11 @@ export async function init(mount, State) {
       const start = (page - 1) * PAGE_SIZE + 1;
       const end   = Math.min(page * PAGE_SIZE, total);
       pagination.innerHTML = `
-        <span class="mc-muted" style="font-size:.8rem">Showing ${start}–${end} of ${total}</span>
+        <span class="mc-muted" style="font-size:.8rem">Showing ${start}â€“${end} of ${total}</span>
         <div style="display:flex;gap:5px">
-          <button class="mc-btn mc-btn--sm ir-pg-btn" data-pg="${page-1}" ${page===1?'disabled':''}>‹ Prev</button>
+          <button class="mc-btn mc-btn--sm ir-pg-btn" data-pg="${page-1}" ${page===1?'disabled':''}>â€¹ Prev</button>
           ${Array.from({length:pages},(_,i)=>`<button class="mc-btn mc-btn--sm ir-pg-btn${i+1===page?' active':''}" data-pg="${i+1}">${i+1}</button>`).join('')}
-          <button class="mc-btn mc-btn--sm ir-pg-btn" data-pg="${page+1}" ${page===pages?'disabled':''}>Next ›</button>
+          <button class="mc-btn mc-btn--sm ir-pg-btn" data-pg="${page+1}" ${page===pages?'disabled':''}>Next â€º</button>
         </div>`;
       pagination.querySelectorAll('.ir-pg-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -130,7 +151,7 @@ export async function init(mount, State) {
       <div class="ir-form-section">
         <label class="ir-label">Incident Type <span class="ir-required">*</span></label>
         <select class="input" id="mf-category">
-          <option value="">— Select type —</option>
+          <option value="">â€” Select type â€”</option>
           ${INCIDENT_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}
         </select>
         <span class="ir-field-error" id="mf-err-category"></span>
@@ -139,7 +160,7 @@ export async function init(mount, State) {
         <div class="ir-form-section">
           <label class="ir-label">Severity <span class="ir-required">*</span></label>
           <select class="input" id="mf-severity">
-            <option value="">— Select —</option>
+            <option value="">â€” Select â€”</option>
             ${Object.entries(INCIDENT_SEVERITIES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}
           </select>
           <span class="ir-field-error" id="mf-err-severity"></span>
@@ -157,7 +178,7 @@ export async function init(mount, State) {
       </div>
       <div class="ir-form-section">
         <label class="ir-label">Immediate Action Taken</label>
-        <textarea class="input" id="mf-action" rows="2" placeholder="e.g. Physician notified, patient moved, equipment isolated…"></textarea>
+        <textarea class="input" id="mf-action" rows="2" placeholder="e.g. Physician notified, patient moved, equipment isolatedâ€¦"></textarea>
       </div>
       <div class="ir-form-row-2">
         <div class="ir-form-section">
@@ -178,7 +199,7 @@ export async function init(mount, State) {
         <div class="ir-form-section">
           <label class="ir-label">Your Role <span class="ir-required">*</span></label>
           <select class="input" id="mf-role">
-            <option value="">— Select —</option>
+            <option value="">â€” Select â€”</option>
             <option>Doctor / Physician</option><option>Nurse</option>
             <option>Clinical Officer</option><option>Pharmacist</option>
             <option>Lab Technician</option><option>Radiographer</option>
@@ -244,13 +265,13 @@ export async function init(mount, State) {
       </div>
       <div class="ir-detail-grid">
         <div><span class="ir-detail-label">Date</span><span>${fmtDate(inc.date)} ${inc.time||''}</span></div>
-        <div><span class="ir-detail-label">Patient ID</span><span>${inc.patientId||'—'}</span></div>
+        <div><span class="ir-detail-label">Patient ID</span><span>${inc.patientId||'â€”'}</span></div>
         <div><span class="ir-detail-label">Reporter</span><span>${inc.reporterName} (${inc.reporterRole})</span></div>
-        <div><span class="ir-detail-label">Witness</span><span>${inc.witnessName||'—'}</span></div>
+        <div><span class="ir-detail-label">Witness</span><span>${inc.witnessName||'â€”'}</span></div>
       </div>
       <div class="ir-detail-block">
         <div class="ir-detail-label">What happened</div>
-        <p>${inc.description||'—'}</p>
+        <p>${inc.description||'â€”'}</p>
       </div>
       ${inc.actionTaken ? `<div class="ir-detail-block">
         <div class="ir-detail-label">Immediate action taken</div>

@@ -1,4 +1,0 @@
-/* Basic styles for Operations feature */
-.feature-ops { padding: 12px; }
-.feature-ops .mc-list { list-style:none; padding:0; }
-.feature-ops .mc-list li { padding:8px; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between }

@@ -1,26 +1,38 @@
 /**
- * ModuCare MS — Notifications Module
+ * ModuCare MS — Analytics & Reports Module
  * Status : 🔲 Scaffolded — ready for implementation
- * Path   : /features/notifications/index.js
- * CSS    : Shared scaffold styles in /css/components.css
- *          Add /features/notifications/notifications.css when implementing.
+ * Path   : /src/features/analytics-reports/index.js
+ * CSS    : /src/features/analytics-reports/styles.css
  */
-import { showToast } from '../../js/utils.js';
+import { showToast } from '../../../js/utils.js';
 
 export function render(container) {
   container.innerHTML = buildShell();
   container.querySelector('#primary-action-btn')
     ?.addEventListener('click', () =>
-      showToast('Notifications — implementation coming soon.', 'info')
+      showToast('Analytics & Reports — implementation coming soon.', 'info')
     );
+}
+
+const ALLOWED_ROLES = ['admin','analyst'];
+
+export async function init(mount, State){
+  const user = State.getUser();
+  if (!user || !ALLOWED_ROLES.includes(user.role)){
+    mount.innerHTML = `<section aria-labelledby="forbidden-analytics"><h2 id="forbidden-analytics">403 — Forbidden</h2><p>Analytics access requires analyst or admin role.</p></section>`;
+    return { destroy(){} };
+  }
+  // backward-compatible init wrapper for router
+  render(mount);
+  return { destroy(){ /* add teardown if needed */ } };
 }
 
 function buildShell() {
   return `
   <div class="section-header">
     <div>
-      <div class="section-title">Notifications</div>
-      <div class="section-subtitle">System alerts, reminders, approval requests, and cross-module event notifications.</div>
+      <div class="section-title">Analytics & Reports</div>
+      <div class="section-subtitle">Cross-departmental reporting, payroll breakdowns, compliance summaries, and roster exports.</div>
     </div>
     <button class="btn btn-primary" id="primary-action-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -28,7 +40,7 @@ function buildShell() {
         <line x1="12" y1="5" x2="12" y2="19"/>
         <line x1="5"  y1="12" x2="19" y2="12"/>
       </svg>
-      New Notifications
+      New Analytics & Reports
     </button>
   </div>
 
@@ -36,9 +48,9 @@ function buildShell() {
 
     <div class="scaffold-hero">
       <div class="scaffold-icon"
-           style="background:#DCFCE7;border-color:#16A34A40">🔔</div>
-      <div class="scaffold-title">Notifications</div>
-      <div class="scaffold-desc">System alerts, reminders, approval requests, and cross-module event notifications.</div>
+           style="background:#EEF5FB;border-color:#1E579940">📊</div>
+      <div class="scaffold-title">Analytics & Reports</div>
+      <div class="scaffold-desc">Cross-departmental reporting, payroll breakdowns, compliance summaries, and roster exports.</div>
     </div>
 
     <div class="scaffold-sections">
@@ -92,7 +104,7 @@ function buildShell() {
         <circle cx="12" cy="12" r="10"/>
         <polyline points="12 6 12 12 16 14"/>
       </svg>
-      Assign to <code>/features/notifications/</code>
+      Assign to <code>/src/features/analytics-reports/</code>
     </div>
 
   </div>`;

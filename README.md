@@ -3,67 +3,66 @@
 > **A centralized organizational management system** for HR, Operations, Finance, Analytics, Compliance, and beyond — built with a Vanilla Web Stack (HTML5 · CSS3 · ES6 Modules).
 
 ## ⚡ Quick Start (Local Development)
-Run the frontend and test UI/logic locally using the bundled Node server.
-1. **Start Server:** `npm start` or `node server/static-server.js`
-2. **Access App:** Open http://localhost:8080
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the server:
+   ```bash
+   npm start
+   ```
+3. Open **http://localhost:8081**
 
 ---
 
-## 🗂 Project Structure
+## 🗂 Current Project Structure
 
 ```
-/moducare-ms
+├── index.html                  # App shell (sidebar + header + router outlet)
+├── login.html                  # Standalone sign-in page
+├── forgot-password.html        # Password reset page
+├── register.html               # User registration page
 │
-├── index.html                  # Dashboard App Shell (sidebar + header + router outlet)
-├── login.html                  # Authentication — Sign In
-├── forgot-password.html        # Authentication — Password Reset
-├── README.md                   # This file
-│
-├── /server                     # Node.js development server
-│   └── static-server.js        # Static file server with API mocks
-│
-├── /assets
-│   ├── /fonts                  # Self-hosted web fonts (if any)
-│   ├── /icons                  # SVG icon sprites
-│   └── /images                 # Logos, illustrations
+├── /server
+│   ├── static-server.js        # Node HTTP server + REST API
+│   └── /controllers
+│       ├── authController.js   # Login / register (bcrypt)
+│       ├── usersController.js  # User CRUD
+│       ├── patientsController.js # Patient CRUD
+│       ├── appointmentsController.js # Appointment CRUD
+│       ├── incidentController.js     # Incident CRUD
+│       └── financeController.js      # Finance/ledger CRUD
 │
 ├── /css
-│   ├── design-system.css       # ★ CSS tokens, reset, typography, shared utilities
-│   ├── components.css          # Modals, dropdowns, tabs, alerts, pagination
-│   ├── auth.css                # Login & password reset pages
-│   └── dashboard.css           # App shell — sidebar, header, layout
+│   ├── design-system.css       # CSS tokens, reset, typography
+│   ├── components.css          # Shared UI components
+│   ├── auth.css                # Login / auth pages
+│   └── dashboard.css           # App shell layout
 │
 ├── /js
-│   ├── auth.js                 # Session management, auth guards, role checking
+│   ├── auth.js                 # Session management, role profiles, dashboard config
 │   ├── login.js                # Login page controller
-│   ├── app.js                  # Dashboard bootstrap (binds UI, calls router)
-│   ├── router.js               # Hash-based SPA router with dynamic imports
-│   ├── store.js                # Lightweight reactive global state
-│   └── utils.js                # Shared helpers — toast, date, CSV export, API fetch
+│   ├── app.js                  # Dashboard bootstrap
+│   ├── router.js               # SPA router with RBAC guards
+│   ├── sidebar.js              # Sidebar toggle / navigation
+│   ├── store.js                # Reactive global state
+│   └── utils.js                # Toast, date, CSV, API helpers
 │
-└── /features                   # ★ Department-specific modules (isolated)
-    ├── /hr-staff               # ✅ Implemented — Staff directory, add/search/export
-    ├── /operations-tasks       # ✅ Implemented — Kanban board + task list
-    ├── /finance-billing        # ✅ Implemented — Timesheet entry + billing log + rates
-    ├── /analytics-reports      # 🔲 Scaffolded
-    ├── /scheduling-calendar    # 🔲 Scaffolded
-    ├── /communications         # 🔲 Scaffolded
-    ├── /document-vault         # 🔲 Scaffolded
-    ├── /audit-compliance       # 🔲 Scaffolded
-    ├── /client-portal          # 🔲 Scaffolded
-    ├── /notifications          # 🔲 Scaffolded
-    ├── /integrations           # 🔲 Scaffolded
-    └── /system-admin           # 🔲 Scaffolded
-```
-
-Each feature folder follows this internal structure:
-
-```
-/features/<module-name>/
-├── index.js          # Module entry point — exports render(container)
-├── <module>.css      # Scoped styles for this module only
-├── /components/      # Sub-components (tables, modals, cards)
-└── /data/            # Mock data seeds or API binding files
+└── /src
+    ├── /css/main.css           # Global app styles
+    ├── /data/hospital.db       # SQLite seed database
+    └── /features                # Department modules (isolated)
+        ├── /dashboard          # Role-based KPI dashboard
+        ├── /admin              # Admin user management (CRUD)
+        ├── /patients           # Patient management (CRUD)
+        ├── /staff              # Staff directory, search, export
+        ├── /operations         # Kanban board + task tracking
+        ├── /finance-billing    # Timesheet engine, billing log, rates
+        ├── /incident-reporting # Incident submission & tracking
+        ├── /communications     # Messaging (scaffold)
+        ├── /scheduling-calendar # Calendar (scaffold)
+        └── /analytics-reports  # Analytics (scaffold)
 ```
 
 ---
@@ -71,183 +70,188 @@ Each feature folder follows this internal structure:
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   **Node.js:** Required for the development server and dependency management.
-*   **Browser:** A modern browser supporting ES6 modules (Chrome, Firefox, Edge, or Safari).
+- **Node.js** (v18+)
+- Modern browser with ES6 module support
 
 ### Installation
-1. Clone the repository.
-2. Install dependencies (required for database and server utilities):
-   ```bash
-   npm install
-   ```
-3. Start the development server: `npm start`
+```bash
+npm install
+npm start
+```
 
 ---
 
 ## 🔐 Authentication & Roles
 
-The auth system (`/js/auth.js`) uses `sessionStorage` / `localStorage` for JWT session management.
+- **Auth:** Email + password via `/api/login`
+- **Hashing:** bcrypt (12 rounds)
+- **Session:** `sessionStorage` / `localStorage` with secure object payload
+- **Rate limiting:** 5 attempts / 60 seconds on login
 
-| Role         | Level | Access                                              |
-|--------------|-------|-----------------------------------------------------|
-| `staff`      | 1     | Dashboard, Operations, Scheduling, Communications, Notifications |
-| `lead`       | 2     | + HR, Finance, Document Vault, Client Portal        |
-| `supervisor` | 3     | + Analytics, Audit & Compliance                     |
-| `director`   | 4     | + Integrations                                      |
-| `admin`      | 5     | Full access including System Admin                  |
+### Role Levels
 
-> **Demo login:** Enter any email + any password (4+ characters) on the login screen. Select your desired role from the role selector.
+| Role | Level | Module Access |
+|------|-------|---------------|
+| `staff` | 1 | Dashboard, Operations, Scheduling, Communications, Incident Reporting |
+| `lead` | 2 | + Staff, Finance, Patients, Document Vault, Client Portal |
+| `supervisor` | 3 | + Analytics, Audit & Compliance |
+| `director` | 4 | + Integrations |
+| `admin` | 5 | + Admin (User Management), System Admin |
 
-> **Production:** Replace `loginRequest()` in `/js/auth.js` with a real `fetch('/api/auth/login', ...)` call.
+Each login renders a dashboard tailored to the user's role via `DASHBOARD_PROFILES` in `js/auth.js`.
 
 ---
 
 ## 🧩 Architecture
 
-### App Shell Pattern
-`index.html` is a persistent shell — the sidebar, header, and `<main id="page-content">` never reload. Only the content area is replaced on navigation.
+### App Shell
+`index.html` is persistent. Sidebar, header, and footer stay mounted. Content is swapped in `#app-content`.
 
-### Hash Router
-`/js/router.js` intercepts sidebar clicks and `hashchange` events. Each module is dynamically imported on first visit and cached:
+### Router
+Client-side router (`src/js/router.js`) loads modules dynamically:
 ```js
-import('/features/hr-staff/index.js').then(mod => mod.render(container))
+import(`/src/features/${name}/index.js`)
 ```
+Every module is protected by a **role gate** before mount.
 
-### Reactive Store
-`/js/store.js` is a tiny pub/sub store. Modules can subscribe to keys:
-```js
-import { get, set, subscribe } from '../../js/store.js';
-subscribe('currentModule', (mod) => console.log('Navigated to:', mod));
-```
+### Feature Contract
+Modules export `init(container, State)` and may return a `destroy()` lifecycle hook.
 
-### Feature Module Contract
-Every feature module **must** export a `render(container)` function:
-```js
-// /features/my-module/index.js
-export function render(container) {
-  container.innerHTML = `...`;
-  // bind events, load data, etc.
-}
-```
+---
+
+## 🔧 REST API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/register` | Create user + employee profile |
+| `POST` | `/api/login` | Authenticate, return session object |
+| `GET` | `/api/health` | Health check |
+| `GET/POST/PUT/DELETE` | `/api/users` | User CRUD |
+| `GET/POST/PUT/DELETE` | `/api/patients` | Patient CRUD |
+| `GET/POST/PUT/DELETE` | `/api/appointments` | Appointment CRUD |
+| `GET/POST/PUT/DELETE` | `/api/incidents` | Incident CRUD |
+| `GET/POST/PUT/DELETE` | `/api/finance` | Finance/ledger CRUD |
+
+All endpoints return JSON. Server headers enforce `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY`.
+
+---
+
+## 📦 Implemented Modules
+
+### ✅ Dashboard (`/dashboard`)
+- Role-adaptive KPI cards from `DASHBOARD_PROFILES`
+- Per-role metrics and quick actions
+
+### ✅ Admin — User Management (`/admin`)
+- Full user CRUD via modal-driven UI
+- Role assignment and password reset
+- Server-backed `/api/users`
+
+### ✅ Patients (`/patients`)
+- Patient list with search/create/edit/delete
+- Server-backed `/api/patients`
+
+### ✅ Staff (`/staff`)
+- Staff directory with grid/list views, search, filters
+- Department and role badges
+- CSV export
+
+### ✅ Operations (`/operations`)
+- Kanban board (Referred → Pending → Active → Completed)
+- List view with sortable columns
+- New task modal with priority, assignee, due date
+- Overdue detection
+
+### ✅ Finance & Billing (`/finance-billing`)
+- Timesheet entry with live billing preview
+- Automatic 15-minute unit conversion
+- Billing log table with hours, units, amounts
+- Rate management schedule
+- CSV export
+
+### ✅ Incident Reporting (`/incident-reporting`)
+- Incident list with severity/status filters
+- Create/edit/delete incidents
+- Server-backed `/api/incidents`
+
+---
+
+## 🔲 Scaffolded Modules (ready for implementation)
+
+| Module | Route | Suggested Priority |
+|--------|-------|-------------------|
+| Communications | `/communications` | Medium |
+| Scheduling & Calendar | `/scheduling-calendar` | High |
+| Analytics & Reports | `/analytics` | High |
+| Audit & Compliance | `/audit-compliance` | High |
 
 ---
 
 ## 🎨 Design System
 
-All tokens are in `/css/design-system.css` as CSS custom properties:
-
+Tokens live in `/css/design-system.css`:
 ```css
 /* Colors */   --clr-primary-500, --clr-accent-400, --clr-success, --clr-danger
 /* Surfaces */ --surface-card, --surface-page, --surface-sidebar
 /* Text */     --text-primary, --text-secondary, --text-tertiary
 /* Spacing */  --sp-1 (4px) → --sp-16 (64px)
-/* Shadows */  --shadow-xs → --shadow-xl
-/* Radii */    --border-radius-sm → --border-radius-xl
-```
-
-Shared utility classes: `.card`, `.btn`, `.badge`, `.table`, `.avatar`, `.input`, `.flex`, `.grid-*`, `.stat-card`, and more.
-
----
-
-## 📦 Implemented Features (v1.0)
-
-### ✅ HR & Staff (`/features/hr-staff`)
-- Full staff directory (table + grid views)
-- Search by name, email, department
-- Filter by department and status
-- Add Staff Member modal with full form validation
-- Role and status badges
-- Export to CSV
-
-### ✅ Operations & Tasks (`/features/operations-tasks`)
-- Kanban board view with 4-column pipeline (Referred → Pending → Active → Completed)
-- List view with sortable columns
-- New task modal with priority, department, assignee, due date
-- Priority badges (Urgent / High / Medium / Low)
-- Overdue detection
-- Filter by status and priority
-
-### ✅ Finance & Billing (`/features/finance-billing`)
-- Timesheet entry with live billing preview
-- Automatic 15-minute unit conversion
-- Billing log table with hours, units, and amounts
-- Rate management panel
-- Approve/pending status tracking
-- Export billing log to CSV
-
----
-
-## 🔲 Scaffolded Modules (ready to implement)
-
-Each of these has a working module shell (`index.js` + `.css`) that the router loads successfully. Assign to developers:
-
-| Module                | Folder                        | Suggested Priority |
-|-----------------------|-------------------------------|-------------------|
-| Analytics & Reports   | `/features/analytics-reports` | High              |
-| Scheduling & Calendar | `/features/scheduling-calendar`| High             |
-| Audit & Compliance    | `/features/audit-compliance`  | High              |
-| Notifications         | `/features/notifications`     | Medium            |
-| Document Vault        | `/features/document-vault`    | Medium            |
-| Communications        | `/features/communications`    | Medium            |
-| System Admin          | `/features/system-admin`      | Medium            |
-| Client Portal         | `/features/client-portal`     | Low               |
-| Integrations          | `/features/integrations`      | Low               |
-
----
-
-## 🔧 Utility API Reference
-
-```js
-import { showToast, formatDate, formatCurrency,
-         hoursToBillingUnits, exportCSV, apiFetch } from '../../js/utils.js';
-
-showToast('Saved!', 'success');          // 'info' | 'success' | 'warning' | 'error'
-formatDate('2025-01-15');                // → "Jan 15, 2025"
-formatCurrency(1234.5);                 // → "$1,234.50"
-hoursToBillingUnits(2.5);              // → 10  (15-min units)
-exportCSV(rowsArray, 'export.csv');     // triggers browser download
-apiFetch('/staff');                     // fetch with auth headers
 ```
 
 ---
 
-## 🤝 Contributing
+## 🛠 Developer Tools
 
-1. Check out the module you're assigned in `/features/<module-name>/`
-2. Open `index.js` — implement `render(container)` and replace scaffold UI
-3. Add scoped styles to `<module>.css` — **do not** modify `/css/design-system.css`
-4. Add sub-components to `/components/` and mock data to `/data/`
-5. Test by running a local server and navigating to your module
-6. Submit a PR against `main` with your module folder only
+**Secret Admin Login:**
+- Navigate to `/secret-login` or use shortcuts (`Ctrl+Alt+L`)
+
+**Database Reset:**
+```bash
+node server/migrate.js
+```
+> Drops and recreates all tables. Seed data is re-inserted.
 
 ---
 
 ## 📋 Conventions
 
-- **No frameworks** — Vanilla HTML5, CSS3, ES6 Modules only
-- **Scoped styles** — each module loads its own CSS; never use global selectors
-- **Design tokens** — always use CSS variables from `design-system.css`, never raw hex values
-- **Module isolation** — a module should not import from another feature module
-- **Shared code** — put reusable logic in `/js/utils.js` or `/js/store.js`
-- **Data** — mock data lives in `/features/<module>/data/`; replace with `apiFetch()` calls in production
+- **No frameworks** — Vanilla HTML5, CSS3, ES6 Modules
+- **Scoped styles** — each module loads its own CSS
+- **Design tokens** — use CSS variables, avoid raw hex values
+- **Module isolation** — no cross-feature imports
+- **Shared code** — `/js/utils.js` or `/js/store.js`
+- **API-first** — replace mock arrays with `fetch()` calls to the server controllers
+
+---
+
+## ✅ What to Work on Next
+
+1. **Replace mock data with API calls**
+   - `src/features/staff/` still uses `MOCK_STAFF` → connect to `/api/users`
+   - `src/features/operations/` still uses `TASKS` → connect to `/api/operations` (add endpoint if missing)
+   - `src/features/incident-reporting/` still uses `MOCK_INCIDENTS` → connect to `/api/incidents`
+   - `src/features/finance-billing/` still uses `TIMESHEETS` → connect to `/api/finance`
+
+2. **Implement missing API endpoints**
+   - `/api/operations` (task persistence)
+   - `/api/documents` (document vault)
+   - `/api/notifications` (notification service)
+   - `/api/audit` or `/api/activities` (compliance logging)
+
+3. **Hardcode cleanup**
+   - `src/features/dashboard/` still has placeholder metrics in `DASHBOARD_PROFILES`
+   - `js/router.js` stats row uses static numbers
+   - Finance rate matrix is static; make it editable via `/api/finance`
+
+4. **Security hardening**
+   - Replace `sessionStorage` checks in `requireAuth` with real JWT verification
+   - Add auth middleware to all protected server routes
+   - Add request validation middleware (zod/Joi style checks)
+
+5. **Scaffolded modules**
+   - Communications (messaging UI + backend)
+   - Scheduling & Calendar (event CRUD + `/api/appointments` expansion)
+   - Analytics & Reports (data aggregation from existing APIs)
 
 ---
 
 *ModuCare MS · Built with Vanilla Web Stack · &copy; 2025*
-
----
-
-### 🛠 Developer Tools & Tips
-
-**Secret Admin Access:**
-The admin login is hidden from the main UI for security. To access the secret login page:
-*   **URL:** Navigate to `/secret-login`
-*   **Shortcuts:** 
-    *   Windows/Linux: `Ctrl+Alt+L`
-    *   macOS: `Ctrl+Shift+L`
-
-**API Mocks:**
-The local server provides several endpoints for development:
-*   `GET /api/health` — System status.
-*   `GET /api/users` — Returns mock user directory.
-*   `POST /api/login` — Authentication simulation.

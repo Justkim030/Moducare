@@ -32,7 +32,77 @@ export const MODULE_PERMISSIONS = {
   'client-portal':      2,
   'integrations':       4,
   'system-admin':       5,
+  'patients':           1,
 };
+
+// Role-specific dashboard cards and quick actions
+export const DASHBOARD_PROFILES = {
+  staff: {
+    title: 'My Workspace',
+    description: 'Your daily tasks, appointments, and patient queue.',
+    cards: [
+      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', metric: '3 pending' },
+      { id: 'appointments', title: 'Appointments', route: '/scheduling-calendar', icon: '📅', metric: '4 today' },
+      { id: 'patients', title: 'My Patients', route: '/patients', icon: '👥', metric: '12 active' },
+      { id: 'incidents', title: 'Incident Reporting', route: '/incident-reporting', icon: '🚨', metric: '0 open' },
+      { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', metric: '2 new' },
+      { id: 'documents', title: 'Document Vault', route: '/document-vault', icon: '📁', metric: '5 pending' },
+    ],
+  },
+  lead: {
+    title: 'Team Lead Workspace',
+    description: 'Team performance, scheduling, approvals, and reports.',
+    cards: [
+      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', metric: '8 open' },
+      { id: 'schedule', title: 'Schedule', route: '/scheduling-calendar', icon: '📅', metric: '3 shifts' },
+      { id: 'timesheets', title: 'Timesheets', route: '/finance-billing', icon: '⏱️', metric: '2 pending' },
+      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', metric: '1 review' },
+      { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', metric: '5 new' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', metric: '22 total' },
+    ],
+  },
+  supervisor: {
+    title: 'Supervisor Overview',
+    description: 'Department oversight, compliance, and resource planning.',
+    cards: [
+      { id: 'compliance', title: 'Compliance', route: '/audit-compliance', icon: '🛡️', metric: 'Good' },
+      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', metric: '22 active' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', metric: '5 active' },
+      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', metric: 'KSh 48,200' },
+      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', metric: '2 open' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', metric: 'View all' },
+    ],
+  },
+  director: {
+    title: 'Director Dashboard',
+    description: 'Hospital-wide KPIs, financials, staffing, and risk.',
+    cards: [
+      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', metric: 'On track' },
+      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', metric: 'KSh 48,200' },
+      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', metric: '22 active' },
+      { id: 'incidents', title: 'Risk / Incidents', route: '/incident-reporting', icon: '🚨', metric: '2 open' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', metric: '5 active' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', metric: 'Overview' },
+    ],
+  },
+  admin: {
+    title: 'System Administration',
+    description: 'User management, system health, audit logs, and access control.',
+    cards: [
+      { id: 'users', title: 'Users', route: '/admin', icon: '👤', metric: 'Manage' },
+      { id: 'audit', title: 'Audit Logs', route: '/audit-compliance', icon: '📝', metric: '1,204 entries' },
+      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', metric: 'Online' },
+      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', metric: '2 open' },
+      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', metric: 'KSh 48,200' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', metric: 'View all' },
+    ],
+  },
+};
+
+export function getDashboardProfile(roleId) {
+  const key = (roleId || '').toLowerCase();
+  return DASHBOARD_PROFILES[key] || DASHBOARD_PROFILES.staff;
+}
 
 // ── Session Management ───────────────────────────────────────
 
@@ -144,10 +214,9 @@ export function canAccessModule(moduleId) {
  *
  * @param {string} email
  * @param {string} password
- * @param {string} role
  * @returns {Promise<{success: boolean, user?: object, error?: string}>}
  */
-export async function loginRequest(email, password, role) {
+export async function loginRequest(email, password) {
   try{
     const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
     const data = await res.json();

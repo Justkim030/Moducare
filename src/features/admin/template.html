@@ -1,7 +1,37 @@
 <section class="feature-admin">
-  <header><h2>System Admin — Users</h2></header>
-  <div id="admin-root">
-    <div id="admin-controls"><button id="refresh-users" class="btn btn-secondary">Refresh</button></div>
-    <div id="users-table-wrap"></div>
+  <header class="admin-header">
+    <div>
+      <h1>User Management</h1>
+      <p class="admin-subtitle">Register staff, assign roles, and manage access.</p>
+    </div>
+    <button class="mc-btn" id="btn-new-user">+ New User</button>
+  </header>
+
+  <div class="card p-0">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Phone</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-table-wrap">
+        <tr><td colspan="5" class="mc-muted">Loading users...</td></tr>
+      </tbody>
+    </table>
+    <div id="users-empty" class="empty-state hidden">No users found.</div>
+  </div>
+
+  <div id="user-modal-root" class="mc-modal-backdrop hidden">
+    <div class="card p-sp-6 modal-surface">
+      <div class="flex justify-between items-center mb-sp-4">
+        <h3 id="modal-title" class="text-lg font-bold">New User</h3>
+        <button class="btn btn-icon" id="modal-close">✕</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
   </div>
 </section>

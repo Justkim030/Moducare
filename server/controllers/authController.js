@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 
 function sendSecureJSON(res, status, data) {
@@ -12,33 +12,44 @@ function sendSecureJSON(res, status, data) {
   res.end(payload);
 }
 
-function handleLogin(req, res) {
+async function hashPassword(password) {
+  return bcrypt.hash(password, 12);
+}
+
+async function verifyPassword(password, hash) {
+  if (!hash || hash.length < 60) return false;
+  if (hash.startsWith('$2a$') || hash.startsWith('$2b$')) {
+    return bcrypt.compare(password, hash);
+  }
+  return false;
+}
+
+async function handleLogin(req, res) {
   let body = '';
   req.on('data', (ch) => (body += ch));
-  req.on('end', () => {
+  req.on('end', async () => {
     try {
       const { email, password } = JSON.parse(body || '{}');
-      
+
       if (!email || !password) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Credentials missing' });
       }
 
-      // Secure Query: Relational mapping matching your final ER diagram
       const query = `
-        SELECT u.id, u.email, u.phone_number, u.passwordHash, e.id AS employee_id, e.name, e.role_id 
+        SELECT u.id, u.email, u.phone_number, u.passwordHash, e.id AS employee_id, e.name, e.role_id
         FROM users u
         INNER JOIN employees e ON e.user_id = u.id
         WHERE LOWER(u.email) = LOWER(?)
       `;
 
-      db.get(query, [email], (getErr, account) => {
+      db.get(query, [email], async (getErr, account) => {
         if (getErr || !account) {
           if (getErr) console.error(`[SECURE EXCEPTION] Login Database Error: ${getErr.message}`);
           return sendSecureJSON(res, 401, { ok: false, error: 'Invalid credentials' });
         }
 
-        const incomingHash = crypto.createHash('sha256').update(password).digest('hex');
-        if (account.passwordHash !== incomingHash) {
+        const valid = await verifyPassword(password, account.passwordHash);
+        if (!valid) {
           return sendSecureJSON(res, 401, { ok: false, error: 'Invalid credentials' });
         }
 
@@ -61,10 +72,10 @@ function handleLogin(req, res) {
   });
 }
 
-function handleRegister(req, res) {
+async function handleRegister(req, res) {
   let body = '';
   req.on('data', (ch) => (body += ch));
-  req.on('end', () => {
+  req.on('end', async () => {
     try {
       const p = JSON.parse(body || '{}');
       const { name, email, password, phone_number, role_id } = p;
@@ -73,16 +84,14 @@ function handleRegister(req, res) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Registration requirements incomplete.' });
       }
 
-      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+      const passwordHash = await hashPassword(password);
       const userId = 'usr_' + Date.now();
       const employeeId = 'emp_' + Date.now();
       const assignedRoleId = role_id || 'role_nurse';
 
-      // CLEAN SERIAL TRANSACTION: Run queries sequentially using parameters directly
       db.serialize(() => {
         let executionError = false;
 
-        // Step 1: Write to authentication row
         db.run(
           'INSERT INTO users (id, email, phone_number, passwordHash) VALUES (?, ?, ?, ?)',
           [userId, email, phone_number || null, passwordHash],
@@ -93,7 +102,6 @@ function handleRegister(req, res) {
               return sendSecureJSON(res, 400, { ok: false, error: 'Account generation could not be processed.' });
             }
 
-            // Step 2: Write profile row safely inside the verification success track
             db.run(
               'INSERT INTO employees (id, name, user_id, role_id) VALUES (?, ?, ?, ?)',
               [employeeId, name, userId, assignedRoleId],
@@ -119,4 +127,4 @@ function handleRegister(req, res) {
   });
 }
 
-module.exports = { handleRegister, handleLogin, sendSecureJSON };
+module.exports = { handleRegister, handleLogin, sendSecureJSON, hashPassword, verifyPassword };

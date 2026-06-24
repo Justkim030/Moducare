@@ -1,40 +1,58 @@
-/**
- * ModuCare MS — HR & Staff Module
+﻿/**
+ * ModuCare MS â€” HR & Staff Module
  * Features: Staff directory grid/table, search & filter,
  *           add staff modal, role badges, status management
  *
  * Entry point: called by router via render(container)
  */
-import { showToast, formatDate, getInitials } from '../../js/utils.js';
-import { hasRole } from '../../js/auth.js';
+import { showToast, formatDate, getInitials } from '../../../js/utils.js';
+import { hasRole } from '../../../js/auth.js';
 
-// ── Inject scoped CSS once ───────────────────────────────────
+// â”€â”€ Inject scoped CSS once â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = 'features/hr-staff/hr-staff.css';
+  link.href = 'src/features/staff/hr-staff.css';
   document.head.appendChild(link);
   _cssLoaded = true;
 }
 
-// ── Mock Data ────────────────────────────────────────────────
+// â”€â”€ Mock Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Replace with: import { fetchStaff } from './data/staff-api.js'
-const MOCK_STAFF = [
-  { id:'s001', name:'Jane Doe',       initials:'JD', department:'System Administration', role:'admin',     status:'active',   email:'jane.doe@org.com',          phone:'(555) 201-1000', joined:'2019-03-12', location:'Main Office' },
-  { id:'s002', name:'Marcus Rivera',  initials:'MR', department:'Operations',            role:'lead',      status:'active',   email:'m.rivera@org.com',           phone:'(555) 201-1042', joined:'2020-07-08', location:'Branch A' },
-  { id:'s003', name:'Sara Okonkwo',   initials:'SO', department:'Finance & Billing',     role:'staff',     status:'active',   email:'sara.o@org.com',             phone:'(555) 201-1087', joined:'2021-01-15', location:'Main Office' },
-  { id:'s004', name:'Alex Liu',       initials:'AL', department:'HR',                    role:'lead',      status:'active',   email:'alex.liu@org.com',           phone:'(555) 201-1031', joined:'2020-11-03', location:'Main Office' },
-  { id:'s005', name:'Priya Joshi',    initials:'PJ', department:'Audit & Compliance',    role:'supervisor',status:'pending',  email:'p.joshi@org.com',            phone:'(555) 201-1059', joined:'2022-03-28', location:'Remote' },
-  { id:'s006', name:'Derek Walsh',    initials:'DW', department:'Operations',            role:'staff',     status:'active',   email:'d.walsh@org.com',            phone:'(555) 201-1065', joined:'2021-09-19', location:'Branch B' },
-  { id:'s007', name:'Amara Nwosu',    initials:'AN', department:'Finance & Billing',     role:'staff',     status:'active',   email:'amara.n@org.com',            phone:'(555) 201-1074', joined:'2022-07-11', location:'Main Office' },
-  { id:'s008', name:'Tomás Guerrero', initials:'TG', department:'Analytics',             role:'supervisor',status:'active',   email:'t.guerrero@org.com',         phone:'(555) 201-1090', joined:'2019-11-22', location:'Main Office' },
-  { id:'s009', name:'Claire Bennett', initials:'CB', department:'HR',                    role:'staff',     status:'inactive', email:'c.bennett@org.com',          phone:'(555) 201-1022', joined:'2018-05-30', location:'Remote' },
-  { id:'s010', name:'Jalen Brooks',   initials:'JB', department:'Operations',            role:'staff',     status:'active',   email:'j.brooks@org.com',           phone:'(555) 201-1099', joined:'2023-02-14', location:'Branch A' },
-  { id:'s011', name:'Mei Tanaka',     initials:'MT', department:'Document Vault',        role:'staff',     status:'active',   email:'m.tanaka@org.com',           phone:'(555) 201-1033', joined:'2022-10-01', location:'Main Office' },
-  { id:'s012', name:'Ray Osei',       initials:'RO', department:'Audit & Compliance',    role:'staff',     status:'pending',  email:'ray.osei@org.com',           phone:'(555) 201-1047', joined:'2023-06-20', location:'Remote' },
-];
+// ── Mock Data (replaced with API) ────────────────────────────────
+window.__STAFF_DATA = [];
+
+async function loadStaff() {
+  // Map API role IDs to UI role keys
+  const roleMap = {
+    'role_dev': 'admin',
+    'role_nurse': 'staff',
+    'lead': 'lead',
+    'supervisor': 'supervisor',
+    'admin': 'admin'
+  };
+  try {
+    const res = await fetch('/api/users');
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
+    window.__STAFF_DATA = (data.users || []).map(u => ({
+      id: u.id,
+      name: u.name,
+      initials: (u.name || '').split(' ').map(p => p[0]).join('').toUpperCase() || '??',
+      department: u.department || 'Unassigned',
+      role: roleMap[u.role] || 'staff',
+      status: 'active',
+      email: u.email,
+      phone: u.phone_number || '—',
+      joined: u.joined || new Date().toISOString().split('T')[0],
+      location: 'Main Office'
+    }));
+  } catch (e) {
+    showToast('Failed to load staff directory', 'error');
+  }
+}
 
 const DEPT_OPTIONS = [
   'All Departments','System Administration','Operations','Finance & Billing',
@@ -55,7 +73,7 @@ const STATUS_MAP = {
   inactive: { dot:'status-dot--inactive', badge:'badge-neutral', label:'Inactive' },
 };
 
-// ── Module State ─────────────────────────────────────────────
+// â”€â”€ Module State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _state = {
   search: '',
   dept:   'All Departments',
@@ -65,15 +83,16 @@ let _state = {
   perPage: 8,
 };
 
-// ── Public Entry ─────────────────────────────────────────────
-export function render(container) {
-  injectCSS();
-  container.innerHTML = buildShell();
-  bindEvents(container);
-  renderList(container);
-}
+// â”€â”€ Public Entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export async function render(container) {
+   injectCSS();
+   container.innerHTML = buildShell();
+   bindEvents(container);
+   await loadStaff();
+   renderList(container);
+ }
 
-// ── Shell HTML ───────────────────────────────────────────────
+// â”€â”€ Shell HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildShell() {
   const canAdd = hasRole('lead');
   return `
@@ -103,7 +122,7 @@ function buildShell() {
       <span class="filter-search__icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </span>
-      <input type="search" id="staff-search" placeholder="Search by name, email, or department…" value="${_state.search}" />
+      <input type="search" id="staff-search" placeholder="Search by name, email, or departmentâ€¦" value="${_state.search}" />
     </div>
 
     <select class="filter-select" id="dept-filter">
@@ -224,7 +243,7 @@ function buildShell() {
   </div>`;
 }
 
-// ── Render List (table or grid) ──────────────────────────────
+// â”€â”€ Render List (table or grid) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderList(container) {
   const filtered = filterStaff();
   const total    = filtered.length;
@@ -241,7 +260,7 @@ function renderList(container) {
 
   if (slice.length === 0) {
     listEl.innerHTML = `<div class="empty-state">
-      <div class="empty-state__icon">🔍</div>
+      <div class="empty-state__icon">ðŸ”</div>
       <div class="empty-state__title">No staff found</div>
       <div class="empty-state__desc">Try adjusting your search or filter criteria.</div>
     </div>`;
@@ -266,15 +285,15 @@ function renderList(container) {
 }
 
 function buildStatsBar() {
-  const active   = MOCK_STAFF.filter(s=>s.status==='active').length;
-  const pending  = MOCK_STAFF.filter(s=>s.status==='pending').length;
-  const inactive = MOCK_STAFF.filter(s=>s.status==='inactive').length;
+  const active   = __STAFF_DATA.filter(s=>s.status==='active').length;
+  const pending  = __STAFF_DATA.filter(s=>s.status==='pending').length;
+  const inactive = __STAFF_DATA.filter(s=>s.status==='inactive').length;
   return `<div class="hr-stats-row">
-    <div class="hr-stat"><span class="hr-stat__val">${MOCK_STAFF.length}</span><span class="hr-stat__lbl">Total Staff</span></div>
+    <div class="hr-stat"><span class="hr-stat__val">${__STAFF_DATA.length}</span><span class="hr-stat__lbl">Total Staff</span></div>
     <div class="hr-stat"><span class="hr-stat__val" style="color:var(--clr-success)">${active}</span><span class="hr-stat__lbl">Active</span></div>
     <div class="hr-stat"><span class="hr-stat__val" style="color:var(--clr-warning)">${pending}</span><span class="hr-stat__lbl">Pending</span></div>
     <div class="hr-stat"><span class="hr-stat__val" style="color:var(--clr-neutral-400)">${inactive}</span><span class="hr-stat__lbl">Inactive</span></div>
-    <div class="hr-stat"><span class="hr-stat__val">${[...new Set(MOCK_STAFF.map(s=>s.department))].length}</span><span class="hr-stat__lbl">Departments</span></div>
+    <div class="hr-stat"><span class="hr-stat__val">${[...new Set(__STAFF_DATA.map(s=>s.department))].length}</span><span class="hr-stat__lbl">Departments</span></div>
   </div>`;
 }
 
@@ -296,7 +315,7 @@ function staffRow(s) {
     <td class="text-secondary text-sm">${formatDate(s.joined)}</td>
     <td>
       <div class="flex gap-1 justify-end">
-        <button class="btn btn-ghost btn-sm btn-icon" data-tip="View Profile" onclick="alert('Profile view for ${s.name} — build in /features/hr-staff/components/')">
+        <button class="btn btn-ghost btn-sm btn-icon" data-tip="View Profile" onclick="alert('Profile view for ${s.name} â€” build in /src/features/staff/components/')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
         <button class="btn btn-ghost btn-sm btn-icon" data-tip="Edit">
@@ -319,8 +338,8 @@ function staffCard(s) {
     <div class="staff-card__dept">${s.department}</div>
     <span class="badge ${r.badge}">${r.label}</span>
     <div class="staff-card__meta">
-      <span>📍 ${s.location}</span>
-      <span>📅 ${formatDate(s.joined)}</span>
+      <span>ðŸ“ ${s.location}</span>
+      <span>ðŸ“… ${formatDate(s.joined)}</span>
     </div>
     <div class="staff-card__email">${s.email}</div>
   </div>`;
@@ -329,17 +348,17 @@ function staffCard(s) {
 function buildPagination(pages, total) {
   const start = (_state.page - 1) * _state.perPage + 1;
   const end   = Math.min(_state.page * _state.perPage, total);
-  let btns = `<button class="page-btn" ${_state.page===1?'disabled':''} data-page="${_state.page-1}">‹</button>`;
+  let btns = `<button class="page-btn" ${_state.page===1?'disabled':''} data-page="${_state.page-1}">â€¹</button>`;
   for (let i=1;i<=pages;i++) {
     btns += `<button class="page-btn ${i===_state.page?'active':''}" data-page="${i}">${i}</button>`;
   }
-  btns += `<button class="page-btn" ${_state.page===pages?'disabled':''} data-page="${_state.page+1}">›</button>`;
-  return `<div class="pagination">${btns}<span class="pagination__info">${start}–${end} of ${total}</span></div>`;
+  btns += `<button class="page-btn" ${_state.page===pages?'disabled':''} data-page="${_state.page+1}">â€º</button>`;
+  return `<div class="pagination">${btns}<span class="pagination__info">${start}â€“${end} of ${total}</span></div>`;
 }
 
-// ── Filter Logic ─────────────────────────────────────────────
+// â”€â”€ Filter Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function filterStaff() {
-  return MOCK_STAFF.filter(s => {
+  return __STAFF_DATA.filter(s => {
     const q = _state.search.toLowerCase();
     const matchSearch = !q ||
       s.name.toLowerCase().includes(q) ||
@@ -351,7 +370,7 @@ function filterStaff() {
   });
 }
 
-// ── Event Binding ────────────────────────────────────────────
+// â”€â”€ Event Binding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function bindEvents(container) {
   // Search
   const search = container.querySelector('#staff-search');
@@ -421,11 +440,11 @@ function bindEvents(container) {
       id: 's' + Date.now(), name: `${first} ${last}`,
       initials: (first[0]+last[0]).toUpperCase(),
       department: dept, role, status:'pending', email,
-      phone: container.querySelector('#f-phone')?.value||'—',
+      phone: container.querySelector('#f-phone')?.value||'â€”',
       joined: new Date().toISOString().split('T')[0],
       location: container.querySelector('#f-location')?.value||'Main Office',
     };
-    MOCK_STAFF.unshift(newMember);
+    __STAFF_DATA.unshift(newMember);
     closeModal();
     _state.page = 1;
     renderList(container);
@@ -438,10 +457,15 @@ function bindEvents(container) {
     import('../../js/utils.js').then(({ exportCSV }) => {
       const rows = [
         ['Name','Department','Role','Status','Email','Phone','Location','Joined'],
-        ...MOCK_STAFF.map(s=>[s.name,s.department,ROLE_MAP[s.role]?.label,s.status,s.email,s.phone,s.location,s.joined])
+        ...__STAFF_DATA.map(s=>[s.name,s.department,ROLE_MAP[s.role]?.label,s.status,s.email,s.phone,s.location,s.joined])
       ];
       exportCSV(rows, 'moducare-staff-directory.csv');
       showToast('Staff directory exported as CSV.', 'success');
     });
   });
 }
+
+
+
+
+

@@ -1,4 +1,6 @@
-.admin-header {
+/* Patients Module Styles */
+
+.patients-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -7,14 +9,29 @@
   padding-bottom: var(--sp-4);
 }
 
-.admin-header h1 {
+.patients-header h1 {
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-.admin-subtitle {
+.patients-subtitle {
   font-size: 13px;
   color: var(--text-tertiary);
   margin: 4px 0 0;
+}
+
+.patients-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--sp-4);
+}
+
+.patients-toolbar .input {
+  max-width: 360px;
+}
+
+.modal-surface {
+  max-width: 560px;
 }

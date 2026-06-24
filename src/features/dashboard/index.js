@@ -1,14 +1,23 @@
 /**
  * Dashboard Feature Logic
- * Handles sub-view routing within the dashboard module.
+ * Handles sub-view routing and role-based card generation.
  */
 import { apiFetch } from '../../../js/utils.js';
+import { getDashboardProfile } from '../../../js/auth.js';
 
 export async function init(mount, State) {
   const path = window.location.pathname;
   const segments = path.split('/');
-  const subView = segments[2] || 'overview'; // Fallback to overview if path is just /dashboard
+  const subView = segments[2] || 'overview';
 
+  const profile = getDashboardProfile(State?.getUser?.()?.role);
+
+  const title = mount.querySelector('#dashboard-title');
+  const subtitle = mount.querySelector('#dashboard-subtitle');
+  if (title) title.textContent = profile.title;
+  if (subtitle) subtitle.textContent = profile.description;
+
+  renderRoleCards(mount, profile.cards);
   switchView(mount, subView);
   loadDashboardData(mount);
 
@@ -17,15 +26,27 @@ export async function init(mount, State) {
   };
 }
 
+function renderRoleCards(mount, cards) {
+  const grid = mount.querySelector('#role-cards');
+  if (!grid) return;
+  grid.innerHTML = cards.map(card => `
+    <a href="${card.route}" data-route class="role-card" title="${card.title}">
+      <span class="role-card__icon">${card.icon}</span>
+      <span class="role-card__title">${card.title}</span>
+      <span class="role-card__metric">${card.metric}</span>
+    </a>
+  `).join('');
+}
+
 function switchView(mount, viewId) {
-  // Hide all views and show target
   mount.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active'));
   const target = mount.querySelector(`#view-${viewId}`) || mount.querySelector('#view-overview');
   target.classList.add('active');
 
-  // Update Breadcrumb/Title
   const title = mount.querySelector('#dashboard-title');
-  if (title) title.textContent = `Dashboard / ${viewId.charAt(0).toUpperCase() + viewId.slice(1).replace('-', ' ')}`;
+  if (title && viewId !== 'overview') {
+    title.textContent = `Dashboard / ${viewId.charAt(0).toUpperCase() + viewId.slice(1).replace('-', ' ')}`;
+  }
 }
 
 async function loadDashboardData(mount) {

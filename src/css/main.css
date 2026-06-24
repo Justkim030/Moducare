@@ -102,6 +102,7 @@ body {
   color: #fff;
   background: linear-gradient(to right, #6366f1, #a855f7);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -453,6 +454,7 @@ tr:hover td {
   cursor: pointer;
   border: 2px solid transparent;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
   user-select: none;
 }
 

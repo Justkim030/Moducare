@@ -253,32 +253,6 @@
   gap: var(--sp-5);
 }
 
-/* Role Selector */
-.role-selector {
-  display: flex;
-  background: var(--clr-neutral-100);
-  border-radius: var(--border-radius-sm);
-  padding: 3px;
-  gap: 2px;
-}
-.role-btn {
-  flex: 1;
-  padding: var(--sp-2) var(--sp-3);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  border-radius: calc(var(--border-radius-sm) - 2px);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-.role-btn.active {
-  background: var(--surface-card);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-xs);
-}
-.role-btn:hover:not(.active) {
-  color: var(--text-primary);
-}
-
 /* Password toggle */
 .input-icon-wrap .pwd-toggle {
   position: absolute;

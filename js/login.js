@@ -1,6 +1,6 @@
 /**
  * ModuCare MS — Login Page Controller
- * Handles: form validation, role selection, password toggle,
+ * Handles: form validation, password toggle,
  *          auth flow, and redirect after login.
  */
 import { loginRequest, setSession, authRedirect } from './auth.js';
@@ -20,19 +20,6 @@ const btnSpinner = document.getElementById('btn-spinner');
 const emailErr   = document.getElementById('email-error');
 const pwdErr     = document.getElementById('password-error');
 const pwdToggle  = document.getElementById('pwd-toggle');
-const roleBtns   = document.querySelectorAll('.role-btn');
-
-// ── State ────────────────────────────────────────────────────
-let selectedRole = 'staff';
-
-// ── Role Selector ────────────────────────────────────────────
-roleBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    roleBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedRole = btn.dataset.role;
-  });
-});
 
 // ── Password Toggle ──────────────────────────────────────────
 pwdToggle?.addEventListener('click', () => {
@@ -102,7 +89,7 @@ form?.addEventListener('submit', async (e) => {
   setLoading(true);
 
   try {
-    const result = await loginRequest(email, password, selectedRole);
+    const result = await loginRequest(email, password);
 
     if (result.success) {
       setSession(result.user, remember);

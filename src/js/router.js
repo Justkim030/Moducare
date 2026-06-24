@@ -9,6 +9,35 @@ let activeFeature = null; // holds returned instance with optional destroy()
 // List of routes that are dedicated to auth screens and should hide the app shell
 const AUTH_ROUTES = ['login', 'secret-login'];
 
+const ROLE_LEVELS = {
+  staff: 1,
+  lead: 2,
+  supervisor: 3,
+  director: 4,
+  admin: 5,
+};
+
+const MODULE_MIN_ROLE = {
+  admin: 'admin',
+  'audit-compliance': 'supervisor',
+  'finance-billing': 'lead',
+  'document-vault': 'lead',
+  'analytics-reports': 'supervisor',
+  'client-portal': 'lead',
+  'integrations': 'director',
+  'system-admin': 'admin',
+};
+
+function getRequiredRole(name) {
+  return MODULE_MIN_ROLE[name] || null;
+}
+
+function hasPermission(currentRole, requiredRole) {
+  const current = ROLE_LEVELS[currentRole] || 0;
+  const required = ROLE_LEVELS[requiredRole] || 99;
+  return current >= required;
+}
+
 function routeNameFromPath(path){
   const p = path.replace(/^\/+/,'').split('/')[0];
   return p || 'dashboard';
@@ -84,16 +113,15 @@ async function loadFeature(name){
 
     const [mod, tmpl] = await Promise.all([modPromise, tmplPromise]);
 
-    /* ── 🔓 TEMPORARILY DISABLED FOR TESTING ALL DASHBOARD MODULES ──
     const user = State.getUser();
-    if (name === 'admin' && (!user || user.role !== 'admin')) {
+    const requiredRole = getRequiredRole(name);
+    if (requiredRole && (!user || !hasPermission(user.role, requiredRole))) {
       showForbidden();
       return;
     }
-    ── Remove or uncomment this guard when ready for production ── */
 
-    const targetOutlet = AUTH_ROUTES.includes(name) 
-      ? document.getElementById('mc-app') 
+    const targetOutlet = AUTH_ROUTES.includes(name)
+      ? document.getElementById('mc-app')
       : outlet;
 
     if (targetOutlet) {
@@ -159,12 +187,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const opsLink = document.querySelector('.mc-nav-operations');
   const finLink = document.querySelector('.mc-nav-finance');
   const analyticsLink = document.querySelector('.mc-nav-analytics');
+  const patientsLink = document.querySelector('.mc-nav-patients');
 
   // Force sidebar visibility highlighters to remain active during testing regardless of current session roles
   if (adminLink) adminLink.classList.add('visible');
   if (opsLink) opsLink.classList.add('visible');
   if (finLink) finLink.classList.add('visible');
   if (analyticsLink) analyticsLink.classList.add('visible');
+  if (patientsLink) patientsLink.classList.add('visible');
 
   /* State subscription rules can remain attached without muting visibility highlights
   State.subscribe(s=>{
