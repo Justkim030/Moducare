@@ -51,7 +51,6 @@ function switchView(mount, viewId) {
 
 async function loadDashboardData(mount) {
   try {
-    // 1. Load Recent Activity for Overview
     const activities = await apiFetch('/activities').catch(() => []);
     const body = mount.querySelector('#recent-body');
     if (body) {
