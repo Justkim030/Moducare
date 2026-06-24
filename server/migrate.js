@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcryptjs');
 
 require('dotenv').config();
 
@@ -119,7 +120,16 @@ function executeSchemaMigration() {
     // 9. Operations
     db.run(`CREATE TABLE operations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      employee_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT,
+      department TEXT,
+      priority TEXT DEFAULT 'medium',
+      status TEXT DEFAULT 'referred',
+      assignee TEXT,
+      due TEXT,
+      tags TEXT,
+      notes TEXT,
+      employee_id TEXT,
       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     )`);
 
@@ -152,23 +162,39 @@ function executeSchemaMigration() {
     db.serialize(() => {
       console.log('\n--- Populating system base seed metrics ---');
 
+      const hash = (pwd) => bcrypt.hashSync(pwd, 12);
+
       // Seed Users
       db.run(`INSERT INTO users (id, email, phone_number, passwordHash) VALUES 
-        ('usr_admin', 'alice@acme.org', '+254700000000', null),
-        ('usr_dan', 'danreech@acme.org', '+254711111111', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f')`);
+        ('usr_admin', 'alice@acme.org', '+254700000000', '${hash('admin123')}'),
+        ('usr_dan', 'danreech@acme.org', '+254711111111', '${hash('dan123')}')`);
 
       // Seed Departments & Roles
       db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services')`);
-      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Systems Engineer', 'dept_tech'), ('role_nurse', 'Triage Practitioner', 'dept_clin')`);
+      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Systems Engineer', 'dept_tech'), ('role_nurse', 'Triage Practitioner', 'dept_clin'), ('role_admin', 'Administrator', 'dept_tech')`);
 
       // Seed Employees
-      db.run(`INSERT INTO employees (id, name, user_id, role_id) VALUES 
+      db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id) VALUES 
+        ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin'),
         ('emp_dan', 'Daniel Mach Reech', 'usr_dan', 'role_dev'),
         ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse')`);
 
       // Seed Patients
       db.run(`INSERT INTO patients (id, name, email, phone_number) VALUES 
         ('pat_1', 'Jane Doe', 'jane@gmail.com', '+254722222222')`);
+
+      // Seed Operations
+      db.run(`INSERT INTO operations (title, description, department, priority, status, assignee, due, tags, notes, employee_id) VALUES 
+        ('Update service agreements for Q1', 'Coordinate with Finance.', 'Operations', 'high', 'active', 'Marcus Rivera', '2025-01-18', '["agreement","billing"]', '', 'emp_dan'),
+        ('Conduct new hire orientation', '', 'HR', 'medium', 'referred', 'Alex Liu', '2025-01-28', '["onboarding"]', '', 'emp_admin'),
+        ('Monthly compliance audit report', 'Requires director sign-off.', 'Audit', 'high', 'pending', 'Priya Joshi', '2025-01-22', '["compliance","report"]', '', 'emp_dan'),
+        ('Process timesheets for Dec payroll', '', 'Finance', 'urgent', 'active', 'Sara Okonkwo', '2025-01-10', '["payroll","timesheet"]', '', 'emp_dan'),
+        ('Deploy staff portal update v2.1', 'Completed on schedule.', 'System Admin', 'medium', 'completed', 'Jane Doe', '2025-01-05', '["system","deploy"]', '', 'emp_admin'),
+        ('Renew annual insurance certificates', '', 'Operations', 'high', 'referred', 'Derek Walsh', '2025-02-01', '["insurance","renewal"]', '', 'emp_dan'),
+        ('Analytics dashboard data refresh', '', 'Analytics', 'low', 'pending', 'Tomas Guerrero', '2025-01-25', '["analytics"]', '', 'emp_admin'),
+        ('Archive inactive client records', '', 'Document Vault', 'low', 'completed', 'Mei Tanaka', '2025-01-08', '["archive","records"]', '', 'emp_admin'),
+        ('Staff skills assessment rollout', '', 'HR', 'medium', 'active', 'Alex Liu', '2025-02-10', '["training"]', '', 'emp_admin'),
+        ('Quarterly board meeting prep', 'Slides due 3 days before.', 'Operations', 'urgent', 'active', 'Marcus Rivera', '2025-01-30', '["meeting","exec"]', '', 'emp_dan')`);
 
       // Seed Core Relational Elements
       db.run(`INSERT INTO appointments (time, patient_id, type, status, employee_id) VALUES 
@@ -179,8 +205,6 @@ function executeSchemaMigration() {
 
       db.run(`INSERT INTO activities (time, employee_id, action, details, priority, due, status) VALUES 
         ('2026-06-08T10:15:00Z', 'emp_field_worker', 'Field Assessment', 'Completed physical check', 'medium', null, 'completed')`);
-
-      db.run(`INSERT INTO operations (employee_id) VALUES ('emp_dan')`);
 
       // Seed Incidents Subtype Inheritances
       db.run(`INSERT INTO incidents (id, created, title, description, status, severity, employee_id) VALUES 

@@ -105,10 +105,10 @@ export async function init(mount, State) {
           <tr class="ir-clickable-row" data-id="${i.id}" style="cursor:pointer">
             <td><strong>${i.id}</strong></td>
             <td>${fmtDate(i.date)} <span class="mc-muted">${i.time || ''}</span></td>
-            <td>${i.category}</td>
-            <td><span class="badge" style="background:${sev.color||'#ccc'};color:#fff;font-size:.72rem">${i.severity}</span></td>
-            <td>${i.reporterName} <span class="mc-muted">(${i.reporterRole})</span></td>
-            <td><span class="badge ${statusClass}">${i.status}</span></td>
+            <td>${escapeHTML(i.category)}</td>
+            <td><span class="badge" style="background:${sev.color||'#ccc'};color:#fff;font-size:.72rem">${escapeHTML(i.severity)}</span></td>
+            <td>${escapeHTML(i.reporterName)} <span class="mc-muted">(${escapeHTML(i.reporterRole)})</span></td>
+            <td><span class="badge ${statusClass}">${escapeHTML(i.status)}</span></td>
           </tr>`;
       }).join('');
 

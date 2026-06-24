@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { validateEmail, validateRequired } = require('../middleware/validation');
@@ -18,9 +19,13 @@ async function hashPassword(password) {
 }
 
 async function verifyPassword(password, hash) {
-  if (!hash || hash.length < 60) return false;
+  if (!hash || hash.length < 10) return false;
   if (hash.startsWith('$2a$') || hash.startsWith('$2b$')) {
     return bcrypt.compare(password, hash);
+  }
+  const legacyHash = crypto.createHash('sha256').update(password).digest('hex');
+  if (hash === legacyHash) {
+    return { ok: true, legacy: true };
   }
   return false;
 }
@@ -56,6 +61,11 @@ async function handleLogin(req, res) {
         const valid = await verifyPassword(password, account.passwordHash);
         if (!valid) {
           return sendSecureJSON(res, 401, { ok: false, error: 'Invalid credentials' });
+        }
+
+        if (valid.legacy) {
+          const newHash = await hashPassword(password);
+          db.run('UPDATE users SET passwordHash = ? WHERE id = ?', [newHash, account.id], () => {});
         }
 
         const safeUserSession = {

@@ -8,6 +8,7 @@ const patientsController = require('./controllers/patientsController');
 const appointmentsController = require('./controllers/appointmentsController');
 const incidentsController = require('./controllers/incidentController');
 const financeController = require('./controllers/financeController');
+const operationsController = require('./controllers/operationsController');
 const db = require('./config/db');
 
 require('dotenv').config();
@@ -183,6 +184,14 @@ const server = http.createServer((req, res) => {
       if (req.method === 'POST' && url === '/api/finance') return enforceRole(AUTH_ROLES, financeController.handleCreate)(req, res);
       if (req.method === 'PUT' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, financeController.handleUpdate)(req, res);
       if (req.method === 'DELETE' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, financeController.handleDelete)(req, res);
+    }
+
+    if (url.startsWith('/api/operations')) {
+      if (req.method === 'GET' && url.match(/\/api\/operations\/[^/]+$/)) return enforceRole(AUTH_ROLES, operationsController.handleGet)(req, res);
+      if (req.method === 'GET' && url === '/api/operations') return enforceRole(AUTH_ROLES, operationsController.handleList)(req, res);
+      if (req.method === 'POST' && url === '/api/operations') return enforceRole(AUTH_ROLES, operationsController.handleCreate)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/operations\/[^/]+$/)) return enforceRole(AUTH_ROLES, operationsController.handleUpdate)(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/operations\/[^/]+$/)) return enforceRole(AUTH_ROLES, operationsController.handleDelete)(req, res);
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });

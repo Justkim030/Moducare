@@ -3,7 +3,7 @@
  * Features: Kanban-style task board, task list, status pipeline,
  *           new task form, priority levels, assignment
  */
-import { showToast, formatDate, escapeHTML } from '../../../js/utils.js';
+import { showToast, formatDate, escapeHTML, apiFetch } from '../../../js/utils.js';
 import { hasRole }               from '../../../js/auth.js';
 
 let _cssLoaded = false;
@@ -14,19 +14,19 @@ function injectCSS() {
   document.head.appendChild(l); _cssLoaded = true;
 }
 
-// ── Mock Data ────────────────────────────────────────────────
-let TASKS = [
-  { id:'t001', title:'Update service agreements for Q1',   dept:'Operations',      priority:'high',   status:'active',    assignee:'Marcus Rivera',  due:'2025-01-18', tags:['agreement','billing'], notes:'Coordinate with Finance.' },
-  { id:'t002', title:'Conduct new hire orientation',       dept:'HR',              priority:'medium', status:'referred',  assignee:'Alex Liu',        due:'2025-01-28', tags:['onboarding'], notes:'' },
-  { id:'t003', title:'Monthly compliance audit report',    dept:'Audit',           priority:'high',   status:'pending',   assignee:'Priya Joshi',     due:'2025-01-22', tags:['compliance','report'], notes:'Requires director sign-off.' },
-  { id:'t004', title:'Process timesheets for Dec payroll', dept:'Finance',         priority:'urgent', status:'active',    assignee:'Sara Okonkwo',    due:'2025-01-10', tags:['payroll','timesheet'], notes:'' },
-  { id:'t005', title:'Deploy staff portal update v2.1',    dept:'System Admin',    priority:'medium', status:'completed', assignee:'Jane Doe',        due:'2025-01-05', tags:['system','deploy'], notes:'Completed on schedule.' },
-  { id:'t006', title:'Renew annual insurance certificates', dept:'Operations',     priority:'high',   status:'referred',  assignee:'Derek Walsh',     due:'2025-02-01', tags:['insurance','renewal'], notes:'' },
-  { id:'t007', title:'Analytics dashboard data refresh',   dept:'Analytics',       priority:'low',    status:'pending',   assignee:'Tomás Guerrero',  due:'2025-01-25', tags:['analytics'], notes:'' },
-  { id:'t008', title:'Archive inactive client records',    dept:'Document Vault',  priority:'low',    status:'completed', assignee:'Mei Tanaka',      due:'2025-01-08', tags:['archive','records'], notes:'' },
-  { id:'t009', title:'Staff skills assessment rollout',    dept:'HR',              priority:'medium', status:'active',    assignee:'Alex Liu',        due:'2025-02-10', tags:['training'], notes:'' },
-  { id:'t010', title:'Quarterly board meeting prep',       dept:'Operations',      priority:'urgent', status:'active',    assignee:'Marcus Rivera',   due:'2025-01-30', tags:['meeting','exec'], notes:'Slides due 3 days before.' },
-];
+// ── Data ──────────────────────────────────────────────────────
+let TASKS = [];
+
+async function loadOperations() {
+  try {
+    const data = await apiFetch('/operations');
+    if (!data.ok) throw new Error(data?.error || 'Failed');
+    TASKS = data.operations || [];
+  } catch (e) {
+    showToast('Failed to load operations', 'error');
+    TASKS = [];
+  }
+}
 
 const STATUSES = [
   { id:'referred',  label:'Referred',  color:'#5B9ED6', bg:'#EEF5FB' },
@@ -48,6 +48,12 @@ export function render(container) {
   container.innerHTML = buildShell();
   bindEvents(container);
   renderBoard(container);
+}
+
+export async function init(container, State) {
+  await loadOperations();
+  render(container);
+  return { destroy() {} };
 }
 
 function buildShell() {

@@ -169,10 +169,16 @@ export async function apiFetch(path, options = {}) {
     localStorage.getItem('moducare_session') || 'null'
   );
 
+  const token = session?.token || (() => {
+    try {
+      return btoa(unescape(encodeURIComponent(JSON.stringify(session))));
+    } catch { return ''; }
+  })();
+
   const res = await fetch(`/api${path}`, {
     headers: {
       'Content-Type': 'application/json',
-      ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers ?? {}),
     },
     ...options,
@@ -202,4 +208,14 @@ export function exportCSV(rows, filename = 'export.csv') {
   a.href = url; a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export function escapeHTML(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
