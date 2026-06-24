@@ -98,4 +98,14 @@ function handleDelete(req, res) {
   });
 }
 
-module.exports = { handleList, handleCreate, handleUpdate, handleDelete };
+function handleAlerts(req, res) {
+  db.all(`SELECT i.id, i.name, i.category, i.current_stock, i.reorder_level, i.unit, i.supplier FROM inventory i WHERE i.current_stock <= i.reorder_level ORDER BY i.current_stock ASC`, [], (err, rows) => {
+    if (err) {
+      console.error(`[SECURE EXCEPTION] Inventory Alerts Error: ${err.message}`);
+      return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+    }
+    return sendSecureJSON(res, 200, { ok: true, alerts: rows || [] });
+  });
+}
+
+module.exports = { handleList, handleCreate, handleUpdate, handleDelete, handleAlerts };

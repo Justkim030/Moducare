@@ -42,6 +42,8 @@ function handleGet(req, res) {
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
     if (!row) return sendSecureJSON(res, 404, { ok: false, error: 'Dispensing record not found' });
+    const userId = req.user?.id || null;
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, 'dispense', ?, 'pharmacy', ?, 'success')`, [userId, `Viewed pharmacy record ${id} for patient ${row.patient_id}`, id], () => {});
     return sendSecureJSON(res, 200, { ok: true, dispensing: row });
   });
 }

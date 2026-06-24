@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { validateEmail, validateRequired } = require('../middleware/validation');
+const { signToken, verifyToken } = require('../utils/jwt');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -77,7 +78,9 @@ async function handleLogin(req, res) {
           role_id: account.role_id
         };
 
-        return sendSecureJSON(res, 200, { ok: true, user: safeUserSession });
+        const token = signToken(safeUserSession);
+
+        return sendSecureJSON(res, 200, { ok: true, user: safeUserSession, token });
       });
 
     } catch (e) {

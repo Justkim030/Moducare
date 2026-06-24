@@ -92,7 +92,7 @@ form?.addEventListener('submit', async (e) => {
     const result = await loginRequest(email, password);
 
     if (result.success) {
-      setSession(result.user, remember);
+      setSession(result.user, result.token, remember);
       // guard against missing name in seeded users
       const who = result.user && (result.user.name || result.user.email) ? (result.user.name || result.user.email).split(' ')[0] : 'there';
       showToast('Welcome back, ' + who + '!', 'success');

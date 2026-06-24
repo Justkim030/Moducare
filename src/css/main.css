@@ -532,3 +532,31 @@ tr:hover td {
 .mc-sidebar.collapsed .mc-sidebar-header {
   justify-content: center;
 }
+
+/* Global Search Dropdown */
+.search-dropdown {
+  position: fixed;
+  top: 60px;
+  right: 200px;
+  width: 420px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--surface-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+  z-index: 999;
+}
+.search-dropdown-inner { padding: 8px; }
+.search-group { margin-top: 4px; }
+.search-group-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 10px 4px; }
+.search-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.search-item:hover { background: var(--clr-primary-50); }
+.search-item strong { font-weight: 600; }
+.search-item .muted { color: var(--text-tertiary); font-size: 12px; margin-left: 6px; }

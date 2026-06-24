@@ -6,7 +6,7 @@
 import { requireAuth, logout, getUserRoleLabel, getSession } from './auth.js';
 import { initRouter } from './router.js';
 import { set } from './store.js';
-import { showToast } from './utils.js';
+import { showToast, escapeHTML, apiFetch } from './utils.js';
 
 // ── Auth Guard ───────────────────────────────────────────────
 const session = requireAuth();
@@ -97,7 +97,6 @@ function initSearch() {
   const globalSearch = document.getElementById('global-search');
   const sidebarSearch = document.getElementById('sidebar-search-trigger');
 
-  // Cmd/Ctrl + K to focus search
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -105,7 +104,6 @@ function initSearch() {
     }
   });
 
-  // Sidebar search trigger
   sidebarSearch?.addEventListener('click', () => globalSearch?.focus());
   sidebarSearch?.addEventListener('keydown', e => {
     if (e.key === 'Enter') globalSearch?.focus();
@@ -114,6 +112,77 @@ function initSearch() {
   globalSearch?.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') globalSearch.blur();
   });
+
+  let debounce;
+  globalSearch?.addEventListener('input', (e) => {
+    clearTimeout(debounce);
+    const q = e.target.value.trim();
+    if (q.length < 2) {
+      removeSearchResults();
+      return;
+    }
+    debounce = setTimeout(() => performSearch(q), 300);
+  });
+}
+
+async function performSearch(query) {
+  try {
+    const data = await apiFetch(`/search?q=${encodeURIComponent(query)}&type=all`);
+    if (!data.ok) return;
+    showSearchResults(data);
+  } catch (e) {
+    console.error('Search error:', e);
+  }
+}
+
+function showSearchResults(data) {
+  removeSearchResults();
+  if (!data.patients?.length && !data.encounters?.length && !data.labOrders?.length) {
+    return;
+  }
+  const dropdown = document.createElement('div');
+  dropdown.className = 'search-dropdown';
+  dropdown.id = 'search-dropdown';
+  let html = '<div class="search-dropdown-inner">';
+
+  if (data.patients?.length) {
+    html += '<div class="search-group"><div class="search-group-label">Patients</div>';
+    data.patients.forEach(p => {
+      html += `<div class="search-item" data-route="/patients"><strong>${escapeHTML(p.name)}</strong> <span class="muted">${escapeHTML(p.email || p.phone_number || '')}</span></div>`;
+    });
+    html += '</div>';
+  }
+  if (data.encounters?.length) {
+    html += '<div class="search-group"><div class="search-group-label">Encounters</div>';
+    data.encounters.forEach(e => {
+      html += `<div class="search-item" data-route="/encounters"><strong>${escapeHTML(e.patient_name || 'Unknown')}</strong> <span class="muted">${escapeHTML(e.visit_type || '')}</span></div>`;
+    });
+    html += '</div>';
+  }
+  if (data.labOrders?.length) {
+    html += '<div class="search-group"><div class="search-group-label">Lab Orders</div>';
+    data.labOrders.forEach(l => {
+      html += `<div class="search-item" data-route="/lab-orders"><strong>${escapeHTML(l.patient_name || 'Unknown')}</strong> <span class="muted">${escapeHTML(l.test_name || l.test_type)}</span></div>`;
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  dropdown.innerHTML = html;
+  document.body.appendChild(dropdown);
+
+  dropdown.querySelectorAll('.search-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const route = item.dataset.route;
+      if (route) window.location.hash = route;
+      removeSearchResults();
+      document.getElementById('global-search').value = '';
+    });
+  });
+}
+
+function removeSearchResults() {
+  const existing = document.getElementById('search-dropdown');
+  if (existing) existing.remove();
 }
 
 // ── Notification Bell ────────────────────────────────────────

@@ -17,6 +17,7 @@ const documentsController = require('./controllers/documentsController');
 const referralsController = require('./controllers/referralsController');
 const auditController = require('./controllers/auditController');
 const inventoryController = require('./controllers/inventoryController');
+const analyticsController = require('./controllers/analyticsController');
 const db = require('./config/db');
 
 require('dotenv').config();
@@ -86,6 +87,8 @@ function sendSecureJSON(res, status, data) {
 
 // RBAC Enforcement
 
+const { verifyToken } = require('./utils/jwt');
+
 const AUTH_ROLES  = ['role_dev', 'role_nurse', 'admin', 'role_admin', 'staff', 'lead', 'supervisor', 'director'];
 const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
 
@@ -98,30 +101,30 @@ function enforceRole(allowedRoles, handler) {
       return sendSecureJSON(res, 401, { ok: false, error: 'Authentication required.' });
     }
 
-    let payload;
-    try {
-      payload = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
-    } catch (e) {
-      return sendSecureJSON(res, 401, { ok: false, error: 'Invalid token.' });
+    const payload = verifyToken(token);
+    if (!payload) {
+      return sendSecureJSON(res, 401, { ok: false, error: 'Invalid or expired token.' });
     }
 
     const roleId = payload.role_id;
     if (!roleId || !allowedRoles.includes(roleId)) {
-      return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+      return sendSecureJSON(res, 403, { ok: false, error: 'Insufficient permissions.' });
     }
 
-    req.user = {
-      id: payload.id,
-      role_id: roleId,
-      employee_id: payload.employee_id,
-      name: payload.name,
-      email: payload.email
-    };
+    req.user = payload;
     return handler(req, res);
   };
 }
 
 const loginAttempts = new Map();
+
+function logPHIAccess(req, action, details, resourceType) {
+  const payload = req.user || {};
+  db.run(`INSERT INTO audit (user_id, action, details, resource_type, status, ip_address, user_agent) VALUES (?, ?, ?, ?, 'success', ?, ?)`,
+    [payload.id || null, action, details || '', resourceType || '', req.ip || '', req.headers['user-agent'] || ''],
+    (err) => { if (err) console.error(`[AUDIT] Log failed: ${err.message}`); }
+  );
+}
 
 function rateLimitLogin(req, res, next) {
   const key = req.ip || req.connection.remoteAddress || 'unknown';
@@ -269,6 +272,25 @@ const server = http.createServer((req, res) => {
       if (req.method === 'POST' && url === '/api/inventory') return enforceRole(AUTH_ROLES, inventoryController.handleCreate)(req, res);
       if (req.method === 'PUT' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, inventoryController.handleUpdate)(req, res);
       if (req.method === 'DELETE' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, inventoryController.handleDelete)(req, res);
+      if (req.method === 'GET' && url === '/api/inventory/alerts') return enforceRole(AUTH_ROLES, inventoryController.handleAlerts)(req, res);
+    }
+
+    if (url.startsWith('/api/analytics')) {
+      if (req.method === 'GET' && url === '/api/analytics/overview') return enforceRole(AUTH_ROLES, analyticsController.handleOverview)(req, res);
+      if (req.method === 'GET' && url === '/api/analytics') return enforceRole(AUTH_ROLES, analyticsController.handleList)(req, res);
+      if (req.method === 'POST' && url === '/api/analytics') return enforceRole(AUTH_ROLES, analyticsController.handleCreate)(req, res);
+    }
+
+    if (url.startsWith('/api/search')) {
+      if (req.method === 'GET') return enforceRole(AUTH_ROLES, handleSearch)(req, res);
+    }
+
+    if (url.startsWith('/api/documents') && req.method === 'POST') {
+      return enforceRole(AUTH_ROLES, handleDocumentUpload)(req, res);
+    }
+
+    if (url.startsWith('/api/reminders') && req.method === 'POST') {
+      return enforceRole(AUTH_ROLES, handleReminderTrigger)(req, res);
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -285,6 +307,119 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
+
+function handleSearch(req, res) {
+  const q = req.url.split('?')[1] || '';
+  const params = new URLSearchParams(q);
+  const query = (params.get('q') || '').toLowerCase();
+  const type = params.get('type') || 'all';
+
+  if (!query || query.length < 2) {
+    return sendSecureJSON(res, 400, { ok: false, error: 'Search query must be at least 2 characters.' });
+  }
+
+  let results = { patients: [], encounters: [], labOrders: [] };
+
+  if (type === 'all' || type === 'patients') {
+    db.all(`SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.county, p.hiv_status FROM patients p WHERE LOWER(p.name) LIKE ? OR LOWER(p.email) LIKE ? OR LOWER(p.phone_number) LIKE ? OR p.id LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
+      if (!err && rows) results.patients = rows;
+      if (type === 'patients') return sendSecureJSON(res, 200, { ok: true, ...results });
+      if (type === 'all' || type === 'encounters') {
+        db.all(`SELECT e.id, e.patient_id, e.encounter_date, e.visit_type, e.chief_complaint, p.name as patient_name FROM encounters e LEFT JOIN patients p ON p.id = e.patient_id WHERE LOWER(e.chief_complaint) LIKE ? OR LOWER(e.visit_type) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
+          if (!err && rows) results.encounters = rows;
+          if (type === 'encounters') return sendSecureJSON(res, 200, { ok: true, ...results });
+          db.all(`SELECT lo.id, lo.patient_id, lo.test_type, lo.test_name, lo.status, lo.result_value, p.name as patient_name FROM lab_orders lo LEFT JOIN patients p ON p.id = lo.patient_id WHERE LOWER(lo.test_name) LIKE ? OR LOWER(lo.result_value) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
+            if (!err && rows) results.labOrders = rows;
+            return sendSecureJSON(res, 200, { ok: true, ...results });
+          });
+        });
+      }
+    });
+  }
+}
+
+function handleDocumentUpload(req, res) {
+  const formidable = require('formidable');
+  const fs = require('fs');
+  const path = require('path');
+  const uploadDir = path.join(ROOT, 'uploads');
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+  const form = new formidable.IncomingForm();
+  form.uploadDir = uploadDir;
+  form.keepExtensions = true;
+
+  form.parse(req, (err, fields, files) => {
+    if (err) {
+      console.error(`[SECURE EXCEPTION] Document Upload Error: ${err.message}`);
+      return sendSecureJSON(res, 500, { ok: false, error: 'Upload failed.' });
+    }
+    const file = files.file;
+    const patientId = fields.patient_id;
+    const docType = fields.doc_type || 'other';
+    const fileName = fields.file_name || file.originalFilename || 'unknown';
+    const fileSize = fs.statSync(file.path).size;
+
+    db.run(`INSERT INTO documents (patient_id, doc_type, file_name, file_size, uploaded_by) VALUES (?, ?, ?, ?, ?)`,
+      [patientId || null, docType, fileName, fileSize, req.user?.id || null],
+      function (err) {
+        if (err) {
+          console.error(`[SECURE EXCEPTION] Document DB Error: ${err.message}`);
+          return sendSecureJSON(res, 500, { ok: false, error: 'Database error.' });
+        }
+        return sendSecureJSON(res, 201, { ok: true, document: { id: this.lastID, file_name: fileName, file_size: fileSize } });
+      }
+    );
+  });
+}
+
+function handleReminderTrigger(req, res) {
+  let body = '';
+  req.on('data', (ch) => (body += ch));
+  req.on('end', () => {
+    try {
+      const p = JSON.parse(body || '{}');
+      const { type, channel } = p;
+
+      db.all(`SELECT a.id, a.patient_id, a.reminder_due, a.reminder_sent, p.name as patient_name, p.phone_number FROM appointments a LEFT JOIN patients p ON p.id = a.patient_id WHERE a.reminder_due IS NOT NULL AND a.reminder_sent = 0 AND a.status = 'scheduled' AND a.reminder_due <= datetime('now') LIMIT 50`, [], (err, rows) => {
+        if (err) {
+          console.error(`[SECURE EXCEPTION] Reminder Query Error: ${err.message}`);
+          return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+        }
+        const appointments = rows || [];
+        const notifications = appointments.map(a => ({
+          patient_id: a.patient_id,
+          type: type || 'reminder',
+          channel: channel || 'sms',
+          subject: 'Appointment Reminder',
+          body: `You have an appointment. Please confirm your attendance.`,
+        }));
+
+        let completed = 0;
+        if (notifications.length === 0) {
+          return sendSecureJSON(res, 200, { ok: true, sent: 0, message: 'No reminders due.' });
+        }
+
+        notifications.forEach(n => {
+          db.run(`INSERT INTO notifications (patient_id, type, channel, subject, body, sent_by) VALUES (?, ?, ?, ?, ?, ?)`,
+            [n.patient_id, n.type, n.channel, n.subject, n.body, req.user?.id || null],
+            function (err) {
+              completed++;
+              if (completed === notifications.length) {
+                const ids = appointments.map(a => a.id);
+                db.run(`UPDATE appointments SET reminder_sent = 1 WHERE id IN (${ids.map(() => '?').join(',')})`, ids, (upErr) => {
+                  return sendSecureJSON(res, 200, { ok: true, sent: notifications.length });
+                });
+              }
+            }
+          );
+        });
+      });
+    } catch (e) {
+      return sendSecureJSON(res, 400, { ok: false, error: 'Malformed payload.' });
+    }
+  });
+}
 
 server.listen(PORT, () => {
   console.log(`\n======================================================`);

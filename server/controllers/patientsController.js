@@ -56,6 +56,8 @@ function handleGet(req, res) {
     if (!row) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Patient not found' });
     }
+    const userId = req.user?.id || null;
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, 'view_patient', ?, 'patient', ?, 'success')`, [userId, `Viewed patient record ${id}`, id], () => {});
     return sendSecureJSON(res, 200, { ok: true, patient: row });
   });
 }

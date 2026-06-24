@@ -132,16 +132,16 @@ export function getSession() {
  * @param {object} user
  * @param {boolean} remember — persist across browser close
  */
-export function setSession(user, remember = false) {
+export function setSession(user, token, remember = false) {
   const session = {
     ...user,
+    token,
     loginAt:   Date.now(),
     expiresAt: remember
-      ? Date.now() + (30 * 24 * 60 * 60 * 1000)  // 30 days
-      : Date.now() + (8 * 60 * 60 * 1000),          // 8 hours
+      ? Date.now() + (30 * 24 * 60 * 60 * 1000)
+      : Date.now() + (8 * 60 * 60 * 1000),
   };
   const storage = remember ? localStorage : sessionStorage;
-  // normalize role to lowercase for consistency
   if (session.role) session.role = session.role.toLowerCase();
   storage.setItem(SESSION_KEY, JSON.stringify(session));
   if (remember) localStorage.setItem(REMEMBER_KEY, '1');
@@ -221,7 +221,7 @@ export async function loginRequest(email, password) {
     const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
     const data = await res.json();
     if (res.ok && data.ok && data.user){
-      return { success: true, user: data.user };
+      return { success: true, user: data.user, token: data.token };
     }
     return { success: false, error: data && data.error ? data.error : 'Login failed' };
   }catch(e){

@@ -50,6 +50,8 @@ function handleGet(req, res) {
     if (!row) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Encounter not found' });
     }
+    const userId = req.user?.id || null;
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, 'view_encounter', ?, 'encounter', ?, 'success')`, [userId, `Viewed encounter ${id} for patient ${row.patient_id}`, id], () => {});
     return sendSecureJSON(res, 200, {
       ok: true,
       encounter: {

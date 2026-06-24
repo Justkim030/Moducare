@@ -44,6 +44,8 @@ function handleGet(req, res) {
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
     if (!row) return sendSecureJSON(res, 404, { ok: false, error: 'Lab order not found' });
+    const userId = req.user?.id || null;
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, 'view_lab', ?, 'lab_order', ?, 'success')`, [userId, `Viewed lab order ${id} for patient ${row.patient_id}`, id], () => {});
     return sendSecureJSON(res, 200, { ok: true, labOrder: row });
   });
 }

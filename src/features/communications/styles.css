@@ -1,10 +1,26 @@
 .comm-layout { padding: 24px; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-out; }
 .comm-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; }
 .comm-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.comm-table-wrap { overflow-x: auto; background: var(--surface-card); border: 1px solid var(--border-light); border-radius: var(--border-radius-md); }
-.comm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.comm-table th { padding: 14px 16px; color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border-light); background: var(--surface-page); text-align: left; }
-.comm-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); }
-.comm-form { display: flex; flex-direction: column; gap: 18px; }
-.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-light); padding-top: 16px; }
+.comm-split { display: flex; gap: 16px; flex: 1; min-height: 500px; }
+.comm-sidebar { width: 300px; border-right: 1px solid var(--border-light); display: flex; flex-direction: column; }
+.comm-sidebar-header { padding: 12px; border-bottom: 1px solid var(--border-light); }
+.thread-list { flex: 1; overflow-y: auto; }
+.thread-item { display: flex; align-items: center; gap: 12px; padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border-light); }
+.thread-item:hover { background: var(--clr-primary-50); }
+.thread-item.active { background: var(--clr-primary-100); border-left: 3px solid var(--clr-primary-500); }
+.thread-item-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--clr-primary-100); color: var(--clr-primary-700); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.thread-item-info { flex: 1; min-width: 0; }
+.thread-item-name { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.thread-item-meta { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thread-view { flex: 1; display: flex; flex-direction: column; }
+.thread-header { padding: 16px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 12px; }
+.thread-header h3 { margin: 0; font-size: 16px; }
+.thread-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.message-bubble { max-width: 75%; padding: 12px 16px; border-radius: 12px; background: var(--surface-page); border: 1px solid var(--border-light); }
+.message-bubble.unread { border-left: 3px solid var(--clr-primary-500); background: var(--clr-primary-50); }
+.message-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.message-subject { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.message-body { color: var(--text-primary); font-size: 13px; line-height: 1.5; }
+.thread-composer { padding: 16px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 10px; }
+.thread-composer-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: var(--text-tertiary); }
