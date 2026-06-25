@@ -9,15 +9,8 @@ const appointmentsController = require('./controllers/appointmentsController');
 const incidentsController = require('./controllers/incidentController');
 const financeController = require('./controllers/financeController');
 const operationsController = require('./controllers/operationsController');
-const encountersController = require('./controllers/encountersController');
-const labOrdersController = require('./controllers/labOrdersController');
-const pharmacyController = require('./controllers/pharmacyController');
-const notificationsController = require('./controllers/notificationsController');
-const documentsController = require('./controllers/documentsController');
-const referralsController = require('./controllers/referralsController');
-const auditController = require('./controllers/auditController');
-const inventoryController = require('./controllers/inventoryController');
 const analyticsController = require('./controllers/analyticsController');
+const activitiesController = require('./controllers/activitiesController');
 const db = require('./config/db');
 
 require('dotenv').config();
@@ -291,6 +284,10 @@ const server = http.createServer((req, res) => {
 
     if (url.startsWith('/api/reminders') && req.method === 'POST') {
       return enforceRole(AUTH_ROLES, handleReminderTrigger)(req, res);
+    }
+
+    if (url.startsWith('/api/activities')) {
+      if (req.method === 'GET' && url === '/api/activities') return enforceRole(AUTH_ROLES, activitiesController.handleList)(req, res);
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });
