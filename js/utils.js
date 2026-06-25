@@ -126,11 +126,11 @@ export function truncate(text, max = 60) {
  * @param {number} amount
  * @param {string} currency
  */
-export function formatCurrency(amount, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency, minimumFractionDigits: 2
-  }).format(amount);
-}
+export function formatCurrency(amount, currency = 'KES') {
+   return new Intl.NumberFormat('en-KE', {
+     style: 'currency', currency, minimumFractionDigits: 2
+   }).format(amount);
+ }
 
 /**
  * Convert decimal hours to 15-minute billing units.

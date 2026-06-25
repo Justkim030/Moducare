@@ -350,7 +350,7 @@ function renderRates(content) {
         const annualized = unit === '15-min' ? rate * 4 * 8 * 220 : rate * 8 * 220;
         return `
         <div class="finance-rate-card">
-          <div style="position: absolute; right: -10px; bottom: -10px; font-size: 72px; opacity: 0.02; font-weight: 800; pointer-events: none; color: #fff;">$</div>
+          <div style="position: absolute; right: -10px; bottom: -10px; font-size: 72px; opacity: 0.02; font-weight: 800; pointer-events: none; color: #fff;">KSh</div>
           <div class="finance-rate-name">${name}</div>
           <div style="display: flex; align-items: baseline; gap: 6px;">
             <span class="finance-rate-value">${formatCurrency(rate)}</span>
