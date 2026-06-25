@@ -133,7 +133,7 @@ export function getSession() {
  * @param {boolean} remember — persist across browser close
  */
 export function setSession(user, token, remember = false) {
-  const session = {
+  let session = {
     ...user,
     token,
     loginAt:   Date.now(),
@@ -141,6 +141,15 @@ export function setSession(user, token, remember = false) {
       ? Date.now() + (30 * 24 * 60 * 60 * 1000)
       : Date.now() + (8 * 60 * 60 * 1000),
   };
+
+  if (!session.role && session.role_id) {
+    const rid = String(session.role_id).toLowerCase();
+    if (rid === 'role_admin') session.role = 'admin';
+    else if (rid === 'role_dev') session.role = 'staff';
+    else if (rid === 'role_nurse') session.role = 'staff';
+    else session.role = rid.replace(/^role_/, '');
+  }
+
   const storage = remember ? localStorage : sessionStorage;
   if (session.role) session.role = session.role.toLowerCase();
   storage.setItem(SESSION_KEY, JSON.stringify(session));

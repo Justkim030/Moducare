@@ -88,15 +88,14 @@ form?.addEventListener('submit', async (e) => {
 
   setLoading(true);
 
-  try {
+  try { 
     const result = await loginRequest(email, password);
 
     if (result.success) {
       setSession(result.user, result.token, remember);
-      // guard against missing name in seeded users
-      const who = result.user && (result.user.name || result.user.email) ? (result.user.name || result.user.email).split(' ')[0] : 'there';
+      const who = (result.user?.email || result.user?.name || 'there').split(' ')[0];
       showToast('Welcome back, ' + who + '!', 'success');
-      setTimeout(() => { window.location.replace('/index.html'); }, 600);
+      setTimeout(() => { window.location.replace('/'); }, 600);
     } else {
       showError(emailInput, emailErr, ' ');
       showError(pwdInput, pwdErr, result.error ?? 'Login failed. Please try again.');

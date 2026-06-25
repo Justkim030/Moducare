@@ -48,7 +48,9 @@ function hasPermission(currentRole, requiredRole) {
 }
 
 function routeNameFromPath(path){
-  const p = path.replace(/^\/+/,'').split('/')[0];
+  let p = path.replace(/^\/+/,'').split('/')[0];
+  p = p.replace(/\.html$/, '');
+  if (p === 'index') return 'dashboard';
   return p || 'dashboard';
 }
 
@@ -162,8 +164,14 @@ function navigate(path){
 }
 
 function loadRoute(path){
-  const name = routeNameFromPath(path);
-  
+  let name = routeNameFromPath(path);
+
+  // Redirect /login to the standalone login page
+  if (name === 'login') {
+    window.location.href = 'login.html';
+    return;
+  }
+
   const isAuthPage = AUTH_ROUTES.includes(name);
   toggleAppShellVisibility(isAuthPage);
 
