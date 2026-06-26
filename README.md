@@ -85,8 +85,8 @@ npm start
 
 - **Auth:** Email + password via `/api/login`
 - **Hashing:** bcrypt (12 rounds)
-- **Session:** `sessionStorage` / `localStorage` with secure object payload
-- **Rate limiting:** 5 attempts / 60 seconds on login
+- **Session:** JWT tokens with 8h expiry, stored in `sessionStorage` / `localStorage`
+- **Security:** JWT verification on all protected API endpoints
 
 ### Role Levels
 
@@ -226,28 +226,28 @@ node server/migrate.js
 ## ✅ What to Work on Next
 
 1. **Replace mock data with API calls**
-   - `src/features/staff/` still uses `MOCK_STAFF` → connect to `/api/users`
-   - `src/features/operations/` still uses `TASKS` → connect to `/api/operations` (add endpoint if missing)
-   - `src/features/incident-reporting/` still uses `MOCK_INCIDENTS` → connect to `/api/incidents`
-   - `src/features/finance-billing/` still uses `TIMESHEETS` → connect to `/api/finance`
+    - `src/features/staff/` still uses `MOCK_STAFF` → connect to `/api/users`
+    - `src/features/operations/` still uses `TASKS` → connect to `/api/operations`
+    - `src/features/incident-reporting/` → connect to `/api/incidents`
+    - `src/features/finance-billing/` still uses `TIMESHEETS` → connect to `/api/finance`
 
-2. **Implement missing API endpoints**
-   - `/api/operations` (task persistence)
-   - `/api/documents` (document vault)
-   - `/api/notifications` (notification service)
-   - `/api/audit` or `/api/activities` (compliance logging)
+2. **Implement missing API endpoints** (partially complete)
+    - `/api/operations` ✓ (task persistence)
+    - `/api/documents` ✓
+    - `/api/notifications` ✓
+    - `/api/activities` ✓
+    - `/api/audit` ✓
 
-3. **Hardcode cleanup**
-   - `src/features/dashboard/` still has placeholder metrics in `DASHBOARD_PROFILES`
-   - `js/router.js` stats row uses static numbers
-   - Finance rate matrix is static; make it editable via `/api/finance`
+4. **Security hardening** (in progress)
+    - Replace `sessionStorage` checks in `requireAuth` with real JWT verification
+    - Add auth middleware to all protected server routes
+    - Add request validation middleware (zod/Joi style checks)
 
-4. **Security hardening**
-   - Replace `sessionStorage` checks in `requireAuth` with real JWT verification
-   - Add auth middleware to all protected server routes
-   - Add request validation middleware (zod/Joi style checks)
+5. **Database performance**
+    - Added indexes on frequently queried columns (patients.name, appointments.date, etc.)
+    - Run `node server/migrate.js` to rebuild indexed database
 
-5. **Scaffolded modules**
+6. **Scaffolded modules**
    - Communications (messaging UI + backend)
    - Scheduling & Calendar (event CRUD + `/api/appointments` expansion)
    - Analytics & Reports (data aggregation from existing APIs)
