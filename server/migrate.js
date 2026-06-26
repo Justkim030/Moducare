@@ -308,7 +308,7 @@ function executeSchemaMigration() {
       FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE
     )`);
 
-// 12. External Incidents (Inheritance subtype)
+    // 12. External Incidents (Inheritance subtype)
     db.run(`CREATE TABLE external_incidents (
       incidents_id INTEGER PRIMARY KEY,
       FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE
@@ -350,8 +350,8 @@ db.serialize(() => {
         ('usr_dan', 'danreech@acme.org', '+254711111111', '${hash(devPwd)}')`);
 
       // Seed Departments & Roles
-      db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services')`);
-      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Systems Engineer', 'dept_tech'), ('role_nurse', 'Triage Practitioner', 'dept_clin'), ('role_admin', 'Administrator', 'dept_tech')`);
+      db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
+      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Staff', 'dept_tech'), ('role_nurse', 'Nurse', 'dept_clin'), ('role_admin', 'Administrator', 'dept_admin'), ('role_lead', 'Team Lead', 'dept_clin'), ('role_supervisor', 'Supervisor', 'dept_admin'), ('role_director', 'Director', 'dept_admin')`);
 
       // Seed Employees
       db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id) VALUES 
