@@ -15,7 +15,7 @@ function filterNavByDepartment() {
   if (!session) return;
   
   const userRole = session.role;
-  const userDept = session.department_name;
+  const userDept = session.department_id; // Use department_id instead of department_name
   
   // For staff users, filter nav links by department
   if (userRole === 'staff' && userDept && DEPARTMENT_MODULES[userDept]) {

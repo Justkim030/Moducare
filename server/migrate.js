@@ -75,8 +75,10 @@ function executeSchemaMigration() {
       name TEXT NOT NULL,
       user_id TEXT UNIQUE,
       role_id TEXT,
+      department_id TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
+      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
+      FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
     )`);
 
     // 5. Patients
@@ -351,13 +353,13 @@ db.serialize(() => {
 
       // Seed Departments & Roles
       db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
-      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Staff', 'dept_tech'), ('role_nurse', 'Nurse', 'dept_clin'), ('role_admin', 'Administrator', 'dept_admin'), ('role_lead', 'Team Lead', 'dept_clin'), ('role_supervisor', 'Supervisor', 'dept_admin'), ('role_director', 'Director', 'dept_admin')`);
+      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Staff', 'dept_tech'), ('role_nurse', 'Nurse', 'dept_clin'), ('role_admin', 'Administrator', 'dept_admin'), ('role_lead', 'Team Lead', 'dept_clin'), ('role_supervisor', 'Supervisor', 'dept_admin'), ('role_director', 'Director', 'dept_admin'), ('role_finance', 'Finance Officer', 'dept_admin')`);
 
-      // Seed Employees
-      db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id) VALUES 
-        ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin'),
-        ('emp_dan', 'Daniel Mach Reech', 'usr_dan', 'role_dev'),
-        ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse')`);
+      // Seed Employees (with department_id)
+      db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id, department_id) VALUES 
+        ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin', 'dept_admin'),
+        ('emp_dan', 'Daniel Mach Reech', 'usr_dan', 'role_dev', 'dept_tech'),
+        ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse', 'dept_clin')`);
 
       // Seed Patients
       db.run(`INSERT INTO patients (id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status) VALUES 

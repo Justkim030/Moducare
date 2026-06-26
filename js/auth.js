@@ -35,12 +35,11 @@ export const MODULE_PERMISSIONS = {
   'patients':           1,
 };
 
-// Department-based card filtering
+// Department-based card filtering (keyed by department ID from DB)
 export const DEPARTMENT_MODULES = {
-  'Finance': ['finance-billing', 'patients', 'notifications'],
-  'Clinical Services': ['patients', 'scheduling-calendar', 'operations-tasks', 'communications', 'notifications'],
-  'IT Engineering': ['operations-tasks', 'communications', 'document-vault'],
-  'Administration': ['audit-compliance', 'system-admin', 'patients', 'finance-billing'],
+  'dept_tech': ['operations-tasks', 'communications', 'document-vault', 'patients'],
+  'dept_clin': ['patients', 'scheduling-calendar', 'operations-tasks', 'communications', 'notifications', 'encounters'],
+  'dept_admin': ['finance-billing', 'patients', 'notifications', 'audit-compliance', 'document-vault'],
 };
 
 // Role-specific dashboard cards and quick actions
