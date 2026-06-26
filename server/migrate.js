@@ -308,11 +308,34 @@ function executeSchemaMigration() {
       FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE
     )`);
 
-    // 12. External Incidents (Inheritance subtype)
+// 12. External Incidents (Inheritance subtype)
     db.run(`CREATE TABLE external_incidents (
       incidents_id INTEGER PRIMARY KEY,
       FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE
     )`);
+
+    // Create indexes for faster queries
+    db.run(`CREATE INDEX idx_users_email ON users(email)`);
+    db.run(`CREATE INDEX idx_patients_name ON patients(name)`);
+    db.run(`CREATE INDEX idx_patients_hiv ON patients(hiv_status)`);
+    db.run(`CREATE INDEX idx_appointments_patient ON appointments(patient_id)`);
+    db.run(`CREATE INDEX idx_appointments_date ON appointments(time)`);
+    db.run(`CREATE INDEX idx_encounters_patient ON encounters(patient_id)`);
+    db.run(`CREATE INDEX idx_encounters_date ON encounters(encounter_date)`);
+    db.run(`CREATE INDEX idx_lab_orders_patient ON lab_orders(patient_id)`);
+    db.run(`CREATE INDEX idx_lab_orders_status ON lab_orders(status)`);
+    db.run(`CREATE INDEX idx_pharmacy_patient ON pharmacy_dispensing(patient_id)`);
+    db.run(`CREATE INDEX idx_finance_patient ON finance(patient_id)`);
+    db.run(`CREATE INDEX idx_finance_date ON finance(date)`);
+    db.run(`CREATE INDEX idx_operations_assignee ON operations(employee_id)`);
+    db.run(`CREATE INDEX idx_operations_status ON operations(status)`);
+    db.run(`CREATE INDEX idx_audit_timestamp ON audit(timestamp)`);
+    db.run(`CREATE INDEX idx_audit_user ON audit(user_id)`);
+    db.run(`CREATE INDEX idx_notifications_patient ON notifications(patient_id)`);
+    db.run(`CREATE INDEX idx_documents_patient ON documents(patient_id)`);
+    db.run(`CREATE INDEX idx_referrals_patient ON referrals(patient_id)`);
+    db.run(`CREATE INDEX idx_incidents_status ON incidents(status)`);
+    db.run(`CREATE INDEX idx_incidents_severity ON incidents(severity)`);
 
     db.serialize(() => {
       console.log('\n--- Populating system base seed metrics ---');

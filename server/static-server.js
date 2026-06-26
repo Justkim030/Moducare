@@ -116,26 +116,12 @@ function enforceRole(allowedRoles, handler) {
   };
 }
 
-const loginAttempts = new Map();
-
 function logPHIAccess(req, action, details, resourceType) {
   const payload = req.user || {};
   db.run(`INSERT INTO audit (user_id, action, details, resource_type, status, ip_address, user_agent) VALUES (?, ?, ?, ?, 'success', ?, ?)`,
     [payload.id || null, action, details || '', resourceType || '', req.ip || '', req.headers['user-agent'] || ''],
     (err) => { if (err) console.error(`[AUDIT] Log failed: ${err.message}`); }
   );
-}
-
-function rateLimitLogin(req, res, next) {
-  const key = req.ip || req.connection.remoteAddress || 'unknown';
-  const attempts = loginAttempts.get(key) || { count: 0, lastAttempt: 0 };
-  
-  if (Date.now() - attempts.lastAttempt < 60000 && attempts.count >= 5) {
-    return sendSecureJSON(res, 429, { ok: false, error: 'Too many login attempts. Try again in 60 seconds.' });
-  }
-  
-  loginAttempts.set(key, { count: attempts.count + 1, lastAttempt: Date.now() });
-  next();
 }
 
 const server = http.createServer((req, res) => {
@@ -150,7 +136,7 @@ const server = http.createServer((req, res) => {
     }
 
     if (url === '/api/login' && req.method === 'POST') {
-      return rateLimitLogin(req, res, () => authController.handleLogin(req, res));
+      return authController.handleLogin(req, res);
     }
 
     if (url === '/api/health' && req.method === 'GET') {
