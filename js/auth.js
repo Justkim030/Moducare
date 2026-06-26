@@ -171,7 +171,7 @@ export function setSession(user, token, remember = false) {
     else if (rid === 'role_director') session.role = 'director';
     else if (rid === 'role_supervisor') session.role = 'supervisor';
     else if (rid === 'role_lead') session.role = 'lead';
-    else if (rid === 'role_dev' || rid === 'role_nurse') session.role = 'staff';
+    else if (rid === 'role_finance' || rid === 'role_dev' || rid === 'role_nurse') session.role = 'staff';
     else session.role = rid.replace(/^role_/, '');
   }
 
