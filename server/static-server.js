@@ -11,6 +11,13 @@ const financeController = require('./controllers/financeController');
 const operationsController = require('./controllers/operationsController');
 const analyticsController = require('./controllers/analyticsController');
 const activitiesController = require('./controllers/activitiesController');
+const labOrdersController = require('./controllers/labOrdersController');
+const encountersController = require('./controllers/encountersController');
+const notificationsController = require('./controllers/notificationsController');
+const documentsController = require('./controllers/documentsController');
+const pharmacyController = require('./controllers/pharmacyController');
+const referralsController = require('./controllers/referralsController');
+const inventoryController = require('./controllers/inventoryController');
 const db = require('./config/db');
 
 require('dotenv').config();
