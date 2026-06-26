@@ -2,7 +2,7 @@
  * Dashboard Feature Logic
  * Handles sub-view routing and role-based card generation.
  */
-import { apiFetch, escapeHTML } from '../../../js/utils.js';
+import { apiFetch, escapeHTML, formatCurrency } from '../../../js/utils.js';
 import { getDashboardProfile } from '../../../js/auth.js';
 
 export async function init(mount, State) {
@@ -19,7 +19,7 @@ export async function init(mount, State) {
 
   renderRoleCards(mount, profile.cards);
   switchView(mount, subView);
-  loadDashboardData(mount);
+  await loadDashboardData(mount);
 
   return {
     destroy: () => {}
@@ -33,7 +33,7 @@ function renderRoleCards(mount, cards) {
     <a href="${card.route}" data-route class="role-card" title="${escapeHTML(card.title)}">
       <span class="role-card__icon">${card.icon}</span>
       <span class="role-card__title">${escapeHTML(card.title)}</span>
-      <span class="role-card__metric">${escapeHTML(card.metric)}</span>
+      <span class="role-card__metric" data-metric="${card.data}">0</span>
     </a>
   `).join('');
 }
@@ -51,6 +51,23 @@ function switchView(mount, viewId) {
 
 async function loadDashboardData(mount) {
   try {
+    // Fetch real dashboard metrics
+    const statsResp = await fetch('/api/dashboard');
+    const result = statsResp.ok ? await statsResp.json() : {};
+    const stats = result.stats || {};
+
+    // Update role card metrics with real data
+    document.querySelectorAll('.role-card__metric').forEach(el => {
+      const key = el.dataset.metric;
+      if (stats[key] !== undefined) {
+        const value = stats[key];
+        el.textContent = key === 'finance' 
+          ? formatCurrency(value)
+          : value + (key === 'notifications' ? ' new' : key === 'documents' ? ' pending' : key.includes('Tasks') ? ' open' : '');
+      }
+    });
+
+    // Load activities
     const activities = await apiFetch('/activities').catch(() => []);
     const body = mount.querySelector('#recent-body');
     if (body) {
@@ -65,7 +82,7 @@ async function loadDashboardData(mount) {
         : '<tr><td colspan="4" class="mc-muted">No recent activity found.</td></tr>';
     }
 
-    // 2. Load Appointments for Calendar
+    // Load appointments for calendar
     const appointments = await apiFetch('/appointments').catch(() => []);
     const calList = mount.querySelector('#calendar-list');
     if (calList) {
@@ -73,21 +90,16 @@ async function loadDashboardData(mount) {
         ? appointments.map(appt => `
             <div class="calendar-item">
               <div class="calendar-item__date">
-                <span class="day">${new Date(appt.date || appt.created).getDate()}</span>
-                <span class="month">${new Date(appt.date || appt.created).toLocaleDateString([], { month: 'short' })}</span>
+                <span class="day">${new Date(appt.time || appt.created).getDate()}</span>
+                <span class="month">${new Date(appt.time || appt.created).toLocaleDateString([], { month: 'short' })}</span>
               </div>
               <div class="calendar-item__body">
-                <div class="calendar-item__title">${appt.title || appt.patient || 'Appointment'}</div>
-                <div class="calendar-item__meta">${appt.time || ''} ${appt.location ? '· ' + appt.location : ''}</div>
+                <div class="calendar-item__title">${appt.type || appt.patient || 'Appointment'}</div>
+                <div class="calendar-item__meta">${appt.time || ''}</div>
               </div>
             </div>`).join('')
         : '<p class="mc-muted">No upcoming appointments found.</p>';
     }
-
-    // 3. Reset/Populate KPI metrics
-    // Financial Metrics (Renamed to KPI 1) - Currency updated to KSh
-    if (mount.querySelector('#kpi-revenue')) mount.querySelector('#kpi-revenue').textContent = 'KSh 0.00';
-    if (mount.querySelector('#kpi-costs')) mount.querySelector('#kpi-costs').textContent = 'KSh 0.00';
 
   } catch (err) {
     console.error('Dashboard: Data load failed', err);

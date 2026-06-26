@@ -337,15 +337,17 @@ function executeSchemaMigration() {
     db.run(`CREATE INDEX idx_incidents_status ON incidents(status)`);
     db.run(`CREATE INDEX idx_incidents_severity ON incidents(severity)`);
 
-    db.serialize(() => {
+db.serialize(() => {
       console.log('\n--- Populating system base seed metrics ---');
 
-      const hash = (pwd) => bcrypt.hashSync(pwd, 12);
+      const adminPwd = process.env.DEFAULT_ADMIN_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'admin123');
+      const devPwd = process.env.DEFAULT_DEV_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'dan123');
+      const hash = (pwd) => pwd ? bcrypt.hashSync(pwd, 12) : null;
 
       // Seed Users
       db.run(`INSERT INTO users (id, email, phone_number, passwordHash) VALUES 
-        ('usr_admin', 'alice@acme.org', '+254700000000', '${hash('admin123')}'),
-        ('usr_dan', 'danreech@acme.org', '+254711111111', '${hash('dan123')}')`);
+        ('usr_admin', 'alice@acme.org', '+254700000000', '${hash(adminPwd)}'),
+        ('usr_dan', 'danreech@acme.org', '+254711111111', '${hash(devPwd)}')`);
 
       // Seed Departments & Roles
       db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services')`);
