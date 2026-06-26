@@ -2,9 +2,33 @@
    - auto-collapses at `breakpoint` width
    - provides a header toggle to manually override
    - saves user preference in localStorage
+   - filters navigation by department for staff users
 */
+import { getSession } from '../../js/auth.js';
+import { DEPARTMENT_MODULES } from '../../js/auth.js';
+
 const BREAKPOINT = 700; // px
 const LS_KEY = 'mc_sidebar_collapsed';
+
+function filterNavByDepartment() {
+  const session = getSession();
+  if (!session) return;
+  
+  const userRole = session.role;
+  const userDept = session.department_name;
+  
+  // For staff users, filter nav links by department
+  if (userRole === 'staff' && userDept && DEPARTMENT_MODULES[userDept]) {
+    const allowedModules = DEPARTMENT_MODULES[userDept];
+    document.querySelectorAll('.mc-nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      const module = href?.replace(/^\//, '').split('/')[0];
+      if (module && !allowedModules.includes(module) && module !== 'dashboard') {
+        link.closest('li')?.classList.add('department-hidden');
+      }
+    });
+  }
+}
 
 function createToggleButton() {
   const btn = document.createElement('button');
@@ -57,6 +81,7 @@ function init() {
   // initialize
   applyPreference();
   onResize();
+  filterNavByDepartment();
   window.addEventListener('resize', onResize);
 }
 

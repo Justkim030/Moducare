@@ -10,6 +10,7 @@
   /* Refined Dark Theme Surfaces */
   --surface-page: #0b0f19;         /* Deep midnight blue-gray */
   --surface-sidebar: #111827;      /* Solid charcoal background */
+  --surface-card: #1e293b;
   --border-light: #1f2937;         /* Subtle, elegant line separation */
   
   /* Typography Colors */
@@ -25,13 +26,14 @@
   --mc-accent: var(--clr-accent-500);
   --mc-danger: var(--clr-danger);
   --mc-shadow: rgba(0, 0, 0, 0.4);
-  
+
   /* Layout Dimensions & Feel */
   --mc-gap: 16px;
   --mc-radius: 8px;               /* Softer, more modern rounded corners */
   --mc-sidebar-width: 260px;
   --mc-header-height: 64px;
   --mc-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --border-radius-md: 8px;
 }
 
 /* Reset & Base System */
@@ -363,6 +365,11 @@ tr:hover td {
 /* Administrative Visibility */
 .mc-nav-admin { display: none; }
 .mc-nav-admin.visible { display: flex; }
+
+/* Department-restricted navigation */
+.mc-nav-item.department-hidden {
+  display: none !important;
+}
 
 /* Print Views */
 @media print {

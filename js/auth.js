@@ -35,73 +35,97 @@ export const MODULE_PERMISSIONS = {
   'patients':           1,
 };
 
+// Department-based card filtering
+export const DEPARTMENT_MODULES = {
+  'Finance': ['finance-billing', 'patients', 'notifications'],
+  'Clinical Services': ['patients', 'scheduling-calendar', 'operations-tasks', 'communications', 'notifications'],
+  'IT Engineering': ['operations-tasks', 'communications', 'document-vault'],
+  'Administration': ['audit-compliance', 'system-admin', 'patients', 'finance-billing'],
+};
+
 // Role-specific dashboard cards and quick actions
 export const DASHBOARD_PROFILES = {
   staff: {
     title: 'My Workspace',
     description: 'Your daily tasks, appointments, and patient queue.',
     cards: [
-      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', data: 'tasks' },
-      { id: 'appointments', title: 'Appointments', route: '/scheduling-calendar', icon: '📅', data: 'appointments' },
-      { id: 'patients', title: 'My Patients', route: '/patients', icon: '👥', data: 'patients' },
-      { id: 'incidents', title: 'Incident Reporting', route: '/incident-reporting', icon: '🚨', data: 'incidents' },
-      { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', data: 'notifications' },
-      { id: 'documents', title: 'Document Vault', route: '/document-vault', icon: '📁', data: 'documents' },
+      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', data: 'tasks', module: 'operations-tasks' },
+      { id: 'appointments', title: 'Appointments', route: '/scheduling-calendar', icon: '📅', data: 'appointments', module: 'scheduling-calendar' },
+      { id: 'patients', title: 'My Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
+      { id: 'incidents', title: 'Incident Reporting', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
+      { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', data: 'notifications', module: 'communications' },
+      { id: 'documents', title: 'Document Vault', route: '/document-vault', icon: '📁', data: 'documents', module: 'document-vault' },
     ],
   },
   lead: {
     title: 'Team Lead Workspace',
     description: 'Team performance, scheduling, approvals, and reports.',
     cards: [
-      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', data: 'teamTasks' },
-      { id: 'schedule', title: 'Schedule', route: '/scheduling-calendar', icon: '📅', data: 'appointments' },
-      { id: 'timesheets', title: 'Timesheets', route: '/finance-billing', icon: '⏱️', data: 'finance' },
-      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents' },
-      { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', data: 'notifications' },
-      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients' },
+      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', data: 'teamTasks', module: 'operations-tasks' },
+      { id: 'schedule', title: 'Schedule', route: '/scheduling-calendar', icon: '📅', data: 'appointments', module: 'scheduling-calendar' },
+      { id: 'timesheets', title: 'Timesheets', route: '/finance-billing', icon: '⏱️', data: 'finance', module: 'finance-billing' },
+      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
+      { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', data: 'notifications', module: 'communications' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
     ],
   },
   supervisor: {
     title: 'Supervisor Overview',
     description: 'Department oversight, compliance, and resource planning.',
     cards: [
-      { id: 'compliance', title: 'Compliance', route: '/audit-compliance', icon: '🛡️', data: 'totalIncidents' },
-      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'patients' },
-      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations' },
-      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance' },
-      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents' },
-      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients' },
+      { id: 'compliance', title: 'Compliance', route: '/audit-compliance', icon: '🛡️', data: 'totalIncidents', module: 'audit-compliance' },
+      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'patients', module: 'patients' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
+      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
     ],
   },
   director: {
     title: 'Director Dashboard',
     description: 'Hospital-wide KPIs, financials, staffing, and risk.',
     cards: [
-      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations' },
-      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance' },
-      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'patients' },
-      { id: 'incidents', title: 'Risk / Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents' },
-      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations' },
-      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients' },
+      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
+      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'patients', module: 'patients' },
+      { id: 'incidents', title: 'Risk / Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
     ],
   },
   admin: {
     title: 'System Administration',
     description: 'User management, system health, audit logs, and access control.',
     cards: [
-      { id: 'users', title: 'Users', route: '/admin', icon: '👤', data: 'users' },
-      { id: 'audit', title: 'Audit Logs', route: '/audit-compliance', icon: '📝', data: 'audit' },
-      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'totalOperations' },
-      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents' },
-      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance' },
-      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients' },
+      { id: 'users', title: 'Users', route: '/admin', icon: '👤', data: 'users', module: 'system-admin' },
+      { id: 'audit', title: 'Audit Logs', route: '/audit-compliance', icon: '📝', data: 'audit', module: 'audit-compliance' },
+      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
+      { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
+      { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
     ],
   },
 };
 
-export function getDashboardProfile(roleId) {
+export function getDashboardProfile(roleId, departmentId) {
   const key = (roleId || '').toLowerCase();
-  return DASHBOARD_PROFILES[key] || DASHBOARD_PROFILES.staff;
+  let profile = DASHBOARD_PROFILES[key] || DASHBOARD_PROFILES.staff;
+  
+  // Filter cards by department for staff-level users
+  if (roleId === 'staff' || roleId === 'STAFF') {
+    const allowedModules = DEPARTMENT_MODULES[departmentId] || [];
+    profile = {
+      ...profile,
+      cards: profile.cards.filter(card => {
+        if (!card.module) return true;
+        const requiredLevel = MODULE_PERMISSIONS[card.module] || 0;
+        const userLevel = ROLES['STAFF'].level;
+        return userLevel >= requiredLevel && allowedModules.includes(card.module);
+      })
+    };
+  }
+  
+  return profile;
 }
 
 // ── Session Management ───────────────────────────────────────
@@ -113,7 +137,7 @@ export function getDashboardProfile(roleId) {
 export function getSession() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY)
-              || localStorage.getItem(SESSION_KEY);
+                || localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const session = JSON.parse(raw);
     // Validate expiry
@@ -145,8 +169,10 @@ export function setSession(user, token, remember = false) {
   if (!session.role && session.role_id) {
     const rid = String(session.role_id).toLowerCase();
     if (rid === 'role_admin') session.role = 'admin';
-    else if (rid === 'role_dev') session.role = 'staff';
-    else if (rid === 'role_nurse') session.role = 'staff';
+    else if (rid === 'role_director') session.role = 'director';
+    else if (rid === 'role_supervisor') session.role = 'supervisor';
+    else if (rid === 'role_lead') session.role = 'lead';
+    else if (rid === 'role_dev' || rid === 'role_nurse') session.role = 'staff';
     else session.role = rid.replace(/^role_/, '');
   }
 

@@ -9,8 +9,9 @@ export async function init(mount, State) {
   const path = window.location.pathname;
   const segments = path.split('/');
   const subView = segments[2] || 'overview';
-
-  const profile = getDashboardProfile(State?.getUser?.()?.role);
+  
+  const user = State?.getUser?.();
+  const profile = getDashboardProfile(user?.role, user?.department_name);
 
   const title = mount.querySelector('#dashboard-title');
   const subtitle = mount.querySelector('#dashboard-subtitle');

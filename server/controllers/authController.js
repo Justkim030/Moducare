@@ -47,9 +47,11 @@ async function handleLogin(req, res) {
       }
 
       const query = `
-        SELECT u.id, u.email, u.phone_number, u.passwordHash, e.id AS employee_id, e.name, e.role_id
+        SELECT u.id, u.email, u.phone_number, u.passwordHash, e.id AS employee_id, e.name, e.role_id, r.name AS role_name, r.department_id, d.name AS department_name
         FROM users u
         INNER JOIN employees e ON e.user_id = u.id
+        INNER JOIN roles r ON r.id = e.role_id
+        LEFT JOIN departments d ON d.id = r.department_id
         WHERE LOWER(u.email) = LOWER(?)
       `;
 
@@ -75,7 +77,10 @@ async function handleLogin(req, res) {
           name: account.name,
           email: account.email,
           phone_number: account.phone_number,
-          role_id: account.role_id
+          role_id: account.role_id,
+          role_name: account.role_name,
+          department_id: account.department_id,
+          department_name: account.department_name
         };
 
         const token = signToken(safeUserSession);
@@ -96,7 +101,7 @@ async function handleRegister(req, res) {
   req.on('end', async () => {
     try {
       const p = JSON.parse(body || '{}');
-      const { name, email, password, phone_number, role_id } = p;
+      const { name, email, password, phone_number, role_id, department_id } = p;
 
       const missing = validateRequired([name, email, password]);
       if (missing.length > 0) {
@@ -130,8 +135,8 @@ async function handleRegister(req, res) {
             }
 
             db.run(
-              'INSERT INTO employees (id, name, user_id, role_id) VALUES (?, ?, ?, ?)',
-              [employeeId, name, userId, assignedRoleId],
+              'INSERT INTO employees (id, name, user_id, role_id, department_id) VALUES (?, ?, ?, ?, ?)',
+              [employeeId, name, userId, assignedRoleId, department_id || null],
               function (empErr) {
                 if (empErr) {
                   console.error(`[SECURE EXCEPTION] Employee Profile Trace: ${empErr.message}`);
@@ -140,7 +145,7 @@ async function handleRegister(req, res) {
 
                 return sendSecureJSON(res, 201, {
                   ok: true,
-                  user: { id: userId, employee_id: employeeId, name, email },
+                  user: { id: userId, employee_id: employeeId, name, email, role_id: assignedRoleId, department_id },
                 });
               }
             );
