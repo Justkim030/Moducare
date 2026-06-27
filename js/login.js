@@ -108,13 +108,6 @@ form?.addEventListener('submit', async (e) => {
   }
 });
 
-// ── SSO Button Stubs ─────────────────────────────────────────
-document.querySelectorAll('.sso-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    showToast('SSO integration coming soon.', 'info');
-  });
-});
-
 // ── Keyboard: Submit on Enter ────────────────────────────────
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && document.activeElement !== signInBtn) {
