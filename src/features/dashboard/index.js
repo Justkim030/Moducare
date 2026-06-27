@@ -9,9 +9,9 @@ export async function init(mount, State) {
   const path = window.location.pathname;
   const segments = path.split('/');
   const subView = segments[2] || 'overview';
-  
+
   const user = State?.getUser?.();
-  const profile = getDashboardProfile(user?.role, user?.department_name);
+  const profile = getDashboardProfile(user?.role, user?.department_id);
 
   const title = mount.querySelector('#dashboard-title');
   const subtitle = mount.querySelector('#dashboard-subtitle');
@@ -52,12 +52,10 @@ function switchView(mount, viewId) {
 
 async function loadDashboardData(mount) {
   try {
-    // Fetch real dashboard metrics
     const statsResp = await fetch('/api/dashboard');
     const result = statsResp.ok ? await statsResp.json() : {};
     const stats = result.stats || {};
 
-    // Update role card metrics with real data
     document.querySelectorAll('.role-card__metric').forEach(el => {
       const key = el.dataset.metric;
       if (stats[key] !== undefined) {
@@ -68,7 +66,6 @@ async function loadDashboardData(mount) {
       }
     });
 
-    // Load activities
     const activities = await apiFetch('/activities').catch(() => []);
     const body = mount.querySelector('#recent-body');
     if (body) {
@@ -83,7 +80,6 @@ async function loadDashboardData(mount) {
         : '<tr><td colspan="4" class="mc-muted">No recent activity found.</td></tr>';
     }
 
-    // Load appointments for calendar
     const appointments = await apiFetch('/appointments').catch(() => []);
     const calList = mount.querySelector('#calendar-list');
     if (calList) {

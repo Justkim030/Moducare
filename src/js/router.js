@@ -166,6 +166,12 @@ function navigate(path){
 function loadRoute(path){
   let name = routeNameFromPath(path);
 
+  // Handle dropdown sub-routes - load parent feature
+  const dropdownParents = ['dashboard', 'patients', 'staff', 'finance-billing', 'operations', 'clinical', 'communications'];
+  if (path.includes('/') && dropdownParents.some(p => name.startsWith(p))) {
+    name = name.split('/')[0];
+  }
+
   // Redirect /login to the standalone login page
   if (name === 'login') {
     window.location.href = 'login.html';
