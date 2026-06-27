@@ -1,14 +1,11 @@
 /**
- * ModuCare MS â€” HR & Staff Module
+ * ModuCare MS — HR & Staff Module
  * Features: Staff directory grid/table, search & filter,
  *           add staff modal, role badges, status management
- *
- * Entry point: called by router via render(container)
  */
-import { showToast, formatDate, getInitials, escapeHTML } from '../../../js/utils.js';
+import { showToast, formatDate, getInitials, escapeHTML, apiFetch } from '../../../js/utils.js';
 import { hasRole } from '../../../js/auth.js';
 
-// â”€â”€ Inject scoped CSS once â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
@@ -19,13 +16,9 @@ function injectCSS() {
   _cssLoaded = true;
 }
 
-// â”€â”€ Mock Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Replace with: import { fetchStaff } from './data/staff-api.js'
-// ── Mock Data (replaced with API) ────────────────────────────────
 window.__STAFF_DATA = [];
 
 async function loadStaff() {
-  // Map API role IDs to UI role keys
   const roleMap = {
     'role_dev': 'admin',
     'role_nurse': 'staff',
@@ -34,7 +27,7 @@ async function loadStaff() {
     'admin': 'admin'
   };
   try {
-    const res = await apiFetch('//users');
+    const res = await apiFetch('/users');
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
     window.__STAFF_DATA = (data.users || []).map(u => ({
@@ -73,32 +66,30 @@ const STATUS_MAP = {
   inactive: { dot:'status-dot--inactive', badge:'badge-neutral', label:'Inactive' },
 };
 
-// â”€â”€ Module State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _state = {
   search: '',
   dept:   'All Departments',
   status: 'all',
-  view:   'table',    // 'table' | 'grid'
+  view:   'table',
   page:   1,
   perPage: 8,
 };
 
-// â”€â”€ Public Entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export async function render(container) {
+export async function init(mount, State) {
    injectCSS();
-   container.innerHTML = buildShell();
-   bindEvents(container);
+   mount.innerHTML = buildShell();
+   bindEvents(mount);
    await loadStaff();
-   renderList(container);
- }
+   renderList(mount);
+   return { destroy: () => {} };
+}
 
-// â”€â”€ Shell HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildShell() {
   const canAdd = hasRole('lead');
   return `
   <div class="section-header">
     <div>
-      <div class="section-title">HR &amp; Staff Directory</div>
+      <div class="section-title">HR & Staff Directory</div>
       <div class="section-subtitle">Manage all staff profiles, roles, and employment status across departments.</div>
     </div>
     <div class="flex gap-3">
@@ -113,16 +104,14 @@ function buildShell() {
     </div>
   </div>
 
-  <!-- Summary Stats -->
   <div class="hr-stats" id="hr-stats"></div>
 
-  <!-- Filter Bar -->
   <div class="filter-bar">
     <div class="filter-search">
       <span class="filter-search__icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </span>
-      <input type="search" id="staff-search" placeholder="Search by name, email, or departmentâ€¦" value="${_state.search}" />
+      <input type="search" id="staff-search" placeholder="Search by name, email, or department…" value="${_state.search}" />
     </div>
 
     <select class="filter-select" id="dept-filter">
@@ -146,13 +135,10 @@ function buildShell() {
     </div>
   </div>
 
-  <!-- List Area -->
   <div id="staff-list"></div>
 
-  <!-- Pagination -->
   <div id="staff-pagination"></div>
 
-  <!-- Add Staff Modal -->
   <div class="modal-overlay hidden" id="add-staff-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal modal--lg">
       <div class="modal__header">
@@ -234,33 +220,28 @@ function buildShell() {
       </div>
       <div class="modal__footer">
         <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
-        <button class="btn btn-primary" id="modal-save">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save Staff Member
-        </button>
+        <button class="btn btn-primary" id="modal-save">Save Staff Member</button>
       </div>
     </div>
   </div>`;
 }
 
-// â”€â”€ Render List (table or grid) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function renderList(container) {
+function renderList(mount) {
   const filtered = filterStaff();
   const total    = filtered.length;
   const pages    = Math.ceil(total / _state.perPage);
   const start    = (_state.page - 1) * _state.perPage;
   const slice    = filtered.slice(start, start + _state.perPage);
 
-  // Stats bar
-  const statsEl = container.querySelector('#hr-stats');
+  const statsEl = mount.querySelector('#hr-stats');
   if (statsEl) statsEl.innerHTML = buildStatsBar();
 
-  const listEl = container.querySelector('#staff-list');
+  const listEl = mount.querySelector('#staff-list');
   if (!listEl) return;
 
   if (slice.length === 0) {
     listEl.innerHTML = `<div class="empty-state">
-      <div class="empty-state__icon">ðŸ”</div>
+      <div class="empty-state__icon">🔍</div>
       <div class="empty-state__title">No staff found</div>
       <div class="empty-state__desc">Try adjusting your search or filter criteria.</div>
     </div>`;
@@ -279,9 +260,8 @@ function renderList(container) {
       </div>`;
   }
 
-  // Pagination
-  const pagEl = container.querySelector('#staff-pagination');
-  if (pagEl) pagEl.innerHTML = pages > 1 ? buildPagination(pages, total) : '';
+  const pagEl = mount.querySelector('#staff-pagination');
+  if (pagEl) pagEl.innerHTML = pages > 1 ? buildPagination(pages) : '';
 }
 
 function buildStatsBar() {
@@ -311,15 +291,12 @@ function staffRow(s) {
     <td class="text-secondary">${escapeHTML(s.department)}</td>
     <td><span class="badge ${r.badge}">${r.label}</span></td>
     <td><span class="badge ${st.badge}"><span class="status-dot ${st.dot}"></span>${st.label}</span></td>
-    <td class="text-secondary">${escapeHTML(s.location)}</td>
+    <td class="text-secondary">${escapeHTML(s.phone)}</td>
     <td class="text-secondary text-sm">${formatDate(s.joined)}</td>
     <td>
       <div class="flex gap-1 justify-end">
-        <button class="btn btn-ghost btn-sm btn-icon" data-tip="View Profile" onclick="alert('Profile view for ${s.name} â€” build in /src/features/staff/components/')">
+        <button class="btn btn-ghost btn-sm btn-icon" data-tip="View Profile" data-action="view" data-id="${s.id}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-        <button class="btn btn-ghost btn-sm btn-icon" data-tip="Edit">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
       </div>
     </td>
@@ -338,8 +315,8 @@ function staffCard(s) {
     <div class="staff-card__dept">${escapeHTML(s.department)}</div>
     <span class="badge ${r.badge}">${r.label}</span>
     <div class="staff-card__meta">
-      <span>ðŸ“ ${escapeHTML(s.location)}</span>
-      <span>ðŸ“… ${formatDate(s.joined)}</span>
+      <span>📍 ${escapeHTML(s.location)}</span>
+      <span>📅 ${formatDate(s.joined)}</span>
     </div>
     <div class="staff-card__email">${escapeHTML(s.email)}</div>
   </div>`;
@@ -348,15 +325,14 @@ function staffCard(s) {
 function buildPagination(pages, total) {
   const start = (_state.page - 1) * _state.perPage + 1;
   const end   = Math.min(_state.page * _state.perPage, total);
-  let btns = `<button class="page-btn" ${_state.page===1?'disabled':''} data-page="${_state.page-1}">â€¹</button>`;
+  let btns = `<button class="page-btn" ${_state.page===1?'disabled':''} data-page="${_state.page-1}">‹</button>`;
   for (let i=1;i<=pages;i++) {
     btns += `<button class="page-btn ${i===_state.page?'active':''}" data-page="${i}">${i}</button>`;
   }
-  btns += `<button class="page-btn" ${_state.page===pages?'disabled':''} data-page="${_state.page+1}">â€º</button>`;
-  return `<div class="pagination">${btns}<span class="pagination__info">${start}â€“${end} of ${total}</span></div>`;
+  btns += `<button class="page-btn" ${_state.page===pages?'disabled':''} data-page="${_state.page+1}">›</button>`;
+  return `<div class="pagination">${btns}<span class="pagination__info">${start}–${end} of ${total}</span></div>`;
 }
 
-// â”€â”€ Filter Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function filterStaff() {
   return __STAFF_DATA.filter(s => {
     const q = _state.search.toLowerCase();
@@ -370,56 +346,49 @@ function filterStaff() {
   });
 }
 
-// â”€â”€ Event Binding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function bindEvents(container) {
-  // Search
-  const search = container.querySelector('#staff-search');
+function bindEvents(mount) {
+  const search = mount.querySelector('#staff-search');
   let debounce;
   search?.addEventListener('input', () => {
     clearTimeout(debounce);
     debounce = setTimeout(() => {
       _state.search = search.value;
       _state.page = 1;
-      renderList(container);
+      renderList(mount);
     }, 280);
   });
 
-  // Dept filter
-  container.querySelector('#dept-filter')?.addEventListener('change', e => {
-    _state.dept = e.target.value; _state.page = 1; renderList(container);
+  mount.querySelector('#dept-filter')?.addEventListener('change', e => {
+    _state.dept = e.target.value; _state.page = 1; renderList(mount);
   });
 
-  // Status filter
-  container.querySelector('#status-filter')?.addEventListener('change', e => {
-    _state.status = e.target.value; _state.page = 1; renderList(container);
+  mount.querySelector('#status-filter')?.addEventListener('change', e => {
+    _state.status = e.target.value; _state.page = 1; renderList(mount);
   });
 
-  // View toggle
-  container.querySelectorAll('.view-toggle').forEach(btn => {
+  mount.querySelectorAll('.view-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
       _state.view = btn.dataset.view;
-      container.querySelectorAll('.view-toggle').forEach(b=>b.classList.remove('active'));
+      mount.querySelectorAll('.view-toggle').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      renderList(container);
+      renderList(mount);
     });
   });
 
-  // Pagination (delegated)
-  container.querySelector('#staff-pagination')?.addEventListener('click', e => {
+  mount.querySelector('#staff-pagination')?.addEventListener('click', e => {
     const btn = e.target.closest('[data-page]');
     if (!btn || btn.disabled) return;
     _state.page = parseInt(btn.dataset.page);
-    renderList(container);
+    renderList(mount);
   });
 
-  // Add Staff Modal
-  const modal      = container.querySelector('#add-staff-modal');
-  const addBtn     = container.querySelector('#add-staff-btn');
-  const closeBtn   = container.querySelector('#modal-close');
-  const cancelBtn  = container.querySelector('#modal-cancel');
-  const saveBtn    = container.querySelector('#modal-save');
+  const modal = mount.querySelector('#add-staff-modal');
+  const addBtn = mount.querySelector('#add-staff-btn');
+  const closeBtn = mount.querySelector('#modal-close');
+  const cancelBtn = mount.querySelector('#modal-cancel');
+  const saveBtn = mount.querySelector('#modal-save');
 
-  const openModal  = () => modal?.classList.remove('hidden');
+  const openModal = () => modal?.classList.remove('hidden');
   const closeModal = () => modal?.classList.add('hidden');
 
   addBtn?.addEventListener('click', openModal);
@@ -428,11 +397,11 @@ function bindEvents(container) {
   modal?.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
   saveBtn?.addEventListener('click', () => {
-    const first = container.querySelector('#f-first')?.value.trim();
-    const last  = container.querySelector('#f-last')?.value.trim();
-    const email = container.querySelector('#f-email')?.value.trim();
-    const dept  = container.querySelector('#f-dept')?.value;
-    const role  = container.querySelector('#f-role')?.value;
+    const first = mount.querySelector('#f-first')?.value.trim();
+    const last  = mount.querySelector('#f-last')?.value.trim();
+    const email = mount.querySelector('#f-email')?.value.trim();
+    const dept  = mount.querySelector('#f-dept')?.value;
+    const role  = mount.querySelector('#f-role')?.value;
     if (!first||!last||!email||!dept||!role) {
       showToast('Please fill in all required fields.', 'warning'); return;
     }
@@ -440,20 +409,19 @@ function bindEvents(container) {
       id: 's' + Date.now(), name: `${first} ${last}`,
       initials: (first[0]+last[0]).toUpperCase(),
       department: dept, role, status:'pending', email,
-      phone: container.querySelector('#f-phone')?.value||'â€”',
+      phone: mount.querySelector('#f-phone')?.value||'—',
       joined: new Date().toISOString().split('T')[0],
-      location: container.querySelector('#f-location')?.value||'Main Office',
+      location: mount.querySelector('#f-location')?.value||'Main Office',
     };
     __STAFF_DATA.unshift(newMember);
     closeModal();
     _state.page = 1;
-    renderList(container);
+    renderList(mount);
     showToast(`${newMember.name} added successfully.`, 'success');
-    container.querySelector('#add-staff-form')?.reset();
+    mount.querySelector('#add-staff-form')?.reset();
   });
 
-  // Export CSV
-  container.querySelector('#export-btn')?.addEventListener('click', () => {
+  mount.querySelector('#export-btn')?.addEventListener('click', () => {
     import('../../js/utils.js').then(({ exportCSV }) => {
       const rows = [
         ['Name','Department','Role','Status','Email','Phone','Location','Joined'],
@@ -464,8 +432,3 @@ function bindEvents(container) {
     });
   });
 }
-
-
-
-
-
