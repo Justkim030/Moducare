@@ -47,7 +47,7 @@
   <!-- 2. MAIN APP CONTAINER -->
   <div class="mc-app" id="mc-app">
     
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR with Dropdowns -->
     <aside class="mc-sidebar" role="navigation" aria-label="Main navigation">
       <div class="mc-sidebar-header">
         <span class="mc-sidebar-title">Navigation</span>
@@ -56,6 +56,7 @@
 
       <nav>
         <ul class="mc-nav-list">
+          <!-- Dashboard Dropdown -->
           <li class="mc-nav-item" id="nav-dashboard-item">
             <a href="/dashboard" data-route class="mc-nav-link" id="dashboard-toggle">Dashboard <span class="mc-nav-chevron">▾</span></a>
             <ul class="mc-nav-dropdown">
@@ -65,24 +66,70 @@
               <li><a href="/dashboard/kpi-1" data-route class="mc-nav-link sub">KPI 1</a></li>
             </ul>
           </li>
-          <li><a href="/staff" data-route class="mc-nav-link">👥 Staff</a></li>
-          <li><a href="/patients" data-route class="mc-nav-link mc-nav-patients">👤 Patients</a></li>
-          <li><a href="/encounters" data-route class="mc-nav-link">🩺 Encounters</a></li>
-          <li><a href="/lab-orders" data-route class="mc-nav-link">🔬 Lab Orders</a></li>
-          <li><a href="/pharmacy" data-route class="mc-nav-link">💊 Pharmacy</a></li>
-          <li><a href="/appointments" data-route class="mc-nav-link">📅 Appointments</a></li>
-          <li><a href="/notifications" data-route class="mc-nav-link">🔔 Notifications</a></li>
-          <li><a href="/documents" data-route class="mc-nav-link">📁 Documents</a></li>
-          <li><a href="/communications" data-route class="mc-nav-link">💬 Communications</a></li>
-          <li><a href="/audit" data-route class="mc-nav-link">🛡️ Audit</a></li>
-          <li><a href="/inventory" data-route class="mc-nav-link">📦 Inventory</a></li>
-          <li><a href="/operations" data-route class="mc-nav-link mc-nav-operations">⚙️ Operations</a></li>
           
-          <li><a href="/finance-billing" data-route class="mc-nav-link mc-nav-finance">💰 Finance</a></li>
-          <li><a href="/scheduling-calendar" data-route class="mc-nav-link mc-nav-scheduling">📆 Scheduling</a></li>
-          <li><a href="/analytics" data-route class="mc-nav-link mc-nav-analytics">📊 Analytics</a></li>
-          <li><a href="/admin" data-route class="mc-nav-link mc-nav-admin" data-admin-only>🛠️ Admin</a></li>
-          <li><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incident Reporting</a></li>
+          <!-- Patients Dropdown -->
+          <li class="mc-nav-item" id="nav-patients-item">
+            <a href="/patients" data-route class="mc-nav-link mc-nav-patients" id="patients-toggle">👤 Patients <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/patients/list" data-route class="mc-nav-link sub">Patient List</a></li>
+              <li><a href="/patients/new" data-route class="mc-nav-link sub">Add Patient</a></li>
+              <li><a href="/patients/records" data-route class="mc-nav-link sub">Medical Records</a></li>
+            </ul>
+          </li>
+          
+          <!-- Staff Dropdown -->
+          <li class="mc-nav-item" id="nav-staff-item">
+            <a href="/staff" data-route class="mc-nav-link" id="staff-toggle">👥 Staff <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/staff/list" data-route class="mc-nav-link sub">Staff List</a></li>
+              <li><a href="/staff/schedule" data-route class="mc-nav-link sub">Schedules</a></li>
+              <li><a href="/staff/performance" data-route class="mc-nav-link sub">Performance</a></li>
+            </ul>
+          </li>
+          
+          <!-- Finance Dropdown -->
+          <li class="mc-nav-item" id="nav-finance-item">
+            <a href="/finance-billing" data-route class="mc-nav-link mc-nav-finance" id="finance-toggle">💰 Finance <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/finance-billing/invoices" data-route class="mc-nav-link sub">Invoices</a></li>
+              <li><a href="/finance-billing/timesheets" data-route class="mc-nav-link sub">Timesheets</a></li>
+              <li><a href="/finance-billing/reports" data-route class="mc-nav-link sub">Reports</a></li>
+            </ul>
+          </li>
+
+          <!-- Operations Dropdown -->
+          <li class="mc-nav-item" id="nav-operations-item">
+            <a href="/operations" data-route class="mc-nav-link mc-nav-operations" id="operations-toggle">⚙️ Operations <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/operations/tasks" data-route class="mc-nav-link sub">Tasks</a></li>
+              <li><a href="/operations/workflow" data-route class="mc-nav-link sub">Workflow</a></li>
+            </ul>
+          </li>
+
+          <!-- Clinical Dropdown -->
+          <li class="mc-nav-item" id="nav-clinical-item">
+            <a href="/clinical" data-route class="mc-nav-link" id="clinical-toggle">🩺 Clinical <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/encounters" data-route class="mc-nav-link sub">Encounters</a></li>
+              <li><a href="/lab-orders" data-route class="mc-nav-link sub">Lab Orders</a></li>
+              <li><a href="/pharmacy" data-route class="mc-nav-link sub">Pharmacy</a></li>
+            </ul>
+          </li>
+
+          <!-- Communications Dropdown -->
+          <li class="mc-nav-item" id="nav-comms-item">
+            <a href="/communications" data-route class="mc-nav-link" id="comms-toggle">💬 Communications <span class="mc-nav-chevron">▾</span></a>
+            <ul class="mc-nav-dropdown">
+              <li><a href="/communications/inbox" data-route class="mc-nav-link sub">Inbox</a></li>
+              <li><a href="/communications/sent" data-route class="mc-nav-link sub">Sent</a></li>
+            </ul>
+          </li>
+
+          <!-- Admin (restricted) -->
+          <li><a href="/admin" data-route class="mc-nav-link mc-nav-admin">🛠️ Admin</a></li>
+          
+          <!-- Incident Reporting -->
+          <li><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incidents</a></li>
         </ul>
       </nav>
     </aside>
@@ -97,27 +144,87 @@
 
   </div>
 
-  <script type="module" src="/src/js/router.js"></script>
-  <script type="module" src="/js/app.js"></script>
+<script type="module">
+import State from '/src/js/state.js';
+import { getSession } from '/js/auth.js';
+import { DEPARTMENT_MODULES, MODULE_PERMISSIONS, ROLES } from '/js/auth.js';
+
+// Profile menu toggle
+document.addEventListener('DOMContentLoaded', () => {
+  const profile = document.getElementById('profile');
+  const profileBtn = document.getElementById('profile-btn');
   
-  <script>
-    // Handle dashboard nested menu toggles
-    document.getElementById('dashboard-toggle')?.addEventListener('click', function(e) {
-      e.preventDefault();
-      document.getElementById('nav-dashboard-item').classList.toggle('expanded');
+  profileBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    profile.classList.toggle('menu-active');
+  });
+  
+  document.addEventListener('click', () => profile.classList.remove('menu-active'));
+  
+  // Dropdown toggle functionality
+  document.querySelectorAll('.mc-nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const parentLi = link.closest('.mc-nav-item');
+      const dropdown = parentLi?.querySelector('.mc-nav-dropdown');
+      if (dropdown) {
+        e.preventDefault();
+        document.querySelectorAll('.mc-nav-item').forEach(li => {
+          if (li !== parentLi) li.classList.remove('expanded');
+        });
+        parentLi.classList.toggle('expanded');
+      }
     });
+  });
+  
+  // Sign out
+  document.getElementById('profile-signout')?.addEventListener('click', () => {
+    import('/js/auth.js').then(({ logout }) => logout());
+  });
+  
+  // Initialize user session
+  try {
+    const sess = getSession();
+    if (sess) {
+      if (sess.role) sess.role = sess.role.toLowerCase();
+      State.setUser(sess);
+    }
+  } catch(e) {}
+  
+  // Filter nav by department for staff users
+  filterNavByDepartment();
+});
 
-    // Handle profile avatar layout popups
-    const profileBtn = document.getElementById('profile-btn');
-    const profileMenu = document.getElementById('profile');
-    profileBtn?.addEventListener('click', function() {
-      profileMenu.classList.toggle('menu-active');
+function filterNavByDepartment() {
+  const session = getSession();
+  if (!session) return;
+  
+  const userRole = session.role;
+  const userDept = session.department_id;
+  
+  // For staff users, filter nav links by department
+  if (userRole === 'staff' && userDept && DEPARTMENT_MODULES[userDept]) {
+    const allowedModules = DEPARTMENT_MODULES[userDept];
+    document.querySelectorAll('.mc-nav-link:not(.sub)').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+      const module = href.replace(/^\//, '').split('/')[0];
+      const parentItem = link.closest('.mc-nav-item');
+      
+      // Always show dashboard and home
+      if (module === 'dashboard' || module === 'admin') {
+        if (parentItem) parentItem.classList.add('visible');
+        return;
+      }
+      
+      // Check if module is in allowed list
+      if (allowedModules.includes(module)) {
+        if (parentItem) parentItem.classList.add('visible');
+      } else {
+        if (parentItem) parentItem.classList.add('department-hidden');
+      }
     });
-
-    // Handle Sidebar manual collapsing via internal Hamburger menu toggle button
-    document.getElementById('sidebar-menu-btn')?.addEventListener('click', function() {
-      document.querySelector('.mc-sidebar').classList.toggle('collapsed');
-    });
-  </script>
+  }
+}
+</script>
 </body>
 </html>
