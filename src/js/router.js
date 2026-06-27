@@ -1,5 +1,5 @@
 import State from './state.js';
-import { getSession } from '../../js/auth.js';
+import { getSession, DEPARTMENT_MODULES } from '../../js/auth.js';
 import './sidebar.js';
 
 const outlet = document.getElementById('app-content');
@@ -183,10 +183,26 @@ document.addEventListener('click', (e)=>{
   const a = e.target.closest('a[data-route]');
   if (!a) return;
   const href = a.getAttribute('href');
-  if (href && !href.startsWith('http') && href.startsWith('/')){
+  if (!href || !href.startsWith('/')) return;
+  
+  const parentItem = a.closest('.mc-nav-item');
+  const dropdown = parentItem?.querySelector('.mc-nav-dropdown');
+  
+  // If this link has a dropdown, toggle it instead of navigating
+  if (dropdown && !a.classList.contains('sub')) {
     e.preventDefault();
-    navigate(href);
+    document.querySelectorAll('.mc-nav-item').forEach(li => {
+      if (li !== parentItem) li.classList.remove('expanded');
+    });
+    parentItem.classList.toggle('expanded');
+    if (!parentItem.classList.contains('expanded')) {
+      // First click just opens dropdown, second navigates
+      return;
+    }
   }
+  
+  e.preventDefault();
+  navigate(href);
 });
 
 window.addEventListener('popstate', ()=> loadRoute(location.pathname));
@@ -194,39 +210,39 @@ window.addEventListener('popstate', ()=> loadRoute(location.pathname));
 document.addEventListener('DOMContentLoaded', () => {
   const brand = document.querySelector('.mc-brand');
   if (brand) brand.addEventListener('keydown', (e)=>{ if (e.key==='Enter') navigate('/dashboard'); });
+  
+  const profile = document.getElementById('profile');
+  const profileBtn = document.getElementById('profile-btn');
+  profileBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    profile.classList.toggle('menu-active');
+  });
+  document.addEventListener('click', () => profile.classList.remove('menu-active'));
+  
+  document.getElementById('profile-signout')?.addEventListener('click', () => {
+    import('/js/auth.js').then(({ logout }) => logout());
+  });
 
   try{
     const sess = getSession();
     if (sess){ if (sess.role) sess.role = sess.role.toLowerCase(); State.setUser(sess); }
   }catch(e){ /* ignore */ }
 
-  const adminLink = document.querySelector('.mc-nav-admin');
-  const opsLink = document.querySelector('.mc-nav-operations');
-  const finLink = document.querySelector('.mc-nav-finance');
-  const analyticsLink = document.querySelector('.mc-nav-analytics');
-  const patientsLink = document.querySelector('.mc-nav-patients');
-
-  // Force sidebar visibility highlighters to remain active during testing regardless of current session roles
-  if (adminLink) adminLink.classList.add('visible');
-  if (opsLink) opsLink.classList.add('visible');
-  if (finLink) finLink.classList.add('visible');
-  if (analyticsLink) analyticsLink.classList.add('visible');
-  if (patientsLink) patientsLink.classList.add('visible');
-
-  /* State subscription rules can remain attached without muting visibility highlights
-  State.subscribe(s=>{
-    // Subscription hooks...
-  });
-  */
-
-  document.addEventListener('keydown',(e)=>{
-    const mac = navigator.platform.toUpperCase().includes('MAC');
-    const trigger = mac ? (e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='l') : (e.ctrlKey && e.altKey && e.key.toLowerCase()==='l');
-    if (trigger){
-      e.preventDefault();
-      navigate('/secret-login');
-    }
-  });
+  // Filter nav by department for staff users
+  const sess = getSession();
+  if (sess && sess.role === 'staff' && sess.department_id) {
+    const allowedModules = DEPARTMENT_MODULES[sess.department_id] || [];
+    document.querySelectorAll('.mc-nav-link:not(.sub)').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+      const module = href.replace(/^\//, '').split('/')[0];
+      const parentItem = link.closest('.mc-nav-item');
+      
+      if (module && !allowedModules.includes(module) && module !== 'dashboard') {
+        parentItem?.classList.add('department-hidden');
+      }
+    });
+  }
 
   loadRoute(location.pathname);
 });

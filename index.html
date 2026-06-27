@@ -32,7 +32,7 @@
       <!-- NEW PROFILE CIRCLE DROPDOWN -->
       <div class="mc-profile" id="profile" tabindex="0" aria-haspopup="menu" aria-label="User menu">
         <div class="mc-avatar-circle" id="profile-btn" role="button" aria-label="Open user profile menu">
-          <span>U</span> <!-- Initial / Avatar Placeholder -->
+          <span>U</span>
         </div>
         <ul class="mc-profile-menu" role="menu" aria-label="Profile menu">
           <li role="none"><a href="/profile" class="mc-profile-item" role="menuitem">👤 View Profile</a></li>
@@ -143,88 +143,6 @@
     </div>
 
   </div>
-
-<script type="module">
-import State from '/src/js/state.js';
-import { getSession } from '/js/auth.js';
-import { DEPARTMENT_MODULES, MODULE_PERMISSIONS, ROLES } from '/js/auth.js';
-
-// Profile menu toggle
-document.addEventListener('DOMContentLoaded', () => {
-  const profile = document.getElementById('profile');
-  const profileBtn = document.getElementById('profile-btn');
-  
-  profileBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    profile.classList.toggle('menu-active');
-  });
-  
-  document.addEventListener('click', () => profile.classList.remove('menu-active'));
-  
-  // Dropdown toggle functionality
-  document.querySelectorAll('.mc-nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const parentLi = link.closest('.mc-nav-item');
-      const dropdown = parentLi?.querySelector('.mc-nav-dropdown');
-      if (dropdown) {
-        e.preventDefault();
-        document.querySelectorAll('.mc-nav-item').forEach(li => {
-          if (li !== parentLi) li.classList.remove('expanded');
-        });
-        parentLi.classList.toggle('expanded');
-      }
-    });
-  });
-  
-  // Sign out
-  document.getElementById('profile-signout')?.addEventListener('click', () => {
-    import('/js/auth.js').then(({ logout }) => logout());
-  });
-  
-  // Initialize user session
-  try {
-    const sess = getSession();
-    if (sess) {
-      if (sess.role) sess.role = sess.role.toLowerCase();
-      State.setUser(sess);
-    }
-  } catch(e) {}
-  
-  // Filter nav by department for staff users
-  filterNavByDepartment();
-});
-
-function filterNavByDepartment() {
-  const session = getSession();
-  if (!session) return;
-  
-  const userRole = session.role;
-  const userDept = session.department_id;
-  
-  // For staff users, filter nav links by department
-  if (userRole === 'staff' && userDept && DEPARTMENT_MODULES[userDept]) {
-    const allowedModules = DEPARTMENT_MODULES[userDept];
-    document.querySelectorAll('.mc-nav-link:not(.sub)').forEach(link => {
-      const href = link.getAttribute('href');
-      if (!href) return;
-      const module = href.replace(/^\//, '').split('/')[0];
-      const parentItem = link.closest('.mc-nav-item');
-      
-      // Always show dashboard and home
-      if (module === 'dashboard' || module === 'admin') {
-        if (parentItem) parentItem.classList.add('visible');
-        return;
-      }
-      
-      // Check if module is in allowed list
-      if (allowedModules.includes(module)) {
-        if (parentItem) parentItem.classList.add('visible');
-      } else {
-        if (parentItem) parentItem.classList.add('department-hidden');
-      }
-    });
-  }
-}
-</script>
+<script type="module" src="/src/js/router.js"></script>
 </body>
 </html>

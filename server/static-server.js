@@ -11,6 +11,7 @@ const financeController = require('./controllers/financeController');
 const operationsController = require('./controllers/operationsController');
 const analyticsController = require('./controllers/analyticsController');
 const activitiesController = require('./controllers/activitiesController');
+const dashboardController = require('./controllers/dashboardController');
 const labOrdersController = require('./controllers/labOrdersController');
 const encountersController = require('./controllers/encountersController');
 const notificationsController = require('./controllers/notificationsController');
@@ -89,7 +90,7 @@ function sendSecureJSON(res, status, data) {
 
 const { verifyToken } = require('./utils/jwt');
 
-const AUTH_ROLES  = ['role_dev', 'role_nurse', 'admin', 'role_admin', 'staff', 'lead', 'supervisor', 'director'];
+const AUTH_ROLES  = ['role_dev', 'role_nurse', 'admin', 'role_admin', 'staff', 'lead', 'supervisor', 'director', 'role_finance'];
 const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
 
 function enforceRole(allowedRoles, handler) {
@@ -281,6 +282,10 @@ const server = http.createServer((req, res) => {
 
     if (url.startsWith('/api/activities')) {
       if (req.method === 'GET' && url === '/api/activities') return enforceRole(AUTH_ROLES, activitiesController.handleList)(req, res);
+    }
+
+    if (url.startsWith('/api/dashboard')) {
+      if (req.method === 'GET' && url === '/api/dashboard') return enforceRole(AUTH_ROLES, dashboardController.handleDashboard)(req, res);
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });
