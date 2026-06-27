@@ -91,7 +91,7 @@ function updateActiveLinks(path) {
   if (exactMatch) {
     exactMatch.classList.add('active');
     if (exactMatch.classList.contains('sub')) {
-      document.getElementById('nav-dashboard-item')?.classList.add('expanded');
+      exactMatch.closest('.mc-nav-item')?.classList.add('expanded');
     }
   } else {
     const feature = routeNameFromPath(path);
@@ -185,20 +185,20 @@ document.addEventListener('click', (e)=>{
   const href = a.getAttribute('href');
   if (!href || !href.startsWith('/')) return;
   
+  // Profile menu click outside sidebar
+  if (a.classList.contains('mc-profile-item')) return;
+  
+  // Handle dropdown parent links - first click opens dropdown, keep it open
   const parentItem = a.closest('.mc-nav-item');
   const dropdown = parentItem?.querySelector('.mc-nav-dropdown');
   
-  // If this link has a dropdown, toggle it instead of navigating
   if (dropdown && !a.classList.contains('sub')) {
-    e.preventDefault();
     document.querySelectorAll('.mc-nav-item').forEach(li => {
       if (li !== parentItem) li.classList.remove('expanded');
     });
     parentItem.classList.toggle('expanded');
-    if (!parentItem.classList.contains('expanded')) {
-      // First click just opens dropdown, second navigates
-      return;
-    }
+    // Don't navigate on parent click - let user select submenu item
+    return;
   }
   
   e.preventDefault();
