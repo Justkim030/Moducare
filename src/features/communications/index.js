@@ -49,7 +49,7 @@ function buildShell() {
           <h3>Select a conversation</h3>
           <p>Choose a patient from the left to view messages, or start a new thread.</p>
         </div>
-        <div id="thread-content" style="display:none;">
+        <div id="thread-content" class="hidden">
           <div class="thread-header">
             <h3 id="thread-patient-name">Patient</h3>
             <span class="badge badge-neutral" id="thread-patient-id"></span>
@@ -58,7 +58,7 @@ function buildShell() {
           <div class="thread-composer">
             <textarea id="thread-input" class="input" rows="2" placeholder="Type a message..."></textarea>
             <div class="thread-composer-actions">
-              <select id="thread-channel" class="input" style="width:auto;">
+              <select id="thread-channel" class="input w-auto">
                 <option value="sms">SMS</option>
                 <option value="whatsapp">WhatsApp</option>
                 <option value="email">Email</option>
@@ -71,8 +71,8 @@ function buildShell() {
       </div>
     </div>
 
-    <div id="comm-modal" class="modal-overlay" style="display:none;">
-      <div class="modal-card" style="max-width: 500px;">
+<div id="comm-modal" class="modal-overlay hidden">
+       <div class="modal-card modal-card--md">
         <div class="modal-header">
           <h2>New Message Thread</h2>
           <button class="modal-close" id="close-comm-modal">&times;</button>

@@ -20,6 +20,7 @@
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
+.modal-overlay[hidden],
 .modal-overlay.hidden { display: none; }
 
 @keyframes fadeIn {
@@ -44,6 +45,25 @@
 .modal--lg { max-width: 720px; }
 .modal--xl { max-width: 960px; }
 .modal--incident { max-width: 640px; }
+
+/* Alias for backwards compatibility */
+.modal-card {
+  background: var(--surface-card);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn var(--duration-slow) var(--ease-out);
+  overflow: hidden;
+}
+.modal-card--sm { max-width: 380px; }
+.modal-card--md { max-width: 560px; }
+.modal-card--lg { max-width: 720px; }
+.modal-card--xl { max-width: 960px; }
+.modal-card--incident { max-width: 640px; }
 
 @keyframes modalIn {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }

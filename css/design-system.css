@@ -232,6 +232,7 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.25; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-6); }
 
 .w-full { width: 100%; }
+.w-auto { width: auto; }
 .h-full { height: 100%; }
 .sr-only {
   position: absolute; width: 1px; height: 1px;
