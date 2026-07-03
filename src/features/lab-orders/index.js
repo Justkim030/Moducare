@@ -9,8 +9,8 @@ let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const l = document.createElement('link');
-  l.rel = 'stylesheet';
-  l.href = 'src/features/lab-orders/styles.css';
+l.rel = 'stylesheet';
+   l.href = '/src/features/lab-orders/styles.css';
   document.head.appendChild(l);
   _cssLoaded = true;
 }

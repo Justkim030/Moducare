@@ -1,3 +1,6 @@
-
 node_modules/
 .env
+.claude/
+.playwright-mcp/
+*.png
+CONTINUATION_PROMPT.md

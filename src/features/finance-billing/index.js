@@ -9,8 +9,8 @@ let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const l = document.createElement('link');
-  l.rel = 'stylesheet'; 
-  l.href = 'features/finance-billing/finance-billing.css';
+l.rel = 'stylesheet'; 
+   l.href = '/src/features/finance-billing/finance-billing.css';
   document.head.appendChild(l); 
   _cssLoaded = true;
 }
@@ -29,9 +29,8 @@ window.__TIMESHEETS_DATA = [];
 
 async function loadTimesheets() {
   try {
-    const res = await apiFetch('//finance');
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
+    const data = await apiFetch('/finance');
+    if (!data.ok) throw new Error(data?.error || 'Failed');
     window.__TIMESHEETS_DATA = (data.records || []).map(r => {
       const rateInfo = RATES[r.type] || RATES['Administrative'];
       const hours = rateInfo.unit === '15-min'

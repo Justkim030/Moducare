@@ -38,7 +38,10 @@ function handleDashboard(req, res) {
                         stats.audit = row && !err ? row.value : 0;
                         db.get(`SELECT SUM(amount) as value FROM finance WHERE status = 'pending'`, (err, row) => {
                           stats.finance = row && !err && row.value ? row.value : 0;
-                          return sendSecureJSON(res, 200, { ok: true, stats });
+                          db.get(`SELECT COUNT(*) as value FROM employees`, (err, row) => {
+                            stats.staffCount = row && !err ? row.value : 0;
+                            return sendSecureJSON(res, 200, { ok: true, stats });
+                          });
                         });
                       });
                     });

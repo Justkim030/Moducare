@@ -73,7 +73,7 @@ export const DASHBOARD_PROFILES = {
     description: 'Department oversight, compliance, and resource planning.',
     cards: [
       { id: 'compliance', title: 'Compliance', route: '/audit-compliance', icon: '🛡️', data: 'totalIncidents', module: 'audit-compliance' },
-      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'patients', module: 'patients' },
+      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'staffCount', module: 'patients' },
       { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
@@ -86,7 +86,7 @@ export const DASHBOARD_PROFILES = {
     cards: [
       { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations', module: 'operations-tasks' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
-      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'patients', module: 'patients' },
+      { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'staffCount', module: 'patients' },
       { id: 'incidents', title: 'Risk / Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
@@ -98,7 +98,7 @@ export const DASHBOARD_PROFILES = {
     cards: [
       { id: 'users', title: 'Users', route: '/admin', icon: '👤', data: 'users', module: 'system-admin' },
       { id: 'audit', title: 'Audit Logs', route: '/audit-compliance', icon: '📝', data: 'audit', module: 'audit-compliance' },
-      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'audit', module: 'operations-tasks' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
@@ -139,12 +139,27 @@ export function getSession() {
                 || localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const session = JSON.parse(raw);
-    // Validate expiry
+    if (!session.token) { clearSession(); return null; }
+    const decoded = decodeToken(session.token);
+    if (!decoded || (decoded.exp && Date.now() >= decoded.exp * 1000)) {
+      clearSession();
+      return null;
+    }
     if (session.expiresAt && Date.now() > session.expiresAt) {
       clearSession();
       return null;
     }
     return session;
+  } catch {
+    return null;
+  }
+}
+
+function decodeToken(token) {
+  try {
+    const payload = token.split('.')[1];
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(json);
   } catch {
     return null;
   }

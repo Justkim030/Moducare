@@ -5,10 +5,10 @@
 import { apiFetch, escapeHTML, formatCurrency } from '../../../js/utils.js';
 import { getDashboardProfile } from '../../../js/auth.js';
 
-export async function init(mount, State) {
+export async function init(mount, State, subView) {
   const path = window.location.pathname;
   const segments = path.split('/');
-  const subView = segments[2] || 'overview';
+  const viewId = subView && subView !== 'dashboard' ? subView : (segments[2] || 'overview');
 
   const user = State?.getUser?.();
   const profile = getDashboardProfile(user?.role, user?.department_id);
@@ -19,7 +19,7 @@ export async function init(mount, State) {
   if (subtitle) subtitle.textContent = profile.description;
 
   renderRoleCards(mount, profile.cards);
-  switchView(mount, subView);
+  switchView(mount, viewId);
   await loadDashboardData(mount);
 
   return {
@@ -52,8 +52,7 @@ function switchView(mount, viewId) {
 
 async function loadDashboardData(mount) {
   try {
-    const statsResp = await fetch('/api/dashboard');
-    const result = statsResp.ok ? await statsResp.json() : {};
+    const result = await apiFetch('/dashboard');
     const stats = result.stats || {};
 
     document.querySelectorAll('.role-card__metric').forEach(el => {
@@ -96,6 +95,37 @@ async function loadDashboardData(mount) {
               </div>
             </div>`).join('')
         : '<p class="mc-muted">No upcoming appointments found.</p>';
+    }
+
+    const kpiRev = mount.querySelector('#kpi-revenue');
+    const kpiCost = mount.querySelector('#kpi-costs');
+    if (kpiRev || kpiCost) {
+      const fin = await apiFetch('/finance').catch(() => ({ ok: false }));
+      const records = fin.records || [];
+      const revenue = records.filter(r => r.status === 'paid').reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+      const costs = records.filter(r => r.status === 'pending').reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+      if (kpiRev) kpiRev.textContent = 'KSh ' + revenue.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      if (kpiCost) kpiCost.textContent = 'KSh ' + costs.toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    const quickForm = mount.querySelector('#incident-form');
+    if (quickForm) {
+      quickForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = mount.querySelector('#inc-title')?.value.trim();
+        const patient = mount.querySelector('#inc-patient')?.value.trim();
+        if (!title) return showToast('Title is required', 'error');
+        try {
+          await apiFetch('/incidents', {
+            method: 'POST',
+            body: JSON.stringify({ title, description: patient ? `Patient: ${patient}` : '', status: 'Reported', severity: 'S3' })
+          });
+          showToast('Quick report submitted', 'success');
+          quickForm.reset();
+        } catch (err) {
+          showToast(err.message || 'Failed to submit report', 'error');
+        }
+      });
     }
 
   } catch (err) {

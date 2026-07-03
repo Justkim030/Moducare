@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { validateEmail, validateRequired } = require('../middleware/validation');
 const { signToken, verifyToken } = require('../utils/jwt');
+const { resetRateLimit } = require('../middleware/rateLimit');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -84,6 +85,8 @@ async function handleLogin(req, res) {
         };
 
         const token = signToken(safeUserSession);
+
+        resetRateLimit(req);
 
         return sendSecureJSON(res, 200, { ok: true, user: safeUserSession, token });
       });

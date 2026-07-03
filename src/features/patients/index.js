@@ -12,15 +12,14 @@ export async function init(mount) {
 }
 
 async function renderTable(mount, query = '') {
-  const qs = query ? `?q=${encodeURIComponent(query)}` : '';
-  const body = mount.querySelector('#patient-table-body');
-  const empty = mount.querySelector('#patient-empty');
-  const count = mount.querySelector('#patient-count');
+   const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+   const body = mount.querySelector('#patient-table-body');
+   const empty = mount.querySelector('#patient-empty');
+   const count = mount.querySelector('#patient-count');
 
-  try {
-    const data = await apiFetch('/patients');
-    const res = { ok: true, json: async () => data };
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
+   try {
+     const data = await apiFetch('/patients');
+     if (!data.ok) throw new Error(data?.error || 'Failed');
 
     const patients = data.patients || [];
     if (count) count.textContent = `${patients.length} patient${patients.length === 1 ? '' : 's'}`;

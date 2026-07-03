@@ -1,0 +1,35 @@
+.settings-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5, 20px);
+  animation: schedFadeIn 0.25s ease-out;
+}
+.settings-layout h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #111);
+  margin: 0;
+}
+.settings-card {
+  padding: var(--sp-4, 16px);
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: var(--border-radius-md, 8px);
+}
+.settings-section {
+  margin-top: var(--sp-4, 16px);
+}
+.settings-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #111);
+  margin: 0 0 8px 0;
+}
+.setting-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary, #555);
+  margin-bottom: 6px;
+}

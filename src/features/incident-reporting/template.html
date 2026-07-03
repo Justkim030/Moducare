@@ -1,62 +1,56 @@
-<div class="mc-feature-layout">
-  <div class="flex justify-between items-center mb-sp-4">
+<div class="ir-layout">
+  <div class="ir-header">
     <div>
-      <h1 class="text-xl font-bold">Clinical Incident Reporting</h1>
-      <p class="text-secondary">Hospital Patient Safety &amp; Operational Quality Assurance Log</p>
+      <h2 class="ir-title">Clinical Incident Reporting</h2>
+      <p class="ir-subtitle">Hospital Patient Safety &amp; Operational Quality Assurance Log</p>
     </div>
-    <button class="btn btn-primary" id="btn-new-incident">🚨 Log New Incident</button>
+    <button class="mc-btn btn-primary" id="btn-new-incident">+ Log New Incident</button>
   </div>
 
-  <div class="grid grid-4 gap-sp-4 mb-sp-6">
-    <div class="card stat-card">
-      <div class="text-secondary font-medium">Total Tracked</div>
-      <div class="text-2xl font-bold" id="stat-total">0</div>
+  <div class="ir-stats">
+    <div class="ir-stat-card">
+      <div class="ir-stat-label">Total Tracked</div>
+      <div class="ir-stat-value" id="stat-total">0</div>
     </div>
-    <div class="card stat-card border-left-danger">
-      <div class="text-secondary font-medium">Active Reviews</div>
-      <div class="text-2xl font-bold text-danger" id="stat-review">0</div>
+    <div class="ir-stat-card ir-stat-review">
+      <div class="ir-stat-label">Active Reviews</div>
+      <div class="ir-stat-value" id="stat-review">0</div>
     </div>
-    <div class="card stat-card">
-      <div class="text-secondary font-medium">Critical (S1/S2)</div>
-      <div class="text-2xl font-bold text-warning" id="stat-critical">0</div>
+    <div class="ir-stat-card ir-stat-critical">
+      <div class="ir-stat-label">Critical (S1/S2)</div>
+      <div class="ir-stat-value" id="stat-critical">0</div>
     </div>
-    <div class="card stat-card">
-      <div class="text-secondary font-medium">Closed / Resolved</div>
-      <div class="text-2xl font-bold text-success" id="stat-closed">0</div>
+    <div class="ir-stat-card ir-stat-closed">
+      <div class="ir-stat-label">Closed / Resolved</div>
+      <div class="ir-stat-value" id="stat-closed">0</div>
     </div>
   </div>
 
   <div class="ir-toolbar">
-    <input type="search" class="input ir-search" id="ir-search" placeholder="Search by title, type, reporter, patient ID…" />
-    <select class="ir-select" id="ir-filter-category">
+    <input type="search" class="input ir-search" id="ir-search" placeholder="Search incidents..." />
+    <select class="input ir-select" id="ir-filter-category">
       <option value="">All Categories</option>
-      <option>Patient Safety (Falls, Medication Error)</option>
-      <option>Clinical Near-Miss</option>
-      <option>Equipment &amp; Facilities Malfunction</option>
-      <option>Infection Control Breach</option>
-      <option>Staff Safety / Needle Stick</option>
-      <option>Patient Complaint / Conduct</option>
     </select>
-    <select class="ir-select" id="ir-filter-severity">
+    <select class="input ir-select" id="ir-filter-severity">
       <option value="">All Severity</option>
-      <option value="S1">S1 – Catastrophic</option>
-      <option value="S2">S2 – Major</option>
-      <option value="S3">S3 – Moderate</option>
-      <option value="S4">S4 – Minor</option>
-      <option value="S5">S5 – Near-Miss</option>
+      <option value="S1">S1 - Catastrophic</option>
+      <option value="S2">S2 - Severe Harm</option>
+      <option value="S3">S3 - Moderate Harm</option>
+      <option value="S4">S4 - Minor Harm</option>
+      <option value="S5">S5 - Near-Miss / No Harm</option>
     </select>
-    <select class="ir-select" id="ir-filter-status">
+    <select class="input ir-select" id="ir-filter-status">
       <option value="">All Statuses</option>
       <option>Reported</option>
       <option>Under Review</option>
       <option>Action Taken</option>
       <option>Closed</option>
     </select>
-    <button class="mc-btn" id="ir-export-btn">Export CSV</button>
+    <button class="mc-btn btn-ghost" id="ir-export-btn">Export CSV</button>
   </div>
 
-  <div class="card p-0">
-    <table class="table" id="incident-table">
+  <div class="ir-table-card">
+    <table class="mc-table ir-table">
       <thead>
         <tr>
           <th data-sort="id">ID</th>
@@ -73,11 +67,11 @@
   </div>
 </div>
 
-<div id="incident-modal-root" class="mc-modal-backdrop hidden">
-  <div class="card p-sp-6 modal-surface">
-    <div class="flex justify-between items-center mb-sp-4">
-      <h3 id="modal-title" class="text-lg font-bold">Log Clinical Incident</h3>
-      <button class="btn btn-icon" id="modal-close">✕</button>
+<div id="incident-modal-root" class="modal-overlay" style="display:none;">
+  <div class="modal-card" style="max-width:640px;">
+    <div class="modal-header">
+      <h2 id="modal-title">Log Clinical Incident</h2>
+      <button class="modal-close" id="modal-close">&times;</button>
     </div>
     <div id="modal-body-content"></div>
   </div>

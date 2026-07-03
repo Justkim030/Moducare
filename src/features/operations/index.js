@@ -10,7 +10,7 @@ let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const l = document.createElement('link');
-  l.rel = 'stylesheet';   l.href = 'src/features/operations/operations-tasks.css';
+  l.rel = 'stylesheet';   l.href = '/src/features/operations/operations-tasks.css';
   document.head.appendChild(l); _cssLoaded = true;
 }
 
@@ -206,48 +206,51 @@ function renderBoard(container) {
 }
 
 function taskCard(t) {
-  const p = PRIORITIES[t.priority] || PRIORITIES.medium;
-  const overdue = t.due && new Date(t.due) < new Date() && t.status !== 'completed';
-  return `<div class="task-card">
-    <div class="task-card__header">
-      <span class="badge" style="background:${p.bg};color:${p.color};font-size:0.6875rem">${p.label}</span>
-      ${overdue?`<span class="badge badge-danger" style="font-size:0.6875rem">Overdue</span>`:''}
-    </div>
-    <div class="task-card__title">${escapeHTML(t.title)}</div>
-    <div class="task-card__meta">
-      <span>📂 ${escapeHTML(t.dept)}</span>
-      ${t.due?`<span>📅 ${formatDate(t.due)}</span>`:''}
-    </div>
-    ${t.assignee?`<div class="task-card__assignee"><div class="avatar avatar-sm">${t.assignee.split(' ').map(p=>p[0]).join('')}</div><span>${escapeHTML(t.assignee)}</span></div>`:''}
-    ${t.tags.length?`<div class="task-card__tags">${t.tags.map(tag=>`<span class="badge badge-neutral" style="font-size:0.6875rem">${escapeHTML(tag)}</span>`).join('')}</div>`:''}
-  </div>`;
-}
+   const p = PRIORITIES[t.priority] || PRIORITIES.medium;
+   const dept = t.department || t.dept || 'Operations';
+   const overdue = t.due && new Date(t.due) < new Date() && t.status !== 'completed';
+   return `<div class="task-card">
+     <div class="task-card__header">
+       <span class="badge" style="background:${p.bg};color:${p.color};font-size:0.6875rem">${p.label}</span>
+       ${overdue?`<span class="badge badge-danger" style="font-size:0.6875rem">Overdue</span>`:''}
+     </div>
+     <div class="task-card__title">${escapeHTML(t.title)}</div>
+     <div class="task-card__meta">
+       <span>📂 ${escapeHTML(dept)}</span>
+       ${t.due?`<span>📅 ${formatDate(t.due)}</span>`:''}
+     </div>
+     ${t.assignee?`<div class="task-card__assignee"><div class="avatar avatar-sm">${t.assignee.split(' ').map(p=>p[0]).join('')}</div><span>${escapeHTML(t.assignee)}</span></div>`:''}
+     ${t.tags.length?`<div class="task-card__tags">${t.tags.map(tag=>`<span class="badge badge-neutral" style="font-size:0.6875rem">${escapeHTML(tag)}</span>`).join('')}</div>`:''}
+   </div>`;
+ }
 
-function taskRow(t) {
-  const p  = PRIORITIES[t.priority]||PRIORITIES.medium;
-  const s  = STATUSES.find(x=>x.id===t.status)||STATUSES[0];
-  const overdue = t.due && new Date(t.due)<new Date() && t.status!=='completed';
-  return `<tr>
-    <td style="font-weight:500;max-width:280px">${escapeHTML(t.title)}
-      ${overdue?`<span class="badge badge-danger" style="font-size:0.6875rem;margin-left:6px">Overdue</span>`:''}
-    </td>
-    <td class="text-secondary">${escapeHTML(t.dept)}</td>
-    <td><span class="badge" style="background:${p.bg};color:${p.color}">${p.label}</span></td>
-    <td><span class="badge" style="background:${s.bg};color:${s.color}">${s.label}</span></td>
-    <td class="text-secondary">${t.assignee||'—'}</td>
-    <td class="text-secondary text-sm">${t.due?formatDate(t.due):'—'}</td>
-  </tr>`;
-}
+ function taskRow(t) {
+   const p  = PRIORITIES[t.priority]||PRIORITIES.medium;
+   const s  = STATUSES.find(x=>x.id===t.status)||STATUSES[0];
+   const dept = t.department || t.dept || 'Operations';
+   const overdue = t.due && new Date(t.due)<new Date() && t.status!=='completed';
+   return `<tr>
+     <td style="font-weight:500;max-width:280px">${escapeHTML(t.title)}
+       ${overdue?`<span class="badge badge-danger" style="font-size:0.6875rem;margin-left:6px">Overdue</span>`:''}
+     </td>
+     <td class="text-secondary">${escapeHTML(dept)}</td>
+     <td><span class="badge" style="background:${p.bg};color:${p.color}">${p.label}</span></td>
+     <td><span class="badge" style="background:${s.bg};color:${s.color}">${s.label}</span></td>
+     <td class="text-secondary">${t.assignee||'—'}</td>
+     <td class="text-secondary text-sm">${t.due?formatDate(t.due):'—'}</td>
+   </tr>`;
+ }
 
-function filterTasks() {
-  return TASKS.filter(t => {
-    const q = _state.search.toLowerCase();
-    const matchQ  = !q || t.title.toLowerCase().includes(q) || t.dept.toLowerCase().includes(q) || (t.assignee||'').toLowerCase().includes(q);
-    const matchSt = _state.filterStatus==='all' || t.status===_state.filterStatus;
-    const matchPr = _state.filterPriority==='all' || t.priority===_state.filterPriority;
-    return matchQ && matchSt && matchPr;
-  });
-}
+ function filterTasks() {
+   return TASKS.filter(t => {
+     const q = _state.search.toLowerCase();
+     const dept = (t.department || t.dept || '').toLowerCase();
+     const matchQ  = !q || t.title.toLowerCase().includes(q) || dept.includes(q) || (t.assignee||'').toLowerCase().includes(q);
+     const matchSt = _state.filterStatus==='all' || t.status===_state.filterStatus;
+     const matchPr = _state.filterPriority==='all' || t.priority===_state.filterPriority;
+     return matchQ && matchSt && matchPr;
+   });
+ }
 
 function bindEvents(container) {
   // Search
@@ -277,22 +280,30 @@ function bindEvents(container) {
   container.querySelector('#task-modal-cancel')?.addEventListener('click', close);
   modal?.addEventListener('click', e => { if(e.target===modal) close(); });
 
-  container.querySelector('#task-modal-save')?.addEventListener('click', () => {
-    const title = container.querySelector('#t-title')?.value.trim();
-    if (!title) { showToast('Task title is required.','warning'); return; }
-    TASKS.unshift({
-      id: 't'+Date.now(),
-      title,
-      dept:     container.querySelector('#t-dept')?.value||'Operations',
-      priority: container.querySelector('#t-priority')?.value||'medium',
-      status:   'referred',
-      assignee: container.querySelector('#t-assignee')?.value.trim()||'',
-      due:      container.querySelector('#t-due')?.value||'',
-      tags:     [],
-      notes:    container.querySelector('#t-notes')?.value.trim()||'',
-    });
-    close();
-    renderBoard(container);
-    showToast('Task created successfully.','success');
-  });
-}
+container.querySelector('#task-modal-save')?.addEventListener('click', async () => {
+     const title = container.querySelector('#t-title')?.value.trim();
+     if (!title) { showToast('Task title is required.','warning'); return; }
+     try {
+       const data = await apiFetch('/operations', {
+         method: 'POST',
+         body: JSON.stringify({
+           title,
+           description: container.querySelector('#t-notes')?.value.trim() || '',
+           department: container.querySelector('#t-dept')?.value || 'Operations',
+           priority: container.querySelector('#t-priority')?.value || 'medium',
+           status: 'referred',
+           assignee: container.querySelector('#t-assignee')?.value.trim() || '',
+           due: container.querySelector('#t-due')?.value || '',
+           tags: [],
+           notes: container.querySelector('#t-notes')?.value.trim() || '',
+         })
+       });
+       if (!data.ok) throw new Error(data?.error || 'Failed');
+       showToast('Task created successfully.', 'success');
+       close();
+       loadOperations();
+     } catch (e) {
+       showToast(e.message || 'Failed to create task', 'error');
+     }
+   });
+ }

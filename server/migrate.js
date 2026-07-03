@@ -39,6 +39,7 @@ function executeSchemaMigration() {
     db.run(`DROP TABLE IF EXISTS activities`);
     db.run(`DROP TABLE IF EXISTS finance`);
     db.run(`DROP TABLE IF EXISTS appointments`);
+    db.run(`DROP TABLE IF EXISTS events`);
     db.run(`DROP TABLE IF EXISTS patients`);
     db.run(`DROP TABLE IF EXISTS employees`);
     db.run(`DROP TABLE IF EXISTS roles`);
@@ -205,6 +206,22 @@ function executeSchemaMigration() {
       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     )`);
 
+    // 6a. Events (staff shifts, meetings, holidays, calendar events)
+    db.run(`CREATE TABLE events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      start_time TEXT NOT NULL,
+      end_time TEXT,
+      type TEXT DEFAULT 'shift',
+      status TEXT DEFAULT 'scheduled',
+      employee_id TEXT,
+      color TEXT DEFAULT '#3b82f6',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE SET NULL
+    )`);
+
     // 7. Finance
     db.run(`CREATE TABLE finance (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -300,6 +317,12 @@ function executeSchemaMigration() {
       status TEXT NOT NULL,
       severity TEXT NOT NULL,
       employee_id TEXT,
+      category TEXT,
+      patient_id TEXT,
+      time TEXT,
+      reporter_role TEXT,
+      action_taken TEXT,
+      witness_name TEXT,
       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE SET NULL
     )`);
 

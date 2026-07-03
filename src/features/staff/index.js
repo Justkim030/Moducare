@@ -10,8 +10,8 @@ let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'src/features/staff/hr-staff.css';
+link.rel = 'stylesheet';
+   link.href = '/src/features/staff/hr-staff.css';
   document.head.appendChild(link);
   _cssLoaded = true;
 }
@@ -27,9 +27,8 @@ async function loadStaff() {
     'admin': 'admin'
   };
   try {
-    const res = await apiFetch('/users');
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
+    const data = await apiFetch('/users');
+    if (!data.ok) throw new Error(data?.error || 'Failed');
     window.__STAFF_DATA = (data.users || []).map(u => ({
       id: u.id,
       name: u.name,

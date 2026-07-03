@@ -1,5 +1,6 @@
 import State from './state.js';
 import { getSession, DEPARTMENT_MODULES } from '../../js/auth.js';
+import { showToast } from '../../js/utils.js';
 import './sidebar.js';
 
 const outlet = document.getElementById('app-content');
@@ -99,56 +100,56 @@ function updateActiveLinks(path) {
   }
 }
 
-async function loadFeature(name){
-  const prev = document.querySelector('link[data-feature-styles]');
-  if (prev) prev.remove();
-  
-  try{
-    if (activeFeature && typeof activeFeature.destroy === 'function'){
-      activeFeature.destroy();
-    }
-  }catch(e){ console.warn('Error during feature destroy', e); }
-  activeFeature = null;
+async function loadFeature(name, subView){
+   const prev = document.querySelector('link[data-feature-styles]');
+   if (prev) prev.remove();
+   
+   try{
+     if (activeFeature && typeof activeFeature.destroy === 'function'){
+       activeFeature.destroy();
+     }
+   }catch(e){ console.warn('Error during feature destroy', e); }
+   activeFeature = null;
 
-  try{
-    const modPromise = import(`/src/features/${name}/index.js`);
-    const tmplPromise = fetch(`/src/features/${name}/template.html`).then(r=>r.ok? r.text(): Promise.reject(r.status));
-    const cssHref = `/src/features/${name}/styles.css`;
+   try{
+     const modPromise = import(`/src/features/${name}/index.js`);
+     const tmplPromise = fetch(`/src/features/${name}/template.html`).then(r=>r.ok? r.text(): Promise.reject(r.status));
+     const cssHref = `/src/features/${name}/styles.css`;
 
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = cssHref;
-    link.setAttribute('data-feature-styles', name);
-    link.onerror = ()=> link.remove();
-    head.appendChild(link);
+     const link = document.createElement('link');
+     link.rel = 'stylesheet';
+     link.href = cssHref;
+     link.setAttribute('data-feature-styles', name);
+     link.onerror = ()=> link.remove();
+     head.appendChild(link);
 
-    const [mod, tmpl] = await Promise.all([modPromise, tmplPromise]);
+     const [mod, tmpl] = await Promise.all([modPromise, tmplPromise]);
 
-    const user = State.getUser();
-    const requiredRole = getRequiredRole(name);
-    if (requiredRole && (!user || !hasPermission(user.role, requiredRole))) {
-      showForbidden();
-      return;
-    }
+     const user = State.getUser();
+     const requiredRole = getRequiredRole(name);
+     if (requiredRole && (!user || !hasPermission(user.role, requiredRole))) {
+       showForbidden();
+       return;
+     }
 
-    const targetOutlet = AUTH_ROUTES.includes(name)
-      ? document.getElementById('mc-app')
-      : outlet;
+     const targetOutlet = AUTH_ROUTES.includes(name)
+       ? document.getElementById('mc-app')
+       : outlet;
 
-    if (targetOutlet) {
-      targetOutlet.innerHTML = tmpl;
-      if (mod && typeof mod.init === 'function') {
-        try{
-          const inst = await mod.init(targetOutlet, State);
-          if (inst && typeof inst.destroy === 'function') activeFeature = inst;
-        }catch(e){ console.error('Feature init error', e); }
-      }
-    }
-  }catch(err){
-    show404(name);
-    console.error('Feature load error', err);
-  }
-}
+     if (targetOutlet) {
+       targetOutlet.innerHTML = tmpl;
+       if (mod && typeof mod.init === 'function') {
+         try{
+           const inst = await mod.init(targetOutlet, State, subView);
+           if (inst && typeof inst.destroy === 'function') activeFeature = inst;
+         }catch(e){ console.error('Feature init error', e); }
+       }
+     }
+   }catch(err){
+     show404(name);
+     console.error('Feature load error', err);
+   }
+ }
 
 function show404(name){
   outlet.innerHTML = `<section aria-labelledby="notfound-title"><h2 id="notfound-title">404 — Not Found</h2><p>Module '${name}' not found.</p></section>`;
@@ -164,15 +165,16 @@ function navigate(path){
 }
 
 function loadRoute(path){
-  let name = routeNameFromPath(path);
+  const segments = path.replace(/^\/+|\/+$/g, '').split('/');
+  let name = segments[0] || 'dashboard';
+  let subView = null;
 
-  // Handle dropdown sub-routes - load parent feature
   const dropdownParents = ['dashboard', 'patients', 'staff', 'finance-billing', 'operations', 'clinical', 'communications'];
-  if (path.includes('/') && dropdownParents.some(p => name.startsWith(p))) {
+  if (path.includes('/') && dropdownParents.some(p => name === p)) {
+    subView = segments[1] || null;
     name = name.split('/')[0];
   }
 
-  // Redirect /login to the standalone login page
   if (name === 'login') {
     window.location.href = 'login.html';
     return;
@@ -182,7 +184,7 @@ function loadRoute(path){
   toggleAppShellVisibility(isAuthPage);
 
   updateActiveLinks(path);
-  loadFeature(name);
+  loadFeature(name, subView);
 }
 
 document.addEventListener('click', (e)=>{

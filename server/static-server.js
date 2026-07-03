@@ -19,6 +19,8 @@ const documentsController = require('./controllers/documentsController');
 const pharmacyController = require('./controllers/pharmacyController');
 const referralsController = require('./controllers/referralsController');
 const inventoryController = require('./controllers/inventoryController');
+const eventsController = require('./controllers/eventsController');
+const { checkRateLimit, resetRateLimit, checkBodySize } = require('./middleware/rateLimit');
 const db = require('./config/db');
 
 require('dotenv').config();
@@ -133,16 +135,32 @@ const server = http.createServer((req, res) => {
 
   if (url.startsWith('/api/')) {
     if (url === '/api/register' && req.method === 'POST') {
+      const rl = checkRateLimit(req);
+      if (!rl.allowed) {
+        res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': String(rl.retryAfter) });
+        return res.end(JSON.stringify({ ok: false, error: 'Too many requests. Please try again later.' }));
+      }
+      checkBodySize(req, res, 512 * 1024);
       return authController.handleRegister(req, res);
     }
 
     if (url === '/api/login' && req.method === 'POST') {
+      const rl = checkRateLimit(req);
+      if (!rl.allowed) {
+        res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': String(rl.retryAfter) });
+        return res.end(JSON.stringify({ ok: false, error: 'Too many login attempts. Please try again later.' }));
+      }
+      checkBodySize(req, res, 512 * 1024);
       return authController.handleLogin(req, res);
     }
 
     if (url === '/api/health' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ ok: true }));
+    }
+
+    if ((req.method === 'POST' || req.method === 'PUT') && !url.startsWith('/api/documents')) {
+      checkBodySize(req, res, 1024 * 1024);
     }
 
     if (url.startsWith('/api/users')) {
@@ -286,6 +304,14 @@ const server = http.createServer((req, res) => {
 
     if (url.startsWith('/api/dashboard')) {
       if (req.method === 'GET' && url === '/api/dashboard') return enforceRole(AUTH_ROLES, dashboardController.handleDashboard)(req, res);
+    }
+
+    if (url.startsWith('/api/events')) {
+      if (req.method === 'GET' && url.match(/\/api\/events\/[^/]+$/)) return enforceRole(AUTH_ROLES, eventsController.handleGet)(req, res);
+      if (req.method === 'GET' && url === '/api/events') return enforceRole(AUTH_ROLES, eventsController.handleList)(req, res);
+      if (req.method === 'POST' && url === '/api/events') return enforceRole(AUTH_ROLES, eventsController.handleCreate)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/events\/[^/]+$/)) return enforceRole(AUTH_ROLES, eventsController.handleUpdate)(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/events\/[^/]+$/)) return enforceRole(AUTH_ROLES, eventsController.handleDelete)(req, res);
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });

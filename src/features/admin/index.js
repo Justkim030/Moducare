@@ -1,4 +1,4 @@
-import { showToast, escapeHTML } from '../../../js/utils.js';
+import { showToast, escapeHTML, apiFetch } from '../../../js/utils.js';
 
 export async function init(mount, State) {
   mount.querySelector('#btn-new-user')?.addEventListener('click', () => openCreateModal(mount));
@@ -11,17 +11,16 @@ export async function init(mount, State) {
 }
 
 async function loadUsers(mount) {
-  const wrap = mount.querySelector('#users-table-wrap');
-  const empty = mount.querySelector('#users-empty');
-  wrap.innerHTML = '<tr><td colspan="5" class="mc-muted">Loading...</td></tr>';
-  empty?.classList.add('hidden');
+   const wrap = mount.querySelector('#users-table-wrap');
+   const empty = mount.querySelector('#users-empty');
+   wrap.innerHTML = '<tr><td colspan="5" class="mc-muted">Loading...</td></tr>';
+   empty?.classList.add('hidden');
 
-  try {
-    const res = await apiFetch('//users');
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
+   try {
+     const data = await apiFetch('/users');
+     if (!data.ok) throw new Error(data?.error || 'Failed');
 
-    const users = data.users || [];
+     const users = data.users || [];
     if (users.length === 0) {
       wrap.innerHTML = '';
       empty?.classList.remove('hidden');
@@ -97,14 +96,13 @@ async function openCreateModal(mount) {
 }
 
 async function openEditModal(mount, id) {
-  const title = mount.querySelector('#modal-title');
-  const body = mount.querySelector('#modal-body');
-  let user = null;
-  try {
-    const res = await apiFetch('//users');
-    const data = await res.json();
-    if (res.ok && data.ok) user = (data.users || []).find(u => u.id === id);
-  } catch (e) { user = null; }
+   const title = mount.querySelector('#modal-title');
+   const body = mount.querySelector('#modal-body');
+   let user = null;
+   try {
+     const data = await apiFetch('/users');
+     if (data.ok) user = (data.users || []).find(u => u.id === id);
+   } catch (e) { user = null; }
 
   if (!user) {
     showToast('User not found.', 'warning');
@@ -168,60 +166,52 @@ async function createUser(mount) {
   if (!pass || pass.length < 4) { if (errPass) errPass.textContent = 'Password must be 4+ characters.'; valid = false; } else { if (errPass) errPass.textContent = ''; }
   if (!valid) return;
 
-  try {
-    const res = await apiFetch('//users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password: pass, phone_number: phone, role_id: role })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
-    showToast('User created successfully.', 'success');
-    closeModal(mount);
-    loadUsers(mount);
-  } catch (e) {
-    showToast(e.message || 'Create failed.', 'error');
-  }
-}
+try {
+     const data = await apiFetch('/users', {
+       method: 'POST',
+       body: JSON.stringify({ name, email, password: pass, phone_number: phone, role_id: role })
+     });
+     if (!data.ok) throw new Error(data?.error || 'Failed');
+     showToast('User created successfully.', 'success');
+     closeModal(mount);
+     loadUsers(mount);
+   } catch (e) {
+     showToast(e.message || 'Create failed.', 'error');
+   }
+ }
 
 async function updateUser(mount, id) {
-  const name = mount.querySelector('#u-name')?.value.trim();
-  const email = mount.querySelector('#u-email')?.value.trim();
-  const pass = mount.querySelector('#u-pass')?.value;
-  const phone = mount.querySelector('#u-phone')?.value.trim();
-  const role = mount.querySelector('#u-role')?.value;
+   const name = mount.querySelector('#u-name')?.value.trim();
+   const email = mount.querySelector('#u-email')?.value.trim();
+   const pass = mount.querySelector('#u-pass')?.value;
+   const phone = mount.querySelector('#u-phone')?.value.trim();
+   const role = mount.querySelector('#u-role')?.value;
 
-  const payload = { name, email, role_id: role };
-  if (pass && pass.length >= 4) payload.password = pass;
+   const payload = { name, email, role_id: role };
+   if (pass && pass.length >= 4) payload.password = pass;
 
-  try {
-    const res = await fetch(`/api/users/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
-    showToast('User updated.', 'success');
-    closeModal(mount);
-    loadUsers(mount);
-  } catch (e) {
-    showToast(e.message || 'Update failed.', 'error');
-  }
-}
+   try {
+     const data = await apiFetch(`/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+     if (!data.ok) throw new Error(data?.error || 'Failed');
+     showToast('User updated.', 'success');
+     closeModal(mount);
+     loadUsers(mount);
+   } catch (e) {
+     showToast(e.message || 'Update failed.', 'error');
+   }
+ }
 
-async function deleteUser(mount, id) {
-  if (!confirm('Delete this user? Their patient/appointment relations must be cleared manually if needed.')) return;
-  try {
-    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed');
-    showToast('User deleted.', 'success');
-    loadUsers(mount);
-  } catch (e) {
-    showToast(e.message || 'Delete failed.', 'error');
-  }
-}
+ async function deleteUser(mount, id) {
+   if (!confirm('Delete this user? Their patient/appointment relations must be cleared manually if needed.')) return;
+   try {
+     const data = await apiFetch(`/users/${id}`, { method: 'DELETE' });
+     if (!data.ok) throw new Error(data?.error || 'Failed');
+     showToast('User deleted.', 'success');
+     loadUsers(mount);
+   } catch (e) {
+     showToast(e.message || 'Delete failed.', 'error');
+   }
+ }
 
 function openModal(mount) {
   mount.querySelector('#user-modal-root')?.classList.remove('hidden');

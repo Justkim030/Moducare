@@ -189,7 +189,7 @@ function removeSearchResults() {
 function initNotifications() {
   const btn = document.getElementById('notif-btn');
   btn?.addEventListener('click', () => {
-    showToast('Notification center coming soon.', 'info');
+    window.location.hash = '/notifications';
   });
 }
 
@@ -198,24 +198,29 @@ function initUserMenu() {
   const headerUserBtn  = document.getElementById('header-user-btn');
   const sidebarUserBtn = document.getElementById('sidebar-user-btn');
 
-  const openMenu = () => {
-    // Placeholder — in production, open a dropdown popover
-    const actions = ['View Profile', 'Account Settings', 'Sign Out'];
-    const choice = prompt(
-      'User Menu\n\n' + actions.map((a,i) => `${i+1}. ${a}`).join('\n') +
-      '\n\nEnter number:'
+  const openMenu = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const choice = confirm(
+      'User Menu\n\n' +
+      '1. View Profile\n' +
+      '2. Account Settings\n' +
+      '3. Sign Out\n\n' +
+      'Click OK for Profile, Cancel for Settings.'
     );
-    if (choice === '3') logout();
-    if (choice === '2') showToast('Account settings coming soon.', 'info');
-    if (choice === '1') showToast('Profile view coming soon.', 'info');
+    if (!choice) {
+      window.location.hash = '/settings';
+    } else {
+      window.location.hash = '/profile';
+    }
   };
 
   headerUserBtn?.addEventListener('click', openMenu);
   sidebarUserBtn?.addEventListener('click', openMenu);
 
   [headerUserBtn, sidebarUserBtn].forEach(btn => {
-    btn?.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') openMenu();
+    btn?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') openMenu(e);
     });
   });
 }
