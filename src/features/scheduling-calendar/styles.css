@@ -437,6 +437,7 @@
 .sched-dot.green { background: #10b981; }
 .sched-dot.orange { background: #f59e0b; }
 .sched-dot.pink { background: #ec4899; }
+.sched-dot.purple { background: #8b5cf6; }
 
 @keyframes schedFadeIn {
   from { opacity: 0; transform: translateY(4px); }
