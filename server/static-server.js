@@ -20,6 +20,7 @@ const pharmacyController = require('./controllers/pharmacyController');
 const referralsController = require('./controllers/referralsController');
 const inventoryController = require('./controllers/inventoryController');
 const eventsController = require('./controllers/eventsController');
+const auditController = require('./controllers/auditController');
 const { checkRateLimit, resetRateLimit, checkBodySize } = require('./middleware/rateLimit');
 const db = require('./config/db');
 

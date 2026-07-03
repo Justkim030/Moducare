@@ -268,7 +268,7 @@ function bindEntryEvents(content, container) {
     switchTab(container, 'entry');
   });
 
-  content.querySelector('#submit-entry-btn')?.addEventListener('click', () => {
+  content.querySelector('#submit-entry-btn')?.addEventListener('click', async () => {
     const staff = content.querySelector('#ts-staff')?.value.trim();
     const hours = parseFloat(content.querySelector('#ts-hours')?.value);
     const type  = content.querySelector('#ts-type')?.value;
@@ -277,14 +277,26 @@ function bindEntryEvents(content, container) {
       showToast('Please specify valid staff identity profiles and execution bounds.','warning'); 
       return;
     }
-    __TIMESHEETS_DATA.unshift({
-      id:'ts'+Date.now(), staff, date, type, hours, 
-      notes: content.querySelector('#ts-notes')?.value.trim()||'',
-      approved: false,
-    });
-    _form = { staff:'', date: new Date().toISOString().split('T')[0], type:'Direct Service', hours:'', notes:'' };
-    showToast('Timesheet ledger node dispatched into approval cycles.','success');
-    switchTab(container, 'log');
+    const rateInfo = RATES[type] || RATES['Administrative'];
+    const amount = rateInfo.unit === '15-min' ? hoursToBillingUnits(hours) : hours;
+    try {
+      await apiFetch('/finance', {
+        method: 'POST',
+        body: JSON.stringify({
+          type,
+          reference: content.querySelector('#ts-notes')?.value.trim() || '',
+          amount,
+          employee_id: '',
+          date,
+        })
+      });
+      _form = { staff:'', date: new Date().toISOString().split('T')[0], type:'Direct Service', hours:'', notes:'' };
+      showToast('Timesheet ledger entry created.', 'success');
+      await loadTimesheets();
+      switchTab(container, 'log');
+    } catch (err) {
+      showToast(err.message || 'Failed to create timesheet entry', 'error');
+    }
   });
 
   content.querySelector('#view-log-btn')?.addEventListener('click', () => switchTab(container, 'log'));

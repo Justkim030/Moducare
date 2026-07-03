@@ -1,0 +1,5 @@
+.audit-layout { padding: 24px; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-out; }
+.audit-layout .section-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; }
+.audit-layout .section-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.audit-layout .section-subtitle { color: var(--text-secondary); font-size: 14px; margin: 4px 0 0; }
+.audit-layout .filter-bar { display: flex; gap: 12px; align-items: center; }

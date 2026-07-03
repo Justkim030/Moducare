@@ -395,29 +395,37 @@ function bindEvents(mount) {
   cancelBtn?.addEventListener('click', closeModal);
   modal?.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
-  saveBtn?.addEventListener('click', () => {
+  saveBtn?.addEventListener('click', async () => {
     const first = mount.querySelector('#f-first')?.value.trim();
     const last  = mount.querySelector('#f-last')?.value.trim();
     const email = mount.querySelector('#f-email')?.value.trim();
     const dept  = mount.querySelector('#f-dept')?.value;
     const role  = mount.querySelector('#f-role')?.value;
+    const phone = mount.querySelector('#f-phone')?.value.trim();
     if (!first||!last||!email||!dept||!role) {
       showToast('Please fill in all required fields.', 'warning'); return;
     }
-    const newMember = {
-      id: 's' + Date.now(), name: `${first} ${last}`,
-      initials: (first[0]+last[0]).toUpperCase(),
-      department: dept, role, status:'pending', email,
-      phone: mount.querySelector('#f-phone')?.value||'—',
-      joined: new Date().toISOString().split('T')[0],
-      location: mount.querySelector('#f-location')?.value||'Main Office',
-    };
-    __STAFF_DATA.unshift(newMember);
-    closeModal();
-    _state.page = 1;
-    renderList(mount);
-    showToast(`${newMember.name} added successfully.`, 'success');
-    mount.querySelector('#add-staff-form')?.reset();
+    try {
+      const data = await apiFetch('/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: `${first} ${last}`,
+          email,
+          phone_number: phone || null,
+          password: 'temp_' + Math.random().toString(36).slice(2, 8),
+          role_id: role,
+        })
+      });
+      if (!data.ok) throw new Error(data?.error || 'Failed');
+      closeModal();
+      await loadStaff();
+      _state.page = 1;
+      renderList(mount);
+      showToast(`${first} ${last} added successfully.`, 'success');
+      mount.querySelector('#add-staff-form')?.reset();
+    } catch (e) {
+      showToast(e.message || 'Failed to add staff', 'error');
+    }
   });
 
   mount.querySelector('#export-btn')?.addEventListener('click', () => {
