@@ -1,6 +1,7 @@
 # ModuCare MS — System Architecture Documentation
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [System Architecture](#system-architecture)
 3. [ERD Diagram](#erd-diagram)
@@ -16,6 +17,7 @@
 ## Overview
 
 ModuCare MS is a modular healthcare management system designed for AMPATH clinic operations. It follows a **client-server architecture** with:
+
 - **Frontend:** Static SPA using vanilla JavaScript ES modules
 - **Backend:** Node.js HTTP server with SQLite database
 - **Deployment:** Single server hosting both API and static assets
@@ -24,7 +26,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 
 ## System Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Browser (Client)                          │
 ├─────────────────────────────────────────────────────────────────┤
@@ -51,7 +53,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 
 ## ERD Diagram
 
-```
+```text
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
 │   users     │──────▶│  employees   │──────▶│   roles     │
 │─────────────│       │─────────────│       │─────────────│
@@ -60,12 +62,12 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 │ passwordHash│       │ name        │       │ dept_id (FK)│
 │ phone       │       │ role_id (FK)│       └─────────────┘
 └─────────────┘       └─────────────┘             ▲
-                                                │
+                                                 │
 ┌─────────────┐       ┌─────────────┐             │
 │  patients   │       │ appointments│             │
 │─────────────│       │─────────────│             │
-│ id (PK)     │       │ id (PK)     │             │
-│ name        │       │ patient_id  │             │
+│ id (PK)     │       │ id (PK)     │
+│ name        │       │ patient_id  │
 │ dob         │       │ employee_id │◀────────────┘
 │ phone       │       │ time        │
 └─────────────┘       └─────────────┘
@@ -113,6 +115,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 ## Database Schema
 
 ### users
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | TEXT (PK) | Unique user identifier |
@@ -121,6 +124,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | passwordHash | TEXT | bcrypt hashed password |
 
 ### employees
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | TEXT (PK) | Employee identifier |
@@ -129,6 +133,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | role_id | TEXT (FK) | References roles.id |
 
 ### roles
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | TEXT (PK) | Role identifier (role_admin, role_dev, etc.) |
@@ -136,6 +141,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | department_id | TEXT (FK) | References departments.id |
 
 ### patients
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | TEXT (PK) | Patient ID (pat_*) |
@@ -147,6 +153,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | hiv_status | TEXT | HIV status |
 
 ### encounters
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER (PK) | Auto-increment ID |
@@ -157,6 +164,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | chief_complaint | TEXT | Initial complaint |
 
 ### appointments
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER (PK) | Auto-increment ID |
@@ -167,6 +175,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | status | TEXT | Scheduled/Completed |
 
 ### finance
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER (PK) | Auto-increment ID |
@@ -176,6 +185,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | status | TEXT | Paid/Pending |
 
 ### operations
+
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER (PK) | Auto-increment ID |
@@ -190,12 +200,14 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 ## API Endpoints
 
 ### Authentication
+
 | Method | Path | Role | Description |
 |--------|------|------|-------------|
 | POST | `/api/login` | - | Returns JWT token |
 | POST | `/api/register` | - | Creates new user |
 
 ### Users
+
 | Method | Path | Role | Description |
 |--------|------|------|-------------|
 | GET | `/api/users` | admin | List all users |
@@ -204,6 +216,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | DELETE | `/api/users/{id}` | admin | Delete user |
 
 ### Patients
+
 | Method | Path | Role | Description |
 |--------|------|------|-------------|
 | GET | `/api/patients` | staff | List patients |
@@ -213,6 +226,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | DELETE | `/api/patients/{id}` | staff | Delete patient |
 
 ### Clinical Modules
+
 | Endpoint | Role | Description |
 |----------|------|-------------|
 | `/api/encounters` | staff | Encounter records |
@@ -222,6 +236,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | `/api/incidents` | staff | Incident reporting |
 
 ### Administrative
+
 | Endpoint | Role | Description |
 |----------|------|-------------|
 | `/api/finance` | lead | Billing records |
@@ -239,6 +254,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 ## Authentication & Authorization
 
 ### JWT Token Claims
+
 ```json
 {
   "id": "usr_*",
@@ -253,6 +269,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 ```
 
 ### Role Levels
+
 | Role | Level | Grants Access To |
 |------|-------|----------------|
 | staff | 1 | Patients, Encounters, Lab, Pharmacy |
@@ -290,13 +307,15 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 ## Production Deployment
 
 ### Environment Variables (.env)
-```
+
+```text
 PORT=8081
 DATABASE_URL=sqlite://src/data/hospital.db
 JWT_SECRET=<generate-secure-secret>
 ```
 
 ### Security Checklist
+
 - [x] Password hashing (bcrypt)
 - [x] JWT authentication
 - [x] RBAC enforcement
@@ -324,5 +343,6 @@ curl -X POST http://localhost:8081/api/login \
 ```
 
 ## Default Credentials (Dev)
+
 - Admin: `alice@acme.org` / `admin123`
 - Staff: `danreech@acme.org` / `dan123`
