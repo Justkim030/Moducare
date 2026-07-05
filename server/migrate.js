@@ -339,6 +339,15 @@ function executeSchemaMigration() {
       FOREIGN KEY (incidents_id) REFERENCES incidents(id) ON DELETE CASCADE
     )`);
 
+    // 13. Analytics
+    db.run(`CREATE TABLE analytics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      metric TEXT NOT NULL,
+      value REAL,
+      period TEXT,
+      recorded_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`);
+
     // Create indexes for faster queries
     db.run(`CREATE INDEX idx_users_email ON users(email)`);
     db.run(`CREATE INDEX idx_patients_name ON patients(name)`);
@@ -362,100 +371,98 @@ function executeSchemaMigration() {
     db.run(`CREATE INDEX idx_incidents_status ON incidents(status)`);
     db.run(`CREATE INDEX idx_incidents_severity ON incidents(severity)`);
 
-db.serialize(() => {
-      console.log('\n--- Populating system base seed metrics ---');
+    console.log('\n--- Populating system base seed metrics ---');
 
-      const adminPwd = process.env.DEFAULT_ADMIN_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'admin123');
-      const devPwd = process.env.DEFAULT_DEV_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'dan123');
-      const hash = (pwd) => pwd ? bcrypt.hashSync(pwd, 12) : null;
+    const adminPwd = process.env.DEFAULT_ADMIN_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'admin123');
+    const devPwd = process.env.DEFAULT_DEV_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'dan123');
+    const hash = (pwd) => pwd ? bcrypt.hashSync(pwd, 12) : null;
 
-      // Seed Users
-      db.run(`INSERT INTO users (id, email, phone_number, passwordHash) VALUES 
-        ('usr_admin', 'alice@acme.org', '+254700000000', '${hash(adminPwd)}'),
-        ('usr_dan', 'danreech@acme.org', '+254711111111', '${hash(devPwd)}')`);
+    // Seed Users
+    db.run(`INSERT INTO users (id, email, phone_number, passwordHash) VALUES 
+      ('usr_admin', 'alice@acme.org', '+254700000000', '${hash(adminPwd)}'),
+      ('usr_dan', 'danreech@acme.org', '+254711111111', '${hash(devPwd)}')`);
 
-      // Seed Departments & Roles
-      db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
-      db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Staff', 'dept_tech'), ('role_nurse', 'Nurse', 'dept_clin'), ('role_admin', 'Administrator', 'dept_admin'), ('role_lead', 'Team Lead', 'dept_clin'), ('role_supervisor', 'Supervisor', 'dept_admin'), ('role_director', 'Director', 'dept_admin'), ('role_finance', 'Finance Officer', 'dept_admin')`);
+    // Seed Departments & Roles
+    db.run(`INSERT INTO departments (id, name) VALUES ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
+    db.run(`INSERT INTO roles (id, name, department_id) VALUES ('role_dev', 'Staff', 'dept_tech'), ('role_nurse', 'Nurse', 'dept_clin'), ('role_admin', 'Administrator', 'dept_admin'), ('role_lead', 'Team Lead', 'dept_clin'), ('role_supervisor', 'Supervisor', 'dept_admin'), ('role_director', 'Director', 'dept_admin'), ('role_finance', 'Finance Officer', 'dept_admin')`);
 
-      // Seed Employees (with department_id)
-      db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id, department_id) VALUES 
-        ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin', 'dept_admin'),
-        ('emp_dan', 'Daniel Mach Reech', 'usr_dan', 'role_dev', 'dept_tech'),
-        ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse', 'dept_clin')`);
+    // Seed Employees (with department_id)
+    db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id, department_id) VALUES 
+      ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin', 'dept_admin'),
+      ('emp_dan', 'Daniel Mach Reech', 'usr_dan', 'role_dev', 'dept_tech'),
+      ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse', 'dept_clin')`);
 
-      // Seed Patients
-      db.run(`INSERT INTO patients (id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status) VALUES 
-        ('pat_1', 'Jane Doe', 'jane@gmail.com', '+254722222222', '1985-03-12', 'Female', 'Eldoret, Kenya', 'Uasin Gishu', 'John Doe', '+254733333333', 'AMP-001', '12345678', 'NHIF-001', 'positive')`);
+    // Seed Patients
+    db.run(`INSERT INTO patients (id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status) VALUES 
+      ('pat_1', 'Jane Doe', 'jane@gmail.com', '+254722222222', '1985-03-12', 'Female', 'Eldoret, Kenya', 'Uasin Gishu', 'John Doe', '+254733333333', 'AMP-001', '12345678', 'NHIF-001', 'positive')`);
 
-      // Seed Operations
-      db.run(`INSERT INTO operations (title, description, department, priority, status, assignee, due, tags, notes, employee_id) VALUES 
-        ('Update service agreements for Q1', 'Coordinate with Finance.', 'Operations', 'high', 'active', 'Marcus Rivera', '2025-01-18', '["agreement","billing"]', '', 'emp_dan'),
-        ('Conduct new hire orientation', '', 'HR', 'medium', 'referred', 'Alex Liu', '2025-01-28', '["onboarding"]', '', 'emp_admin'),
-        ('Monthly compliance audit report', 'Requires director sign-off.', 'Audit', 'high', 'pending', 'Priya Joshi', '2025-01-22', '["compliance","report"]', '', 'emp_dan'),
-        ('Process timesheets for Dec payroll', '', 'Finance', 'urgent', 'active', 'Sara Okonkwo', '2025-01-10', '["payroll","timesheet"]', '', 'emp_dan'),
-        ('Deploy staff portal update v2.1', 'Completed on schedule.', 'System Admin', 'medium', 'completed', 'Jane Doe', '2025-01-05', '["system","deploy"]', '', 'emp_admin'),
-        ('Renew annual insurance certificates', '', 'Operations', 'high', 'referred', 'Derek Walsh', '2025-02-01', '["insurance","renewal"]', '', 'emp_dan'),
-        ('Analytics dashboard data refresh', '', 'Analytics', 'low', 'pending', 'Tomas Guerrero', '2025-01-25', '["analytics"]', '', 'emp_admin'),
-        ('Archive inactive client records', '', 'Document Vault', 'low', 'completed', 'Mei Tanaka', '2025-01-08', '["archive","records"]', '', 'emp_admin'),
-        ('Staff skills assessment rollout', '', 'HR', 'medium', 'active', 'Alex Liu', '2025-02-10', '["training"]', '', 'emp_admin'),
-        ('Quarterly board meeting prep', 'Slides due 3 days before.', 'Operations', 'urgent', 'active', 'Marcus Rivera', '2025-01-30', '["meeting","exec"]', '', 'emp_dan')`);
+    // Seed Operations
+    db.run(`INSERT INTO operations (title, description, department, priority, status, assignee, due, tags, notes, employee_id) VALUES 
+      ('Update service agreements for Q1', 'Coordinate with Finance.', 'Operations', 'high', 'active', 'Marcus Rivera', '2025-01-18', '["agreement","billing"]', '', 'emp_dan'),
+      ('Conduct new hire orientation', '', 'HR', 'medium', 'referred', 'Alex Liu', '2025-01-28', '["onboarding"]', '', 'emp_admin'),
+      ('Monthly compliance audit report', 'Requires director sign-off.', 'Audit', 'high', 'pending', 'Priya Joshi', '2025-01-22', '["compliance","report"]', '', 'emp_dan'),
+      ('Process timesheets for Dec payroll', '', 'Finance', 'urgent', 'active', 'Sara Okonkwo', '2025-01-10', '["payroll","timesheet"]', '', 'emp_dan'),
+      ('Deploy staff portal update v2.1', 'Completed on schedule.', 'System Admin', 'medium', 'completed', 'Jane Doe', '2025-01-05', '["system","deploy"]', '', 'emp_admin'),
+      ('Renew annual insurance certificates', '', 'Operations', 'high', 'referred', 'Derek Walsh', '2025-02-01', '["insurance","renewal"]', '', 'emp_dan'),
+      ('Analytics dashboard data refresh', '', 'Analytics', 'low', 'pending', 'Tomas Guerrero', '2025-01-25', '["analytics"]', '', 'emp_admin'),
+      ('Archive inactive client records', '', 'Document Vault', 'low', 'completed', 'Mei Tanaka', '2025-01-08', '["archive","records"]', '', 'emp_admin'),
+      ('Staff skills assessment rollout', '', 'HR', 'medium', 'active', 'Alex Liu', '2025-02-10', '["training"]', '', 'emp_admin'),
+      ('Quarterly board meeting prep', 'Slides due 3 days before.', 'Operations', 'urgent', 'active', 'Marcus Rivera', '2025-01-30', '["meeting","exec"]', '', 'emp_dan')`);
 
-      // Seed Core Relational Elements
-      db.run(`INSERT INTO appointments (time, patient_id, type, status, employee_id) VALUES 
-        ('2026-06-15T10:00:00Z', 'pat_1', 'Consultation', 'scheduled', 'emp_field_worker')`);
+    // Seed Core Relational Elements
+    db.run(`INSERT INTO appointments (time, patient_id, type, status, employee_id) VALUES 
+      ('2026-06-15T10:00:00Z', 'pat_1', 'Consultation', 'scheduled', 'emp_field_worker')`);
 
-      db.run(`INSERT INTO finance (type, reference, amount, status, date, due, employee_id, patient_id) VALUES 
-        ('Invoice', 'INV-2026-001', 4500.00, 'pending', '2026-06-08', '2026-06-22', 'emp_dan', 'pat_1')`);
+    db.run(`INSERT INTO finance (type, reference, amount, status, date, due, employee_id, patient_id) VALUES 
+      ('Invoice', 'INV-2026-001', 4500.00, 'pending', '2026-06-08', '2026-06-22', 'emp_dan', 'pat_1')`);
 
-      db.run(`INSERT INTO activities (time, employee_id, action, details, priority, due, status) VALUES 
-        ('2026-06-08T10:15:00Z', 'emp_field_worker', 'Field Assessment', 'Completed physical check', 'medium', null, 'completed')`);
+    db.run(`INSERT INTO activities (time, employee_id, action, details, priority, due, status) VALUES 
+      ('2026-06-08T10:15:00Z', 'emp_field_worker', 'Field Assessment', 'Completed physical check', 'medium', null, 'completed')`);
 
-      // Seed Incidents Subtype Inheritances
-      db.run(`INSERT INTO incidents (id, created, title, description, status, severity, employee_id) VALUES 
-        (101, '2026-06-08T09:00:00Z', 'Database Interruption', 'Minor replication gap', 'resolved', 'low', 'emp_dan'),
-        (102, '2026-06-08T11:30:00Z', 'External Power Spike', 'Transformer burst outside gate', 'open', 'critical', 'emp_dan')`);
+    // Seed Incidents Subtype Inheritances
+    db.run(`INSERT INTO incidents (id, created, title, description, status, severity, employee_id) VALUES 
+      (101, '2026-06-08T09:00:00Z', 'Database Interruption', 'Minor replication gap', 'resolved', 'low', 'emp_dan'),
+      (102, '2026-06-08T11:30:00Z', 'External Power Spike', 'Transformer burst outside gate', 'open', 'critical', 'emp_dan')`);
 
-      db.run(`INSERT INTO internal_incidents (incidents_id, department_id) VALUES (101, 'dept_tech')`);
-      db.run(`INSERT INTO external_incidents (incidents_id) VALUES (102)`);
+    db.run(`INSERT INTO internal_incidents (incidents_id, department_id) VALUES (101, 'dept_tech')`);
+    db.run(`INSERT INTO external_incidents (incidents_id) VALUES (102)`);
 
-      db.run(`INSERT INTO encounters (patient_id, encounter_date, visit_type, provider_id, chief_complaint, vitals, diagnoses, soap_notes, hiv_viral_load, hiv_cd4, art_regimen, art_adherence, follow_up_plan) VALUES 
-        ('pat_1', '2026-06-15T10:00:00Z', 'Follow-up', 'emp_dan', 'Routine HIV follow-up', '{"bp":"120/80","temp":"36.5","weight":"65","pulse":"72"}', '["HIV/AIDS","Hypertension"]', 'Patient reports good adherence. No side effects.', '< 40', '450', 'TLD', 'Good', 'Return in 3 months for VL repeat')`);
+    db.run(`INSERT INTO encounters (patient_id, encounter_date, visit_type, provider_id, chief_complaint, vitals, diagnoses, soap_notes, hiv_viral_load, hiv_cd4, art_regimen, art_adherence, follow_up_plan) VALUES 
+      ('pat_1', '2026-06-15T10:00:00Z', 'Follow-up', 'emp_dan', 'Routine HIV follow-up', '{"bp":"120/80","temp":"36.5","weight":"65","pulse":"72"}', '["HIV/AIDS","Hypertension"]', 'Patient reports good adherence. No side effects.', '< 40', '450', 'TLD', 'Good', 'Return in 3 months for VL repeat')`);
 
-      db.run(`INSERT INTO lab_orders (patient_id, encounter_id, test_type, test_name, status, result_value, result_unit, reference_range, abnormal_flag, result_date, ordering_provider_id) VALUES 
-        ('pat_1', 1, 'HIV', 'Viral Load', 'resulted', '< 40', 'copies/mL', '< 50', 'Normal', '2026-06-16T08:00:00Z', 'emp_dan'),
-        ('pat_1', 1, 'Hematology', 'CD4 Count', 'resulted', '450', 'cells/uL', '500-1400', 'Normal', '2026-06-16T08:00:00Z', 'emp_dan'),
-        ('pat_1', 1, 'Chemistry', 'Creatinine', 'resulted', '1.1', 'mg/dL', '0.6-1.2', 'Normal', '2026-06-16T08:00:00Z', 'emp_dan')`);
+    db.run(`INSERT INTO lab_orders (patient_id, encounter_id, test_type, test_name, status, result_value, result_unit, reference_range, abnormal_flag, result_date, ordering_provider_id) VALUES 
+      ('pat_1', 1, 'HIV', 'Viral Load', 'resulted', '< 40', 'copies/mL', '< 50', 'Normal', '2026-06-16T08:00:00Z', 'emp_dan'),
+      ('pat_1', 1, 'Hematology', 'CD4 Count', 'resulted', '450', 'cells/uL', '500-1400', 'Normal', '2026-06-16T08:00:00Z', 'emp_dan'),
+      ('pat_1', 1, 'Chemistry', 'Creatinine', 'resulted', '1.1', 'mg/dL', '0.6-1.2', 'Normal', '2026-06-16T08:00:00Z', 'emp_dan')`);
 
-      db.run(`INSERT INTO pharmacy_dispensing (patient_id, encounter_id, drug_name, drug_code, dosage, frequency, duration_days, quantity, regimen_type, adherence_counseled, dispensed_by, notes) VALUES 
-        ('pat_1', 1, 'Dolutegravir/Lamivudine/Tenofovir', 'TLD', '1 tablet', 'Once daily', 30, 30, 'ART', 1, 'emp_dan', '3-month refill dispensed')`);
+    db.run(`INSERT INTO pharmacy_dispensing (patient_id, encounter_id, drug_name, drug_code, dosage, frequency, duration_days, quantity, regimen_type, adherence_counseled, dispensed_by, notes) VALUES 
+      ('pat_1', 1, 'Dolutegravir/Lamivudine/Tenofovir', 'TLD', '1 tablet', 'Once daily', 30, 30, 'ART', 1, 'emp_dan', '3-month refill dispensed')`);
 
-      db.run(`INSERT INTO notifications (patient_id, type, channel, subject, body, sent_by) VALUES 
-        ('pat_1', 'reminder', 'sms', 'Appointment Reminder', 'You have an appointment on 2026-07-15. Please confirm.', 'emp_admin'),
-        ('pat_1', 'result', 'whatsapp', 'Lab Results Ready', 'Your viral load result is < 40 copies/mL. Visit clinic for results.', 'emp_dan')`);
+    db.run(`INSERT INTO notifications (patient_id, type, channel, subject, body, sent_by) VALUES 
+      ('pat_1', 'reminder', 'sms', 'Appointment Reminder', 'You have an appointment on 2026-07-15. Please confirm.', 'emp_admin'),
+      ('pat_1', 'result', 'whatsapp', 'Lab Results Ready', 'Your viral load result is < 40 copies/mL. Visit clinic for results.', 'emp_dan')`);
 
-      db.run(`INSERT INTO documents (patient_id, doc_type, file_name, file_size, uploaded_by) VALUES 
-        ('pat_1', 'lab_result', 'viral_load_june_2026.pdf', 245000, 'emp_dan'),
-        ('pat_1', 'clinical_note', 'encounter_note_june_15.docx', 18500, 'emp_dan')`);
+    db.run(`INSERT INTO documents (patient_id, doc_type, file_name, file_size, uploaded_by) VALUES 
+      ('pat_1', 'lab_result', 'viral_load_june_2026.pdf', 245000, 'emp_dan'),
+      ('pat_1', 'clinical_note', 'encounter_note_june_15.docx', 18500, 'emp_dan')`);
 
-      db.run(`INSERT INTO referrals (patient_id, from_facility, to_facility, reason, request_type, status, requested_by) VALUES 
-        ('pat_1', 'AMPATH Uzima Clinic', 'Moi Teaching and Referral Hospital', 'Complex TB/HIV co-infection case', 'referral', 'pending', 'emp_dan')`);
+    db.run(`INSERT INTO referrals (patient_id, from_facility, to_facility, reason, request_type, status, requested_by) VALUES 
+      ('pat_1', 'AMPATH Uzima Clinic', 'Moi Teaching and Referral Hospital', 'Complex TB/HIV co-infection case', 'referral', 'pending', 'emp_dan')`);
 
-      db.run(`INSERT INTO inventory (name, category, current_stock, reorder_level, unit, supplier) VALUES 
-        ('Dolutegravir/Lamivudine/Tenofovir (TLD)', 'medication', 500, 100, 'tablets', 'KAZ'),
-        ('Cotrimoxazole 960mg', 'medication', 200, 50, 'tablets', 'KAZ'),
-        ('Rapid HIV Test Kits', 'consumable', 50, 20, 'kits', 'Egypt'),
-        ('Blood Pressure Cuffs', 'equipment', 15, 5, 'units', 'Local Supplier'),
-        ('Glucose Test Strips', 'consumable', 30, 15, 'strips', 'KAZ')`);
+    db.run(`INSERT INTO inventory (name, category, current_stock, reorder_level, unit, supplier) VALUES 
+      ('Dolutegravir/Lamivudine/Tenofovir (TLD)', 'medication', 500, 100, 'tablets', 'KAZ'),
+      ('Cotrimoxazole 960mg', 'medication', 200, 50, 'tablets', 'KAZ'),
+      ('Rapid HIV Test Kits', 'consumable', 50, 20, 'kits', 'Egypt'),
+      ('Blood Pressure Cuffs', 'equipment', 15, 5, 'units', 'Local Supplier'),
+      ('Glucose Test Strips', 'consumable', 30, 15, 'strips', 'KAZ')`);
 
-      db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES 
-        ('usr_dan', 'login', 'User logged in successfully', 'auth', 'success'),
-        ('usr_admin', 'create_encounter', 'Created encounter for pat_1', 'encounter', 'success'),
-        ('usr_dan', 'dispense', 'Dispensed TLD to pat_1', 'pharmacy', 'success'),
-        ('usr_admin', 'view_patient', 'Viewed patient record pat_1', 'patient', 'success')`);
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES 
+      ('usr_dan', 'login', 'User logged in successfully', 'auth', 'success'),
+      ('usr_admin', 'create_encounter', 'Created encounter for pat_1', 'encounter', 'success'),
+      ('usr_dan', 'dispense', 'Dispensed TLD to pat_1', 'pharmacy', 'success'),
+      ('usr_admin', 'view_patient', 'Viewed patient record pat_1', 'patient', 'success')`);
 
-      console.log('✓ Mock transactional items completely loaded.');
-    });
+    console.log('✓ Mock transactional items completely loaded.');
   });
 
   db.close((err) => {

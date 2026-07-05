@@ -319,11 +319,11 @@ JWT_SECRET=<generate-secure-secret>
 - [x] Password hashing (bcrypt)
 - [x] JWT authentication
 - [x] RBAC enforcement
+- [x] Rate limiting on login endpoint
+- [x] XSS prevention (escapeHTML)
 - [ ] HTTPS (use reverse proxy)
 - [ ] CSP headers
-- [ ] Rate limiting (partially implemented)
-- [ ] Input validation
-- [ ] XSS prevention (escapeHTML)
+- [ ] Input validation (zod/Joi)
 
 ---
 

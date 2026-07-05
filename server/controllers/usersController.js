@@ -106,43 +106,63 @@ async function handleUpdate(req, res) {
   req.on('end', async () => {
     try {
       const p = JSON.parse(body || '{}');
-      const { name, email, password, role_id } = p;
+      const { name, email, password, role_id, phone_number } = p;
 
-      const fields = [];
-      const values = [];
-      if (name !== undefined) {
-        fields.push('e.name = ?');
-        values.push(sanitizeString(name));
-      }
+      const userFields = [];
+      const userValues = [];
+      const empFields = [];
+      const empValues = [];
+
       if (email !== undefined) {
         if (!validateEmail(email)) {
           return sendSecureJSON(res, 400, { ok: false, error: 'Invalid email format.' });
         }
-        fields.push('u.email = ?');
-        values.push(email);
+        userFields.push('email = ?');
+        userValues.push(email);
       }
-      if (role_id !== undefined) {
-        fields.push('e.role_id = ?');
-        values.push(role_id);
+      if (phone_number !== undefined) {
+        userFields.push('phone_number = ?');
+        userValues.push(sanitizeString(phone_number));
       }
       if (password !== undefined) {
         if (password.length < 8) {
           return sendSecureJSON(res, 400, { ok: false, error: 'Password must be at least 8 characters.' });
         }
         const hash = await hashPassword(password);
-        fields.push('u.passwordHash = ?');
-        values.push(hash);
+        userFields.push('passwordHash = ?');
+        userValues.push(hash);
       }
-      values.push(id);
+      if (role_id !== undefined) {
+        empFields.push('role_id = ?');
+        empValues.push(role_id);
+      }
+      if (name !== undefined) {
+        empFields.push('name = ?');
+        empValues.push(sanitizeString(name));
+      }
 
-      const sql = `UPDATE users u JOIN employees e ON e.user_id = u.id SET ${fields.join(', ')} WHERE u.id = ?`;
-      db.run(sql, values, function (err) {
-        if (err) {
-          console.error(`[SECURE EXCEPTION] User Update Trace: ${err.message}`);
-          return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
+      if (userFields.length === 0 && empFields.length === 0) {
+        return sendSecureJSON(res, 400, { ok: false, error: 'No fields to update.' });
+      }
+
+      db.serialize(() => {
+        if (userFields.length > 0) {
+          userValues.push(id);
+          db.run(`UPDATE users SET ${userFields.join(', ')} WHERE id = ?`, userValues, (err) => {
+            if (err) {
+              console.error(`[SECURE EXCEPTION] User Update Trace: ${err.message}`);
+              return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
+            }
+          });
         }
-        if (this.changes === 0) {
-          return sendSecureJSON(res, 404, { ok: false, error: 'User not found.' });
+        if (empFields.length > 0) {
+          empValues.push(id);
+          db.run(`UPDATE employees SET ${empFields.join(', ')} WHERE user_id = ?`, empValues, (err) => {
+            if (err) {
+              console.error(`[SECURE EXCEPTION] Employee Update Trace: ${err.message}`);
+              return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
+            }
+          });
         }
         return sendSecureJSON(res, 200, { ok: true });
       });

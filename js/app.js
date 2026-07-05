@@ -4,7 +4,6 @@
  * Runs auth checks, populates user info, wires up UI interactions.
  */
 import { requireAuth, logout, getUserRoleLabel, getSession } from './auth.js';
-import { initRouter } from './router.js';
 import { set } from './store.js';
 import { showToast, escapeHTML, apiFetch } from './utils.js';
 
@@ -257,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserMenu();
   initSignOutButton();
   applyNavPermissions();
-  initRouter();
 
   showToast(`Signed in as ${session.name}`, 'success');
 });

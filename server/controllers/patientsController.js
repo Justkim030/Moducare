@@ -68,7 +68,7 @@ function handleCreate(req, res) {
   req.on('end', () => {
     try {
       const p = JSON.parse(body || '{}');
-      const { id, name, email, phone_number } = p;
+      const { id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status } = p;
 
       const missing = validateRequired([name]);
       if (missing.length > 0) {
@@ -87,7 +87,7 @@ function handleCreate(req, res) {
         name: sanitizeString(name),
         email: email ? sanitizeString(email) : null,
         phone_number: phone_number ? sanitizeString(phone_number) : null,
-        dob: dob || null,
+        dob: dob ? sanitizeString(dob) : null,
         gender: gender ? sanitizeString(gender) : null,
         address: address ? sanitizeString(address) : null,
         county: county ? sanitizeString(county) : null,

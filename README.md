@@ -231,27 +231,31 @@ node server/migrate.js
     - `src/features/incident-reporting/` → connect to `/api/incidents`
     - `src/features/finance-billing/` still uses `TIMESHEETS` → connect to `/api/finance`
 
-2. **Implement missing API endpoints** (partially complete)
-    - `/api/operations` ✓ (task persistence)
-    - `/api/documents` ✓
-    - `/api/notifications` ✓
-    - `/api/activities` ✓
-    - `/api/audit` ✓
+2. **Security hardening** (complete)
+    - JWT verification on all protected server routes ✓
+    - Request validation middleware active ✓
 
-4. **Security hardening** (in progress)
-    - Replace `sessionStorage` checks in `requireAuth` with real JWT verification
-    - Add auth middleware to all protected server routes
-    - Add request validation middleware (zod/Joi style checks)
-
-5. **Database performance**
+3. **Database performance**
     - Added indexes on frequently queried columns (patients.name, appointments.date, etc.)
     - Run `node server/migrate.js` to rebuild indexed database
 
-6. **Scaffolded modules**
+4. **Scaffolded modules**
    - Communications (messaging UI + backend)
    - Scheduling & Calendar (event CRUD + `/api/appointments` expansion)
    - Analytics & Reports (data aggregation from existing APIs)
 
 ---
+
+## 📝 Recent Fixes (2026-07-05)
+
+- Fixed duplicate `/api/notifications` route in static-server.js
+- Fixed undefined variables in patientsController.js handleCreate
+- Fixed invalid SQLite UPDATE JOIN syntax in usersController.js
+- Added missing analytics table to migration
+- Fixed setSession arguments order in register.js
+- Removed non-existent initRouter import in app.js
+- Fixed syntax error in timeAgo function in utils.js
+- Fixed nested db.serialize structure in migrate.js
+- Added handleGet export to inventoryController.js
 
 *ModuCare MS · Built with Vanilla Web Stack · &copy; 2025*

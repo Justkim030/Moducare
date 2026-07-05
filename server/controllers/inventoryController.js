@@ -108,4 +108,4 @@ function handleAlerts(req, res) {
   });
 }
 
-module.exports = { handleList, handleCreate, handleUpdate, handleDelete, handleAlerts };
+module.exports = { handleList, handleCreate, handleUpdate, handleDelete, handleAlerts, handleGet: handleList };

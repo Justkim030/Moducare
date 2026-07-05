@@ -24,7 +24,7 @@ form?.addEventListener('submit', async (e)=>{
     const res = await fetch('/api/register', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ name, email, role, password: pwd }) });
     const data = await res.json();
     if (res.status === 201 && data.ok){
-      setSession(data.user, true);
+      setSession(data.user, data.token, true);
       showToast('Account created — you are signed in', 'success');
       setTimeout(()=> location.replace('/index.html'), 700);
       return;

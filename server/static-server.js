@@ -235,14 +235,7 @@ const server = http.createServer((req, res) => {
       if (req.method === 'DELETE' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, pharmacyController.handleDelete)(req, res);
     }
 
-    if (url.startsWith('/api/appointments')) {
-      if (req.method === 'GET' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, appointmentsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/appointments') return enforceRole(AUTH_ROLES, appointmentsController.handleList)(req, res);
-      if (req.method === 'POST' && url === '/api/appointments') return enforceRole(AUTH_ROLES, appointmentsController.handleCreate)(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, appointmentsController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, appointmentsController.handleDelete)(req, res);
-    }
-
+    // Notifications
     if (url.startsWith('/api/notifications')) {
       if (req.method === 'GET' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, notificationsController.handleGet)(req, res);
       if (req.method === 'GET' && url === '/api/notifications') return enforceRole(AUTH_ROLES, notificationsController.handleList)(req, res);
