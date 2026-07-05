@@ -20,13 +20,13 @@ window.__STAFF_DATA = [];
 
 async function loadStaff() {
    const roleMap = {
-     'role_admin': 'admin',
-     'role_dev': 'staff',
-     'role_nurse': 'staff',
-     'role_lead': 'lead',
-     'role_supervisor': 'supervisor',
-     'role_director': 'director',
-     'role_finance': 'staff',
+     'role_admin': 'role_admin',
+     'role_dev': 'role_dev',
+     'role_nurse': 'role_nurse',
+     'role_lead': 'role_lead',
+     'role_supervisor': 'role_supervisor',
+     'role_director': 'role_director',
+     'role_finance': 'role_dev',
    };
    const deptMap = {
      'dept_tech': 'System Administration',
@@ -41,7 +41,7 @@ async function loadStaff() {
        name: u.name,
        initials: (u.name || '').split(' ').map(p => p[0]).join('').toUpperCase() || '??',
        department: deptMap[u.department_id] || 'Operations',
-       role: roleMap[u.role_id] || 'staff',
+       role: roleMap[u.role_id] || 'role_nurse',
        status: 'active',
        email: u.email,
        phone: u.phone_number || '—',
@@ -59,12 +59,13 @@ const DEPT_OPTIONS = [
 ];
 
 const ROLE_MAP = {
-  admin:     { label:'Admin',      badge:'badge-danger',   hex:'#DC2626' },
-  director:  { label:'Director',   badge:'badge-primary',  hex:'#1E5799' },
-  supervisor:{ label:'Supervisor', badge:'badge-warning',  hex:'#D97706' },
-  lead:      { label:'Team Lead',  badge:'badge-accent',   hex:'#0F7A75' },
-  staff:     { label:'Staff',      badge:'badge-neutral',  hex:'#5C728A' },
-};
+   role_admin:     { label:'Admin',      badge:'badge-danger',   hex:'#DC2626' },
+   role_director:  { label:'Director',   badge:'badge-primary',  hex:'#1E5799' },
+   role_supervisor:{ label:'Supervisor', badge:'badge-warning',  hex:'#D97706' },
+   role_lead:      { label:'Team Lead',  badge:'badge-accent',   hex:'#0F7A75' },
+   role_dev:       { label:'Staff',      badge:'badge-neutral',  hex:'#5C728A' },
+   role_nurse:     { label:'Staff',      badge:'badge-neutral',  hex:'#5C728A' },
+ };
 
 const STATUS_MAP = {
   active:   { dot:'status-dot--active',   badge:'badge-success', label:'Active'   },
