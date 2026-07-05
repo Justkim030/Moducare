@@ -110,4 +110,41 @@ function handleDelete(req, res) {
   });
 }
 
-module.exports = { handleList, handleGet, handleCreate, handleUpdate, handleDelete };
+module.exports = { handleList, handleGet, handleCreate, handleUpdate, handleDelete, handleBroadcast };
+
+function handleBroadcast(req, res) {
+  let body = '';
+  req.on('data', (ch) => (body += ch));
+  req.on('end', () => {
+    try {
+      const { type, channel } = JSON.parse(body || '{}');
+      db.all(`SELECT a.id, a.patient_id, a.reminder_due, a.reminder_sent, p.name as patient_name, p.phone_number FROM appointments a LEFT JOIN patients p ON p.id = a.patient_id WHERE a.reminder_due IS NOT NULL AND a.reminder_sent = 0 AND a.status = 'scheduled' AND a.reminder_due <= datetime('now') LIMIT 50`, [], (err, rows) => {
+        if (err) {
+          console.error(`[SECURE EXCEPTION] Broadcast Query Error: ${err.message}`);
+          return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+        }
+        const appointments = rows || [];
+        if (appointments.length === 0) {
+          return sendSecureJSON(res, 200, { ok: true, sent: 0, message: 'No reminders due.' });
+        }
+
+        let completed = 0;
+        appointments.forEach(a => {
+          db.run(`INSERT INTO notifications (patient_id, type, channel, subject, body, sent_by) VALUES (?, ?, ?, ?, ?, ?)`,
+            [a.patient_id, type || 'reminder', channel || 'sms', 'Appointment Reminder', `You have an appointment on ${a.reminder_due}. Please confirm.`, req.user?.id || null],
+            function (err) {
+              completed++;
+              if (completed === appointments.length) {
+                const ids = appointments.map(a => a.id);
+                db.run(`UPDATE appointments SET reminder_sent = 1 WHERE id IN (${ids.map(() => '?').join(',')})`, ids, () => {});
+                return sendSecureJSON(res, 200, { ok: true, sent: appointments.length });
+              }
+            }
+          );
+        });
+      });
+    } catch (e) {
+      return sendSecureJSON(res, 400, { ok: false, error: 'Malformed payload.' });
+    }
+  });
+}

@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
-const { validateEmail, validateRequired } = require('../middleware/validation');
+const { validateEmail, validateRequired, sanitizeString } = require('../middleware/validation');
 const { signToken, verifyToken } = require('../utils/jwt');
 const { resetRateLimit } = require('../middleware/rateLimit');
 
@@ -125,21 +125,29 @@ async function handleRegister(req, res) {
       const assignedRoleId = role_id || 'role_nurse';
 
       db.serialize(() => {
-        let executionError = false;
-
         db.run(
           'INSERT INTO users (id, email, phone_number, passwordHash) VALUES (?, ?, ?, ?)',
           [userId, email, phone_number || null, passwordHash],
           function (err) {
             if (err) {
-              executionError = true;
               console.error(`[SECURE EXCEPTION] User Write Trace: ${err.message}`);
               return sendSecureJSON(res, 400, { ok: false, error: 'Account generation could not be processed.' });
             }
 
+            const safeSession = {
+              id: userId,
+              employee_id: employeeId,
+              name,
+              email,
+              phone_number: phone_number || null,
+              role_id: assignedRoleId,
+            };
+
+            const token = signToken(safeSession);
+
             db.run(
               'INSERT INTO employees (id, name, user_id, role_id, department_id) VALUES (?, ?, ?, ?, ?)',
-              [employeeId, name, userId, assignedRoleId, department_id || null],
+              [employeeId, sanitizeString(name) || '', userId, assignedRoleId, department_id || null],
               function (empErr) {
                 if (empErr) {
                   console.error(`[SECURE EXCEPTION] Employee Profile Trace: ${empErr.message}`);
@@ -149,6 +157,7 @@ async function handleRegister(req, res) {
                 return sendSecureJSON(res, 201, {
                   ok: true,
                   user: { id: userId, employee_id: employeeId, name, email, role_id: assignedRoleId, department_id },
+                  token,
                 });
               }
             );

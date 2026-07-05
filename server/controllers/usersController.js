@@ -18,28 +18,45 @@ async function hashPassword(password) {
 }
 
 function handleList(req, res) {
-  // Defense-in-depth: verify admin role even if middleware is bypassed
-  const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
-  if (!req.user || !req.user.role_id || !ADMIN_ROLES.includes(req.user.role_id)) {
-    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
-  }
+   const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
+   if (!req.user || !req.user.role_id || !ADMIN_ROLES.includes(req.user.role_id)) {
+     return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+   }
 
-  db.all(`SELECT u.id, u.email, u.phone_number, e.name, r.name as role_name, r.id as role_id FROM users u LEFT JOIN employees e ON e.user_id = u.id LEFT JOIN roles r ON r.id = e.role_id`, (err, rows) => {
-    if (err) {
-      console.error(`[SECURE EXCEPTION] Users List Database Error: ${err.message}`);
-      return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
-    }
-    const users = (rows || []).map(r => ({
-      id: r.id,
-      email: r.email,
-      phone_number: r.phone_number,
-      name: r.name || '',
-      role: r.role_id || '',
-      role_label: r.role_name || '',
-    }));
-    return sendSecureJSON(res, 200, { ok: true, users });
-  });
-}
+   db.all(`SELECT u.id, u.email, u.phone_number, e.name, r.name as role_name, r.id as role_id FROM users u LEFT JOIN employees e ON e.user_id = u.id LEFT JOIN roles r ON r.id = e.role_id`, (err, rows) => {
+     if (err) {
+       console.error(`[SECURE EXCEPTION] Users List Database Error: ${err.message}`);
+       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+     }
+const users = (rows || []).map(r => ({
+        id: r.id,
+        email: r.email,
+        phone_number: r.phone_number,
+        name: r.name || '',
+        role: r.role_id || '',
+        role_label: r.role_name || '',
+        department_id: r.department_id || '',
+      }));
+     return sendSecureJSON(res, 200, { ok: true, users });
+   });
+ }
+
+ function handleGet(req, res) {
+   const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
+   if (!req.user || !req.user.role_id || !ADMIN_ROLES.includes(req.user.role_id)) {
+     return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+   }
+
+   const id = req.url.split('/').pop();
+   db.get(`SELECT u.id, u.email, u.phone_number, e.name, r.name as role_name, r.id as role_id FROM users u LEFT JOIN employees e ON e.user_id = u.id LEFT JOIN roles r ON r.id = e.role_id WHERE u.id = ?`, [id], (err, row) => {
+     if (err) {
+       console.error(`[SECURE EXCEPTION] User Detail Error: ${err.message}`);
+       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+     }
+     if (!row) return sendSecureJSON(res, 404, { ok: false, error: 'User not found' });
+     return sendSecureJSON(res, 200, { ok: true, user: row });
+   });
+ }
 
 async function handleCreate(req, res) {
   let body = '';
@@ -192,8 +209,9 @@ function handleDelete(req, res) {
 }
 
 module.exports = {
-  handleList,
-  handleCreate,
-  handleUpdate,
-  handleDelete
-};
+   handleList,
+   handleGet,
+   handleCreate,
+   handleUpdate,
+   handleDelete
+ };

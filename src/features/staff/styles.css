@@ -1,0 +1,99 @@
+/* ── HR & Staff Module — Scoped Styles ───────────────────── */
+
+/* Summary stats bar */
+.hr-stats { margin-bottom: var(--sp-5); }
+.hr-stats-row {
+  display: flex;
+  gap: 1px;
+  background: var(--border-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+.hr-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--surface-card);
+  text-align: center;
+  gap: 2px;
+}
+.hr-stat__val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.hr-stat__lbl {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* View toggle active — shared style in /css/components.css */
+
+/* Staff grid */
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-5);
+  margin-bottom: var(--sp-4);
+}
+
+.staff-card {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  transition: box-shadow var(--duration-base), transform var(--duration-base);
+  box-shadow: var(--shadow-xs);
+}
+.staff-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--clr-primary-200);
+}
+.staff-card__top {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: var(--sp-3);
+}
+.staff-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.staff-card__dept {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-2);
+}
+.staff-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--sp-3);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-light);
+  padding-top: var(--sp-3);
+}
+.staff-card__email {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  word-break: break-all;
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .hr-stats-row { flex-wrap: wrap; }
+  .hr-stat { min-width: 80px; }
+}

@@ -10,8 +10,8 @@ let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const link = document.createElement('link');
-link.rel = 'stylesheet';
-   link.href = '/src/features/staff/hr-staff.css';
+  link.rel = 'stylesheet';
+   link.href = '/src/features/staff/styles.css';
   document.head.appendChild(link);
   _cssLoaded = true;
 }
@@ -19,32 +19,39 @@ link.rel = 'stylesheet';
 window.__STAFF_DATA = [];
 
 async function loadStaff() {
-  const roleMap = {
-    'role_dev': 'admin',
-    'role_nurse': 'staff',
-    'lead': 'lead',
-    'supervisor': 'supervisor',
-    'admin': 'admin'
-  };
-  try {
-    const data = await apiFetch('/users');
-    if (!data.ok) throw new Error(data?.error || 'Failed');
-    window.__STAFF_DATA = (data.users || []).map(u => ({
-      id: u.id,
-      name: u.name,
-      initials: (u.name || '').split(' ').map(p => p[0]).join('').toUpperCase() || '??',
-      department: u.department || 'Unassigned',
-      role: roleMap[u.role] || 'staff',
-      status: 'active',
-      email: u.email,
-      phone: u.phone_number || '—',
-      joined: u.joined || new Date().toISOString().split('T')[0],
-      location: 'Main Office'
-    }));
-  } catch (e) {
-    showToast('Failed to load staff directory', 'error');
-  }
-}
+   const roleMap = {
+     'role_admin': 'admin',
+     'role_dev': 'staff',
+     'role_nurse': 'staff',
+     'role_lead': 'lead',
+     'role_supervisor': 'supervisor',
+     'role_director': 'director',
+     'role_finance': 'staff',
+   };
+   const deptMap = {
+     'dept_tech': 'System Administration',
+     'dept_clin': 'Operations',
+     'dept_admin': 'Audit & Compliance',
+   };
+   try {
+     const data = await apiFetch('/users');
+     if (!data.ok) throw new Error(data?.error || 'Failed');
+     window.__STAFF_DATA = (data.users || []).map(u => ({
+       id: u.id,
+       name: u.name,
+       initials: (u.name || '').split(' ').map(p => p[0]).join('').toUpperCase() || '??',
+       department: deptMap[u.department_id] || 'Operations',
+       role: roleMap[u.role_id] || 'staff',
+       status: 'active',
+       email: u.email,
+       phone: u.phone_number || '—',
+       joined: new Date().toISOString().split('T')[0],
+       location: 'Main Office'
+     }));
+   } catch (e) {
+     showToast('Failed to load staff directory', 'error');
+   }
+ }
 
 const DEPT_OPTIONS = [
   'All Departments','System Administration','Operations','Finance & Billing',
@@ -77,11 +84,14 @@ let _state = {
 export async function init(mount, State) {
    injectCSS();
    mount.innerHTML = buildShell();
+   
+   const container = mount.querySelector('#staff-container');
+   if (!container) { /* fallback to mount */ }
    bindEvents(mount);
    await loadStaff();
    renderList(mount);
    return { destroy: () => {} };
-}
+ }
 
 function buildShell() {
   const canAdd = hasRole('lead');
