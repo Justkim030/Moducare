@@ -110,7 +110,7 @@ function handleDelete(req, res) {
   });
 }
 
-module.exports = { handleList, handleGet, handleCreate, handleUpdate, handleDelete, handleBroadcast };
+module.exports = { handleList, handleGet, handleCreate, handleUpdate, handleDelete };
 
 function handleBroadcast(req, res) {
   let body = '';
@@ -136,8 +136,9 @@ function handleBroadcast(req, res) {
               completed++;
               if (completed === appointments.length) {
                 const ids = appointments.map(a => a.id);
-                db.run(`UPDATE appointments SET reminder_sent = 1 WHERE id IN (${ids.map(() => '?').join(',')})`, ids, () => {});
-                return sendSecureJSON(res, 200, { ok: true, sent: appointments.length });
+                db.run(`UPDATE appointments SET reminder_sent = 1 WHERE id IN (${ids.map(() => '?').join(',')})`, ids, () => {
+                  return sendSecureJSON(res, 200, { ok: true, sent: appointments.length });
+                });
               }
             }
           );
@@ -148,3 +149,5 @@ function handleBroadcast(req, res) {
     }
   });
 }
+
+module.exports = { handleList, handleGet, handleCreate, handleUpdate, handleDelete, handleBroadcast };

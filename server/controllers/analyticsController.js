@@ -11,66 +11,55 @@ function sendSecureJSON(res, status, data) {
   res.end(payload);
 }
 
-function handleOverview(req, res) {
-  const stats = {
-    totalPatients: 0,
-    activePatients: 0,
-    totalEncounters: 0,
-    totalLabOrders: 0,
-    pendingLabOrders: 0,
-    totalDispensing: 0,
-    totalAppointments: 0,
-    scheduledAppointments: 0,
-    totalNotifications: 0,
-    unreadNotifications: 0,
-    totalInventory: 0,
-    lowStockItems: 0,
-    totalReferrals: 0,
-    pendingReferrals: 0,
-  };
-
-  db.get(`SELECT COUNT(*) as totalPatients FROM patients`, (err, row) => {
-    if (!err && row) stats.totalPatients = row.totalPatients;
-    db.get(`SELECT COUNT(*) as activePatients FROM patients WHERE hiv_status = 'positive'`, (err, row) => {
-      if (!err && row) stats.activePatients = row.activePatients;
-      db.get(`SELECT COUNT(*) as totalEncounters FROM encounters`, (err, row) => {
-        if (!err && row) stats.totalEncounters = row.totalEncounters;
-        db.get(`SELECT COUNT(*) as totalLabOrders FROM lab_orders`, (err, row) => {
-          if (!err && row) stats.totalLabOrders = row.totalLabOrders;
-          db.get(`SELECT COUNT(*) as pendingLabOrders FROM lab_orders WHERE status = 'ordered' OR status = 'processing'`, (err, row) => {
-            if (!err && row) stats.pendingLabOrders = row.pendingLabOrders;
-            db.get(`SELECT COUNT(*) as totalDispensing FROM pharmacy_dispensing`, (err, row) => {
-              if (!err && row) stats.totalDispensing = row.totalDispensing;
-              db.get(`SELECT COUNT(*) as totalAppointments FROM appointments`, (err, row) => {
-                if (!err && row) stats.totalAppointments = row.totalAppointments;
-                db.get(`SELECT COUNT(*) as scheduledAppointments FROM appointments WHERE status = 'scheduled'`, (err, row) => {
-                  if (!err && row) stats.scheduledAppointments = row.scheduledAppointments;
-                  db.get(`SELECT COUNT(*) as totalNotifications FROM notifications`, (err, row) => {
-                    if (!err && row) stats.totalNotifications = row.totalNotifications;
-                    db.get(`SELECT COUNT(*) as unreadNotifications FROM notifications WHERE read_at IS NULL`, (err, row) => {
-                      if (!err && row) stats.unreadNotifications = row.unreadNotifications;
-                      db.get(`SELECT COUNT(*) as totalInventory FROM inventory`, (err, row) => {
-                        if (!err && row) stats.totalInventory = row.totalInventory;
-                        db.get(`SELECT COUNT(*) as lowStockItems FROM inventory WHERE current_stock <= reorder_level`, (err, row) => {
-                          if (!err && row) stats.lowStockItems = row.lowStockItems;
-                          db.get(`SELECT COUNT(*) as totalReferrals FROM referrals`, (err, row) => {
-                            if (!err && row) stats.totalReferrals = row.totalReferrals;
-                            db.get(`SELECT COUNT(*) as pendingReferrals FROM referrals WHERE status = 'pending'`, (err, row) => {
-                              if (!err && row) stats.pendingReferrals = row.pendingReferrals;
-                              return sendSecureJSON(res, 200, { ok: true, stats });
-                            });
-                          });
-                        });
-                      });
-                    });
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
+function queryGet(sql, defaults = {}) {
+  return new Promise((resolve) => {
+    db.get(sql, (err, row) => {
+      resolve({ ...defaults, ...(row || {}) });
     });
+  });
+}
+
+function handleOverview(req, res) {
+  Promise.all([
+    queryGet("SELECT COUNT(*) as totalPatients FROM patients", { totalPatients: 0 }),
+    queryGet("SELECT COUNT(*) as activePatients FROM patients WHERE hiv_status = 'positive'", { activePatients: 0 }),
+    queryGet("SELECT COUNT(*) as totalEncounters FROM encounters", { totalEncounters: 0 }),
+    queryGet("SELECT COUNT(*) as totalLabOrders FROM lab_orders", { totalLabOrders: 0 }),
+    queryGet("SELECT COUNT(*) as pendingLabOrders FROM lab_orders WHERE status = 'ordered' OR status = 'processing'", { pendingLabOrders: 0 }),
+    queryGet("SELECT COUNT(*) as totalDispensing FROM pharmacy_dispensing", { totalDispensing: 0 }),
+    queryGet("SELECT COUNT(*) as totalAppointments FROM appointments", { totalAppointments: 0 }),
+    queryGet("SELECT COUNT(*) as scheduledAppointments FROM appointments WHERE status = 'scheduled'", { scheduledAppointments: 0 }),
+    queryGet("SELECT COUNT(*) as totalNotifications FROM notifications", { totalNotifications: 0 }),
+    queryGet("SELECT COUNT(*) as unreadNotifications FROM notifications WHERE read_at IS NULL", { unreadNotifications: 0 }),
+    queryGet("SELECT COUNT(*) as totalInventory FROM inventory", { totalInventory: 0 }),
+    queryGet("SELECT COUNT(*) as lowStockItems FROM inventory WHERE current_stock <= reorder_level", { lowStockItems: 0 }),
+    queryGet("SELECT COUNT(*) as totalReferrals FROM referrals", { totalReferrals: 0 }),
+    queryGet("SELECT COUNT(*) as pendingReferrals FROM referrals WHERE status = 'pending'", { pendingReferrals: 0 }),
+  ]).then(([
+    totalPatients, activePatients, totalEncounters, totalLabOrders,
+    pendingLabOrders, totalDispensing, totalAppointments, scheduledAppointments,
+    totalNotifications, unreadNotifications, totalInventory, lowStockItems,
+    totalReferrals, pendingReferrals
+  ]) => {
+    const stats = {
+      totalPatients: totalPatients.totalPatients || 0,
+      activePatients: activePatients.activePatients || 0,
+      totalEncounters: totalEncounters.totalEncounters || 0,
+      totalLabOrders: totalLabOrders.totalLabOrders || 0,
+      pendingLabOrders: pendingLabOrders.pendingLabOrders || 0,
+      totalDispensing: totalDispensing.totalDispensing || 0,
+      totalAppointments: totalAppointments.totalAppointments || 0,
+      scheduledAppointments: scheduledAppointments.scheduledAppointments || 0,
+      totalNotifications: totalNotifications.totalNotifications || 0,
+      unreadNotifications: unreadNotifications.unreadNotifications || 0,
+      totalInventory: totalInventory.totalInventory || 0,
+      lowStockItems: lowStockItems.lowStockItems || 0,
+      totalReferrals: totalReferrals.totalReferrals || 0,
+      pendingReferrals: pendingReferrals.pendingReferrals || 0,
+    };
+    return sendSecureJSON(res, 200, { ok: true, stats });
+  }).catch(() => {
+    return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
   });
 }
 
