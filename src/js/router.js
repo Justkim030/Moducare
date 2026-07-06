@@ -201,6 +201,7 @@ document.addEventListener('click', (e)=>{
   const dropdown = parentItem?.querySelector('.mc-nav-dropdown');
   
   if (dropdown && !a.classList.contains('sub')) {
+    e.preventDefault();
     document.querySelectorAll('.mc-nav-item').forEach(li => {
       if (li !== parentItem) li.classList.remove('expanded');
     });
