@@ -33,8 +33,8 @@ function handleList(req, res) {
     }
     const encounters = (rows || []).map(r => ({
       ...r,
-      vitals: r.vitals ? JSON.parse(r.vitals) : {},
-      diagnoses: r.diagnoses ? JSON.parse(r.diagnoses) : [],
+      vitals: (() => { try { return r.vitals ? JSON.parse(r.vitals) : {}; } catch { return {}; } })(),
+      diagnoses: (() => { try { return r.diagnoses ? JSON.parse(r.diagnoses) : []; } catch { return []; } })(),
     }));
     return sendSecureJSON(res, 200, { ok: true, encounters });
   });
@@ -56,8 +56,8 @@ function handleGet(req, res) {
       ok: true,
       encounter: {
         ...row,
-        vitals: row.vitals ? JSON.parse(row.vitals) : {},
-        diagnoses: row.diagnoses ? JSON.parse(row.diagnoses) : [],
+        vitals: (() => { try { return row.vitals ? JSON.parse(row.vitals) : {}; } catch { return {}; } })(),
+        diagnoses: (() => { try { return row.diagnoses ? JSON.parse(row.diagnoses) : []; } catch { return []; } })(),
       }
     });
   });
