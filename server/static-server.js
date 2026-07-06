@@ -93,8 +93,8 @@ function sendSecureJSON(res, status, data) {
 
 const { verifyToken } = require('./utils/jwt');
 
-const AUTH_ROLES  = ['role_dev', 'role_nurse', 'admin', 'role_admin', 'staff', 'lead', 'supervisor', 'director', 'role_finance'];
-const ADMIN_ROLES = ['role_dev', 'admin', 'role_admin'];
+const AUTH_ROLES  = ['role_dev', 'role_nurse', 'role_admin', 'role_lead', 'role_supervisor', 'role_director', 'role_finance'];
+const ADMIN_ROLES = ['role_admin'];
 
 function enforceRole(allowedRoles, handler) {
   return function(req, res) {
