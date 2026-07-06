@@ -5,66 +5,130 @@
       <p id="dashboard-subtitle" class="dashboard-subtitle"></p>
     </div>
     <div class="dashboard-actions">
-      <button id="left-collapse" class="mc-btn">◀</button>
+      <button id="left-collapse" class="mc-btn" aria-label="Toggle Sidebar">◀</button>
     </div>
   </header>
 
   <div id="role-cards" class="role-kpi-grid"></div>
 
+  <div class="stats-summary" id="stats-summary">
+    <div class="stat-card"><div class="stat-card__label">Patients</div><div class="stat-card__value" id="stat-patients">0</div></div>
+    <div class="stat-card"><div class="stat-card__label">Appointments</div><div class="stat-card__value" id="stat-appointments">0</div></div>
+    <div class="stat-card"><div class="stat-card__label">Open Incidents</div><div class="stat-card__value" id="stat-incidents">0</div></div>
+    <div class="stat-card"><div class="stat-card__label">Notifications</div><div class="stat-card__value" id="stat-notifications">0</div></div>
+  </div>
+
   <div class="dashboard-layout">
-    <!-- Overview View -->
+
     <div id="view-overview" class="dashboard-view active">
       <section class="card">
-          <div class="section-header">
-            <div class="section-title">Recent Activity</div>
-            <div>
-              <input id="activity-search" type="search" placeholder="Search recent activity">
-              <button id="export-csv" class="mc-btn">Export</button>
-            </div>
+        <div class="section-header">
+          <div class="section-title">Recent Activity</div>
+          <div class="section-actions">
+            <input id="activity-search" type="search" class="input" placeholder="Search activity...">
+            <button id="export-csv" class="mc-btn">Export CSV</button>
           </div>
-          <div class="table-wrap">
-            <table class="table">
-              <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
-              <tbody id="recent-body"><tr><td colspan="4">Loading…</td></tr></tbody>
-            </table>
-          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+            <tbody id="recent-body"><tr><td colspan="4" class="mc-muted">Loading...</td></tr></tbody>
+          </table>
+        </div>
       </section>
-
       <section class="card">
-        <div class="section-header"><div class="section-title">Quick Report</div></div>
+        <div class="section-header"><div class="section-title">Quick Incident Report</div></div>
         <form id="incident-form">
-          <div class="input-group"><label>Title<input id="inc-title" class="input" required></label></div>
-          <div class="input-group"><label>Patient<input id="inc-patient" class="input"></label></div>
-          <button type="submit" class="mc-btn btn-primary">Submit Report</button>
+          <div class="form-grid">
+            <div class="input-group"><label>Title<input id="inc-title" class="input" required></label></div>
+            <div class="input-group"><label>Patient<input id="inc-patient" class="input"></label></div>
+            <div class="input-group"><label>Severity<select id="inc-severity" class="input"><option>S3</option><option>S2</option><option>S1</option></select></label></div>
+            <button type="submit" class="mc-btn btn-primary">Submit Report</button>
+          </div>
         </form>
       </section>
     </div>
 
-    <!-- Tasks View -->
     <div id="view-tasks" class="dashboard-view">
       <section class="card">
-        <div class="section-header"><div class="section-title">My Tasks</div></div>
-        <p class="mc-muted">Assigned tasks and reminders will appear here.</p>
+        <div class="section-header">
+          <div class="section-title">Operations & Tasks</div>
+          <div class="section-actions">
+            <select id="task-filter" class="input">
+              <option value="all">All Tasks</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+            <button id="new-task-btn" class="mc-btn btn-primary">+ New Task</button>
+          </div>
+        </div>
+        <div id="task-list" class="task-list"><p class="mc-muted">Loading tasks...</p></div>
       </section>
     </div>
 
-    <!-- Calendar View -->
     <div id="view-calendar" class="dashboard-view">
       <section class="card">
-        <div class="section-header"><div class="section-title">Schedule Overview</div></div>
-        <div id="calendar-list" class="calendar-list">Loading appointments...</div>
+        <div class="section-header">
+          <div class="section-title">Schedule Overview</div>
+          <div class="calendar-nav">
+            <button id="cal-prev" class="mc-btn">◀</button>
+            <span id="cal-month" class="cal-month-label"></span>
+            <button id="cal-next" class="mc-btn">▶</button>
+          </div>
+        </div>
+        <div class="calendar-layout">
+          <div class="calendar-grid" id="calendar-grid">
+            <div class="cal-header-row"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+            <div id="calendar-days" class="calendar-days"></div>
+          </div>
+          <div class="calendar-sidebar">
+            <h4 id="cal-sidebar-date" class="cal-sidebar-date">Select a date</h4>
+            <div id="calendar-appointments" class="calendar-appointments"><p class="mc-muted">Click a date to view appointments.</p></div>
+          </div>
+        </div>
       </section>
     </div>
 
-    <!-- KPI 1 View (Financial Metrics) -->
     <div id="view-kpi-1" class="dashboard-view">
       <section class="card">
-        <div class="section-header"><div class="section-title">Financial Metrics</div></div>
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">Revenue</div><div class="value" id="kpi-revenue">KSh 0.00</div></div>
-          <div class="kpi"><div class="label">Costs</div><div class="value" id="kpi-costs">KSh 0.00</div></div>
+        <div class="section-header"><div class="section-title">Financial Metrics Overview</div></div>
+        <div class="kpi-grid" id="kpi-grid">
+          <div class="kpi"><div class="label">Revenue (Paid)</div><div class="value" id="kpi-revenue">KSh 0.00</div></div>
+          <div class="kpi"><div class="label">Pending Costs</div><div class="value" id="kpi-costs">KSh 0.00</div></div>
+          <div class="kpi"><div class="label">Pending Invoices</div><div class="value" id="kpi-pending">0</div></div>
+          <div class="kpi"><div class="label">Paid Invoices</div><div class="value" id="kpi-paid">0</div></div>
+        </div>
+        <div class="kpi-chart">
+          <div class="kpi-chart__title">Monthly Financial Overview</div>
+          <div class="kpi-chart__bars" id="kpi-bars"><p class="mc-muted">Loading financial data...</p></div>
         </div>
       </section>
+    </div>
+
+  </div>
+
+  <div id="task-modal" class="mc-modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-task-title">New Task</h3>
+        <button id="task-modal-close" class="modal__close" aria-label="Close">✕</button>
+      </div>
+      <form id="task-form">
+        <div class="modal__body">
+          <div class="input-group"><label>Title<input id="task-title" class="input" required></label></div>
+          <div class="input-group"><label>Description<textarea id="task-desc" class="input" rows="3"></textarea></label></div>
+          <div class="form-row">
+            <div class="input-group"><label>Priority<select id="task-priority" class="input"><option>medium</option><option>high</option><option>low</option></select></label></div>
+            <div class="input-group"><label>Due Date<input id="task-due" type="date" class="input"></label></div>
+            <div class="input-group"><label>Assignee<input id="task-assignee" class="input"></label></div>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" id="task-modal-cancel" class="mc-btn">Cancel</button>
+          <button type="submit" class="mc-btn btn-primary">Save Task</button>
+        </div>
+      </form>
     </div>
   </div>
 </section>
