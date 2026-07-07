@@ -23,6 +23,7 @@ const eventsController = require('./controllers/eventsController');
 const auditController = require('./controllers/auditController');
 const { checkRateLimit, resetRateLimit, checkBodySize } = require('./middleware/rateLimit');
 const db = require('./config/db');
+const { runMigration } = require('./migrate');
 
 require('dotenv').config();
 
@@ -436,10 +437,18 @@ function handleReminderTrigger(req, res) {
   });
 }
 
-server.listen(PORT, () => {
-  console.log(`\n======================================================`);
-  console.log(`🚀 Secure ModuCare Application Engine active.`);
-  console.log(`📂 Serving plain assets directly from root directory.`);
-  console.log(`👉 Access dashboard at: http://localhost:${PORT}`);
-  console.log(`======================================================\n`);
-});
+runMigration()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`\n======================================================`);
+      console.log(`🚀 Secure ModuCare Application Engine active.`);
+      console.log(`📂 Serving plain assets directly from root directory.`);
+      console.log(`👉 Access dashboard at: http://localhost:${PORT}`);
+      console.log(`======================================================\n`);
+    });
+  })
+  .catch((err) => {
+    console.error('Fatal: database migration failed, server not started.', err.message);
+    process.exit(1);
+  });
+
