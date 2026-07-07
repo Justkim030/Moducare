@@ -50,7 +50,7 @@ function handleList(req, res) {
       status: r.status,
       assignee: r.assignee,
       due: r.due,
-      tags: r.tags ? JSON.parse(r.tags) : [],
+      tags: (() => { try { return r.tags ? JSON.parse(r.tags) : []; } catch { return []; } })(),
       notes: r.notes,
       employee_id: r.employee_id,
       owner: r.owner,
@@ -73,7 +73,7 @@ function handleGet(req, res) {
       ok: true,
       operation: {
         ...row,
-        tags: row.tags ? JSON.parse(row.tags) : [],
+        tags: (() => { try { return row.tags ? JSON.parse(row.tags) : []; } catch { return []; } })(),
       }
     });
   });

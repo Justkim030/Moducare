@@ -23,7 +23,7 @@ function handleList(req, res) {
      return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
    }
 
-   db.all(`SELECT u.id, u.email, u.phone_number, e.name, r.name as role_name, r.id as role_id FROM users u LEFT JOIN employees e ON e.user_id = u.id LEFT JOIN roles r ON r.id = e.role_id`, (err, rows) => {
+    db.all(`SELECT u.id, u.email, u.phone_number, e.name, r.name as role_name, r.id as role_id, r.department_id FROM users u LEFT JOIN employees e ON e.user_id = u.id LEFT JOIN roles r ON r.id = e.role_id`, (err, rows) => {
      if (err) {
        console.error(`[SECURE EXCEPTION] Users List Database Error: ${err.message}`);
        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
