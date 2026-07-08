@@ -42,6 +42,117 @@ export const DEPARTMENT_MODULES = {
   'dept_admin': ['finance-billing', 'patients', 'notifications', 'audit-compliance', 'document-vault'],
 };
 
+// ── Clinical RBAC (Level 1 + Level 2) ──────────────────────────
+// Maps the DB role_id to a clinical workspace profile. The backend is the
+// authoritative source of capabilities; the frontend only renders what the
+// server returns in the login payload (session.capabilities).
+export const CLINICAL_ROLE_MAP = {
+  role_admin:      { key: 'admin',    label: 'System Admin',          color: '#DC2626' },
+  role_dev:        { key: 'intake',   label: 'Front-Desk / Intake',   color: '#5B9ED6' },
+  role_nurse:      { key: 'triage',   label: 'Clinical Staff / Triage', color: '#13C8BC' },
+  role_lead:       { key: 'provider', label: 'Healthcare Provider',   color: '#1E5799' },
+  role_supervisor: { key: 'mande',    label: 'Facility Analytics & M&E', color: '#F59E0B' },
+  role_director:   { key: 'mande',    label: 'Facility Analytics & M&E', color: '#F59E0B' },
+  role_finance:    { key: 'ancillary',label: 'Ancillary Services',    color: '#7C3AED' },
+};
+
+// module id -> capability required to view it (mirrors server MODULE_CAPABILITIES)
+export const MODULE_CAPABILITIES = {
+  'dashboard':           'patient:read',
+  'patients':            'patient:read',
+  'scheduling-calendar': 'appointment:read',
+  'operations-tasks':    'patient:read',
+  'communications':      'communication:read',
+  'document-vault':      'patient:read',
+  'incident-reporting':  'incident:read',
+  'clinical':            'encounter:read',
+  'encounters':          'encounter:read',
+  'lab-orders':          'lab:read',
+  'pharmacy':            'pharmacy:inventory_read',
+  'finance-billing':     'finance:read',
+  'analytics-reports':   'analytics:read',
+  'audit-compliance':    'audit:read',
+  'admin':               'user:manage',
+  'system-health':       'system:health',
+};
+
+// Clinical dashboard blueprint (6 cards per role) — rendered only if the
+// user holds the required capability (Level 1).
+export const CLINICAL_PROFILES = {
+  admin: {
+    title: 'System Administration',
+    description: 'User management, system health, audit logs, and access control.',
+    cards: [
+      { id: 'user-provisioning', title: 'User Provisioning', route: '/admin', icon: '👤', cap: 'user:manage' },
+      { id: 'role-permissions',  title: 'Role Permissions',  route: '/admin', icon: '🔐', cap: 'role:manage' },
+      { id: 'audit-logs',        title: 'Audit Logs',        route: '/audit-compliance', icon: '📝', cap: 'audit:read' },
+      { id: 'system-health',     title: 'System Health',     route: '/dashboard/overview', icon: '🖥️', cap: 'system:health' },
+      { id: 'db-backups',        title: 'Database Backups',  route: '/admin', icon: '💾', cap: 'backup:manage' },
+      { id: 'incident-logs',     title: 'Incident Logs',     route: '/incident-reporting', icon: '🚨', cap: 'incident:read' },
+    ],
+  },
+  intake: {
+    title: 'Front-Desk / Intake',
+    description: 'Get patients into the building and route them correctly.',
+    cards: [
+      { id: 'patient-search',   title: 'Patient Search',     route: '/patients/list', icon: '🔎', cap: 'patient:read' },
+      { id: 'new-registration', title: 'New Registration',   route: '/patients/new', icon: '📝', cap: 'patient:register' },
+      { id: 'visit-initiation', title: 'Visit Initiation',   route: '/patients/new', icon: '🚪', cap: 'appointment:write' },
+      { id: 'facility-queue',   title: 'Active Facility Queue', route: '/dashboard', icon: '📋', cap: 'patient:read' },
+      { id: 'appointments',     title: 'Appointments Schedule', route: '/scheduling-calendar', icon: '📅', cap: 'appointment:read' },
+      { id: 'demographics',     title: 'Demographics Update', route: '/patients/list', icon: '🏠', cap: 'patient:write_demographics' },
+    ],
+  },
+  triage: {
+    title: 'Clinical Staff / Triage',
+    description: 'Capture initial vitals and clear the waitlist.',
+    cards: [
+      { id: 'triage-waitlist',  title: 'Triage Waitlist',   route: '/dashboard', icon: '⏳', cap: 'patient:read' },
+      { id: 'vitals-capture',   title: 'Vitals Capture',    route: '/encounters', icon: '💓', cap: 'patient:write_vitals' },
+      { id: 'encounter-history',title: 'Encounter History', route: '/encounters', icon: '📁', cap: 'encounter:read' },
+      { id: 'screening-tools',  title: 'Screening Tools (TB/Nutrition)', route: '/encounters', icon: '🧪', cap: 'encounter:write' },
+      { id: 'patient-handover', title: 'Patient Handover',  route: '/communications', icon: '🤝', cap: 'communication:write' },
+      { id: 'incident-reporting', title: 'Incident Reporting', route: '/incident-reporting', icon: '🚨', cap: 'incident:write' },
+    ],
+  },
+  provider: {
+    title: 'Healthcare Provider',
+    description: 'Clinical decision-making, examinations, and order entries.',
+    cards: [
+      { id: 'clinical-workspace', title: 'Clinical Workspace', route: '/encounters', icon: '🩺', cap: 'encounter:read' },
+      { id: 'consultation-forms', title: 'Consultation Forms', route: '/encounters', icon: '📋', cap: 'encounter:write' },
+      { id: 'order-entry',        title: 'Order Entry (Lab/Rx)', route: '/lab-orders', icon: '🧾', cap: 'prescription:write' },
+      { id: 'care-timeline',      title: 'Patient Care Timeline', route: '/patients/records', icon: '🕒', cap: 'patient:read' },
+      { id: 'referrals',          title: 'Referrals & Discharges', route: '/referrals', icon: '↪️', cap: 'referral:write' },
+      { id: 'medical-alerts',     title: 'Medical Alerts / CDSS', route: '/dashboard', icon: '🔔', cap: 'patient:write_clinical' },
+    ],
+  },
+  mande: {
+    title: 'Facility Analytics & M&E',
+    description: 'Aggregated reporting, compliance, and clinical outcomes.',
+    cards: [
+      { id: 'cohort-tracking', title: 'M&E Cohort Tracking', route: '/dashboard', icon: '📊', cap: 'analytics:read' },
+      { id: 'moh-exports',     title: 'MoH Reporting Exports', route: '/dashboard', icon: '📤', cap: 'report:export' },
+      { id: 'facility-kpis',   title: 'Facility Performance KPIs', route: '/dashboard/kpi-1', icon: '📈', cap: 'analytics:read' },
+      { id: 'defaulter-logs',  title: 'Retention & Defaulter Logs', route: '/dashboard', icon: '📉', cap: 'analytics:read' },
+      { id: 'quality-assurance', title: 'Quality Assurance (QA)', route: '/audit-compliance', icon: '✅', cap: 'audit:read' },
+      { id: 'finance-summaries', title: 'Finance & Billing Summaries', route: '/finance-billing', icon: '💰', cap: 'finance:read' },
+    ],
+  },
+  ancillary: {
+    title: 'Ancillary Services',
+    description: 'Fulfill clinical orders: lab results and pharmacy dispensing.',
+    cards: [
+      { id: 'pending-lab',    title: 'Pending Lab Orders', route: '/lab-orders', icon: '🧪', cap: 'lab:read' },
+      { id: 'results-entry',  title: 'Results Entry',      route: '/lab-orders', icon: '📥', cap: 'lab:result_entry' },
+      { id: 'prescription-q', title: 'Prescription Queue', route: '/pharmacy', icon: '💊', cap: 'pharmacy:dispense' },
+      { id: 'drug-dispensing',title: 'Drug Dispensing',    route: '/pharmacy', icon: '💉', cap: 'pharmacy:dispense' },
+      { id: 'pharma-inventory', title: 'Pharmaceutical Inventory', route: '/pharmacy', icon: '📦', cap: 'pharmacy:inventory_read' },
+      { id: 'stock-alerts',   title: 'Stock Alerts',       route: '/inventory', icon: '⚠️', cap: 'inventory:read' },
+    ],
+  },
+};
+
 // Role-specific dashboard cards and quick actions
 export const DASHBOARD_PROFILES = {
   staff: {
@@ -107,24 +218,19 @@ export const DASHBOARD_PROFILES = {
 };
 
 export function getDashboardProfile(roleId, departmentId) {
-  const key = (roleId || '').toLowerCase();
-  let profile = DASHBOARD_PROFILES[key] || DASHBOARD_PROFILES.staff;
-  
-  // Filter cards by department for staff-level users
-  if (roleId === 'staff' || roleId === 'STAFF') {
-    const allowedModules = DEPARTMENT_MODULES[departmentId] || [];
-    profile = {
-      ...profile,
-      cards: profile.cards.filter(card => {
-        if (!card.module) return true;
-        const requiredLevel = MODULE_PERMISSIONS[card.module] || 0;
-        const userLevel = ROLES['STAFF'].level;
-        return userLevel >= requiredLevel && allowedModules.includes(card.module);
-      })
-    };
-  }
-  
-  return profile;
+  const clinical = CLINICAL_ROLE_MAP[(roleId || '').toLowerCase()];
+  const profile = CLINICAL_PROFILES[clinical ? clinical.key : 'intake'] || CLINICAL_PROFILES.intake;
+  const caps = getSession()?.capabilities || [];
+  const allowed = (cap) => !cap || caps.includes(cap) || caps.includes('*');
+  return {
+    ...profile,
+    cards: profile.cards.filter(card => allowed(card.cap)),
+  };
+}
+
+export function canAccessCapability(capability) {
+  const caps = getSession()?.capabilities || [];
+  return caps.includes('*') || caps.includes(capability);
 }
 
 // ── Session Management ───────────────────────────────────────
@@ -190,6 +296,9 @@ export function setSession(user, token, remember = false) {
     else session.role = rid.replace(/^role_/, '');
   }
 
+  const clinical = CLINICAL_ROLE_MAP[(session.role_id || '').toLowerCase()];
+  if (clinical) session.clinical_role = clinical.key;
+
   const storage = remember ? localStorage : sessionStorage;
   if (session.role) session.role = session.role.toLowerCase();
   storage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -250,6 +359,8 @@ export function hasRole(roleId) {
 export function canAccessModule(moduleId) {
   const session = getSession();
   if (!session) return false;
+  const cap = MODULE_CAPABILITIES[moduleId];
+  if (cap) return canAccessCapability(cap);
   const required = MODULE_PERMISSIONS[moduleId] ?? 99;
   const current  = ROLES[session.role?.toUpperCase()]?.level ?? 0;
   return current >= required;
@@ -287,6 +398,8 @@ export async function loginRequest(email, password) {
 export function getUserRoleLabel() {
   const session = getSession();
   if (!session) return '';
+  const clinical = CLINICAL_ROLE_MAP[(session.role_id || '').toLowerCase()];
+  if (clinical) return clinical.label;
   return ROLES[session.role?.toUpperCase()]?.label ?? session.role;
 }
 

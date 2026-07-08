@@ -238,10 +238,14 @@ function initSignOutButton() {
 
 // ── Hide Inaccessible Nav Items ──────────────────────────────
 function applyNavPermissions() {
-  import('./auth.js').then(({ canAccessModule }) => {
+  import('./auth.js').then(({ canAccessCapability, canAccessModule }) => {
+    // Capability-gated nav (Level 1): hide items the user lacks the capability for.
+    document.querySelectorAll('.mc-nav-item[data-capability]').forEach(el => {
+      el.style.display = canAccessCapability(el.dataset.capability) ? '' : 'none';
+    });
+    // Legacy module-gated nav (fallback).
     document.querySelectorAll('.nav-item[data-module]').forEach(el => {
-      const allowed = canAccessModule(el.dataset.module);
-      el.style.display = allowed ? '' : 'none';
+      el.style.display = canAccessModule(el.dataset.module) ? '' : 'none';
     });
   });
 }

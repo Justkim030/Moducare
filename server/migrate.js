@@ -15,6 +15,8 @@ const bcrypt = require('bcryptjs');
 
 require('dotenv').config();
 
+const { initCapabilities } = require('./config/permissions');
+
 const ROOT = process.cwd();
 const dbPath = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('sqlite://')
   ? path.resolve(ROOT, process.env.DATABASE_URL.replace('sqlite://', ''))
@@ -346,12 +348,19 @@ function buildSchema(db, resolve, reject) {
 
     console.log('--- Seeding reference + demo data (INSERT OR IGNORE) ---');
     seedData(db);
-  });
 
-  db.close((err) => {
-    if (err) { console.error('Migration close error:', err.message); return reject(err); }
-    console.log('✓ Migration complete. Database ready.');
-    resolve();
+    initCapabilities()
+      .then(() => {
+        db.close((err) => {
+          if (err) { console.error('Migration close error:', err.message); return reject(err); }
+          console.log('✓ Migration complete. Database ready.');
+          resolve();
+        });
+      })
+      .catch((e) => {
+        console.error('Capability seed error:', e.message);
+        db.close(() => reject(e));
+      });
   });
 }
 

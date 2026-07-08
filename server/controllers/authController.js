@@ -4,6 +4,7 @@ const db = require('../config/db');
 const { validateEmail, validateRequired, sanitizeString } = require('../middleware/validation');
 const { signToken, verifyToken } = require('../utils/jwt');
 const { resetRateLimit } = require('../middleware/rateLimit');
+const { getCapabilities, getModulesForRole } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -81,7 +82,9 @@ async function handleLogin(req, res) {
           role_id: account.role_id,
           role_name: account.role_name,
           department_id: account.department_id,
-          department_name: account.department_name
+          department_name: account.department_name,
+          capabilities: getCapabilities(account.role_id),
+          modules: getModulesForRole(account.role_id)
         };
 
         const token = signToken(safeUserSession);
