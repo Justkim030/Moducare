@@ -133,7 +133,13 @@ const server = http.createServer((req, res) => {
   res.removeHeader('Server');
   res.removeHeader('X-Powered-By');
 
-  const url = decodeURIComponent(req.url.split('?')[0]);
+  let url;
+  try {
+    url = decodeURIComponent(req.url.split('?')[0]);
+  } catch (e) {
+    res.writeHead(400, { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff' });
+    return res.end(JSON.stringify({ error: 'Malformed request URL.' }));
+  }
 
   if (url.startsWith('/api/')) {
     if (url === '/api/register' && req.method === 'POST') {
@@ -315,6 +321,10 @@ const server = http.createServer((req, res) => {
 
   const filePath = path.join(ROOT, url === '/' ? '/index.html' : url);
   serveFile(filePath, res);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT] Recovered from unexpected error:', err && err.message);
 });
 
 process.on('SIGINT', () => {

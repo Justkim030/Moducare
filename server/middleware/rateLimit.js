@@ -29,57 +29,21 @@ function resetRateLimit(req) {
 }
 
 function checkBodySize(req, res, maxBytes = 1024 * 1024) {
-  let size = 0;
-  const originalWrite = res.write;
-  const originalEnd = res.end;
-  const originalWriteHead = res.writeHead;
-  let headersSent = false;
+  let received = 0;
+  let aborted = false;
 
-  res.writeHead = function(status, ...args) {
-    if (headersSent) return originalWriteHead.apply(this, [status, ...args]);
-    const payload = args[0] || {};
-    const headerStr = Buffer.byteLength(JSON.stringify(payload || {}));
-    if (size + headerStr > maxBytes) {
-      headersSent = true;
-      res.writeHead = originalWriteHead;
-      res.write = originalWrite;
-      res.end = originalEnd;
-      originalWriteHead.call(res, 413, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ ok: false, error: 'Payload too large.' }));
-    }
-    return originalWriteHead.apply(this, [status, ...args]);
-  };
-
-  res.write = function (chunk, encoding) {
-    if (headersSent) return originalWrite.apply(this, arguments);
-    size += Buffer.byteLength(chunk, encoding);
-    if (size > maxBytes) {
-      headersSent = true;
-      res.writeHead = originalWriteHead;
-      res.write = originalWrite;
-      res.end = originalEnd;
-      res.writeHead(413, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: false, error: 'Payload too large.' }));
-      return false;
-    }
-    return originalWrite.apply(this, arguments);
-  };
-  res.end = function (chunk, encoding) {
-    if (headersSent) return originalEnd.apply(this, arguments);
-    if (chunk) {
-      size += Buffer.byteLength(chunk, encoding);
-      if (size > maxBytes) {
-        headersSent = true;
-        res.writeHead = originalWriteHead;
-        res.write = originalWrite;
-        res.end = originalEnd;
+  req.on('data', (chunk) => {
+    if (aborted) return;
+    received += chunk.length;
+    if (received > maxBytes) {
+      aborted = true;
+      if (!res.headersSent) {
         res.writeHead(413, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'Payload too large.' }));
-        return;
       }
+      req.destroy();
     }
-    return originalEnd.apply(this, arguments);
-  };
+  });
 }
 
 module.exports = { checkRateLimit, resetRateLimit, checkBodySize };
