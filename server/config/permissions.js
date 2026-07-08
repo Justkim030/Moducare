@@ -14,6 +14,10 @@
 
 // Capability catalog: kept as documentation + validation surface.
 const CAPABILITIES = {
+  'dashboard:view':           'View dashboard (role-scoped aggregates)',
+  'staff:read':               'View staff / HR deployment',
+  'operations:read':          'View operations & facility queue',
+  'clinical:read':            'View clinical module (triage/orders/CDSS)',
   'patient:read':             'View patient records',
   'patient:register':         'Register a new patient',
   'patient:write_demographics':'Edit demographic / intake data',
@@ -49,69 +53,73 @@ const CAPABILITIES = {
 
 // Seed mapping: role_id -> capabilities. This is the default that gets
 // written into role_permissions on first run (INSERT OR IGNORE keeps it
-// editable directly in the DB afterwards).
+// editable directly in the DB afterwards). Visibility caps (dashboard:view,
+// staff:read, operations:read, clinical:read, etc.) encode the Admin
+// "Role Filtering Matrix"; functional caps encode Level 2 (CRUD) enforcement.
 const ROLE_CAPABILITY_SEED = {
-  role_admin:     Object.keys(CAPABILITIES), // full control
+  role_admin:     Object.keys(CAPABILITIES), // full control — sees everything
 
-  role_dev: [ // Front-Desk / Intake
-    'patient:read', 'patient:register', 'patient:write_demographics',
+  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents)
+    'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read',
+    'patient:register', 'patient:write_demographics',
     'appointment:read', 'appointment:write',
-    'communication:read', 'communication:write',
-    'incident:read', 'incident:write',
+    'incident:write',
   ],
 
-  role_nurse: [ // Clinical Staff / Triage
-    'patient:read', 'patient:write_demographics', 'patient:write_vitals',
+  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents)
+    'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'incident:read',
+    'patient:write_demographics', 'patient:write_vitals',
     'encounter:read', 'encounter:write',
-    'appointment:read',
-    'incident:read', 'incident:write',
+    'appointment:read', 'incident:write',
   ],
 
-  role_lead: [ // Healthcare Provider
-    'patient:read', 'patient:write_clinical', 'patient:write_vitals',
+  role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents)
+    'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'communication:read', 'incident:read',
+    'patient:write_clinical', 'patient:write_vitals',
     'prescription:write', 'lab:order', 'lab:read',
     'encounter:read', 'encounter:write',
-    'referral:write', 'incident:read', 'incident:write',
-    'appointment:read',
+    'referral:write', 'incident:write', 'appointment:read',
   ],
 
-  role_supervisor: [ // Facility Analytics & M&E
-    'analytics:read', 'report:export', 'audit:read',
-    'finance:read', 'patient:read', 'incident:read',
+  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents)
+    'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
+    'analytics:read', 'report:export',
   ],
 
-  role_director: [ // Facility Analytics & M&E (director)
-    'analytics:read', 'report:export', 'audit:read',
-    'finance:read', 'finance:write', 'patient:read',
-    'system:health', 'incident:read',
+  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage
+    'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
+    'analytics:read', 'report:export', 'finance:write', 'system:health',
   ],
 
-  role_finance: [ // Ancillary Services (billing + pharmacy/inventory fulfillment)
-    'finance:read', 'finance:write',
+  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents
+    'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'clinical:read', 'incident:read',
+    'finance:write',
     'pharmacy:inventory_read', 'inventory:read', 'inventory:write',
     'lab:result_entry', 'pharmacy:dispense', 'lab:read',
-    'patient:read',
   ],
 };
 
-// Module id -> capability required to access it (frontend nav gating).
+// Module id -> capability required to *view* it in the sidebar (L1 gating).
+// Maps directly to the Admin "Role Filtering Matrix".
 const MODULE_CAPABILITIES = {
-  'dashboard':          'patient:read',
-  'patients':           'patient:read',
-  'scheduling-calendar':'appointment:read',
-  'operations-tasks':   'patient:read',
-  'communications':     'communication:read',
-  'document-vault':    'patient:read',
-  'incident-reporting': 'incident:read',
-  'clinical':           'encounter:read',
-  'encounters':         'encounter:read',
-  'lab-orders':         'lab:read',
-  'pharmacy':           'pharmacy:inventory_read',
-  'finance-billing':    'finance:read',
-  'analytics-reports':  'analytics:read',
-  'audit-compliance':   'audit:read',
-  'admin':              'user:manage',
-  'system-health':      'system:health',
+  'dashboard':           'dashboard:view',
+  'patients':            'patient:read',
+  'staff':               'staff:read',
+  'finance-billing':     'finance:read',
+  'operations-tasks':    'operations:read',
+  'clinical':            'clinical:read',
+  'communications':      'communication:read',
+  'audit-compliance':    'audit:read',
+  'incident-reporting':  'incident:read',
+  // supporting / nested views
+  'scheduling-calendar': 'appointment:read',
+  'document-vault':      'patient:read',
+  'encounters':          'encounter:read',
+  'lab-orders':          'lab:read',
+  'pharmacy':            'pharmacy:inventory_read',
+  'analytics-reports':   'analytics:read',
+  'admin':               'user:manage',
+  'system-health':       'system:health',
 };
 
 const db = require('./db');

@@ -58,20 +58,21 @@ export const CLINICAL_ROLE_MAP = {
 
 // module id -> capability required to view it (mirrors server MODULE_CAPABILITIES)
 export const MODULE_CAPABILITIES = {
-  'dashboard':           'patient:read',
+  'dashboard':           'dashboard:view',
   'patients':            'patient:read',
-  'scheduling-calendar': 'appointment:read',
-  'operations-tasks':    'patient:read',
+  'staff':               'staff:read',
+  'finance-billing':     'finance:read',
+  'operations-tasks':    'operations:read',
+  'clinical':            'clinical:read',
   'communications':      'communication:read',
-  'document-vault':      'patient:read',
+  'audit-compliance':    'audit:read',
   'incident-reporting':  'incident:read',
-  'clinical':            'encounter:read',
+  'scheduling-calendar': 'appointment:read',
+  'document-vault':      'patient:read',
   'encounters':          'encounter:read',
   'lab-orders':          'lab:read',
   'pharmacy':            'pharmacy:inventory_read',
-  'finance-billing':     'finance:read',
   'analytics-reports':   'analytics:read',
-  'audit-compliance':    'audit:read',
   'admin':               'user:manage',
   'system-health':       'system:health',
 };
