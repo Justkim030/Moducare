@@ -16,7 +16,7 @@ export async function init(mount, State, subView) {
   const viewId = subView && subView !== 'dashboard' ? subView : (segments[2] || 'overview');
 
   const user = State?.getUser?.();
-  const profile = getDashboardProfile(user?.role, user?.department_id);
+  const profile = getDashboardProfile(user?.role_id, user?.department_id);
 
   const title = mount.querySelector('#dashboard-title');
   const subtitle = mount.querySelector('#dashboard-subtitle');

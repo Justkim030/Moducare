@@ -167,6 +167,9 @@ function navigate(path){
 function loadRoute(path){
   const segments = path.replace(/^\/+|\/+$/g, '').split('/');
   let name = segments[0] || 'dashboard';
+  // Normalize entry paths like /index.html -> dashboard (mirrors routeNameFromPath)
+  name = name.replace(/\.html$/, '');
+  if (name === 'index') name = 'dashboard';
   let subView = null;
 
   const dropdownParents = ['dashboard', 'patients', 'staff', 'finance-billing', 'operations', 'clinical', 'communications'];

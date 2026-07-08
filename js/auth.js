@@ -84,12 +84,12 @@ export const CLINICAL_PROFILES = {
     title: 'System Administration',
     description: 'User management, system health, audit logs, and access control.',
     cards: [
-      { id: 'user-provisioning', title: 'User Provisioning', route: '/admin', icon: '👤', cap: 'user:manage' },
+      { id: 'user-provisioning', title: 'User Provisioning', route: '/admin', icon: '👤', cap: 'user:manage', data: 'users' },
       { id: 'role-permissions',  title: 'Role Permissions',  route: '/admin', icon: '🔐', cap: 'role:manage' },
-      { id: 'audit-logs',        title: 'Audit Logs',        route: '/audit-compliance', icon: '📝', cap: 'audit:read' },
+      { id: 'audit-logs',        title: 'Audit Logs',        route: '/audit-compliance', icon: '📝', cap: 'audit:read', data: 'audit' },
       { id: 'system-health',     title: 'System Health',     route: '/dashboard/overview', icon: '🖥️', cap: 'system:health' },
       { id: 'db-backups',        title: 'Database Backups',  route: '/admin', icon: '💾', cap: 'backup:manage' },
-      { id: 'incident-logs',     title: 'Incident Logs',     route: '/incident-reporting', icon: '🚨', cap: 'incident:read' },
+      { id: 'incident-logs',     title: 'Incident Logs',     route: '/incident-reporting', icon: '🚨', cap: 'incident:read', data: 'incidents' },
     ],
   },
   intake: {
@@ -319,8 +319,10 @@ export function clearSession() {
  * Logs the current user out: clears session and redirects.
  */
 export function logout() {
-  clearSession();
-  window.location.href = 'login.html';
+  try { clearSession(); } catch (e) { /* storage may be unavailable; ignore */ }
+  // Hard navigation (replace, not href) so the back button can't return
+  // to an authenticated view and the SPA state is fully reset.
+  window.location.replace('login.html');
 }
 
 // ── Auth Guards ──────────────────────────────────────────────
