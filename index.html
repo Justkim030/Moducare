@@ -57,7 +57,7 @@
       <nav>
         <ul class="mc-nav-list">
           <!-- Dashboard Dropdown -->
-          <li class="mc-nav-item" id="nav-dashboard-item" data-capability="patient:read">
+          <li class="mc-nav-item" id="nav-dashboard-item" data-capability="dashboard:view">
             <a href="/dashboard" data-route class="mc-nav-link" id="dashboard-toggle">Dashboard <span class="mc-nav-chevron">▾</span></a>
             <ul class="mc-nav-dropdown">
               <li><a href="/dashboard/overview" data-route class="mc-nav-link sub">Overview</a></li>
@@ -78,7 +78,7 @@
           </li>
           
           <!-- Staff Dropdown -->
-          <li class="mc-nav-item" id="nav-staff-item" data-capability="user:manage">
+          <li class="mc-nav-item" id="nav-staff-item" data-capability="staff:read">
             <a href="/staff" data-route class="mc-nav-link" id="staff-toggle">👥 Staff <span class="mc-nav-chevron">▾</span></a>
             <ul class="mc-nav-dropdown">
               <li><a href="/staff/list" data-route class="mc-nav-link sub">Staff List</a></li>
@@ -98,7 +98,7 @@
           </li>
 
           <!-- Operations Dropdown -->
-          <li class="mc-nav-item" id="nav-operations-item" data-capability="patient:read">
+          <li class="mc-nav-item" id="nav-operations-item" data-capability="operations:read">
             <a href="/operations" data-route class="mc-nav-link mc-nav-operations" id="operations-toggle">⚙️ Operations <span class="mc-nav-chevron">▾</span></a>
             <ul class="mc-nav-dropdown">
               <li><a href="/operations/tasks" data-route class="mc-nav-link sub">Tasks</a></li>
@@ -107,7 +107,7 @@
           </li>
 
           <!-- Clinical Dropdown -->
-          <li class="mc-nav-item" id="nav-clinical-item" data-capability="encounter:read">
+          <li class="mc-nav-item" id="nav-clinical-item" data-capability="clinical:read">
             <a href="/clinical" data-route class="mc-nav-link" id="clinical-toggle">🩺 Clinical <span class="mc-nav-chevron">▾</span></a>
             <ul class="mc-nav-dropdown">
               <li><a href="/encounters" data-route class="mc-nav-link sub">Encounters</a></li>
