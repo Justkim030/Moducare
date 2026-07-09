@@ -109,17 +109,11 @@ const ROLE_CAPABILITY_SEED = {
     'attendance:view', 'leave:approve', 'role:manage',
   ],
 
-  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications, Staff
+  role_director: [ // M&E Director — same visibility as supervisor, adds staff/system manage, Communications, Notifications, Inventory audit/reconcile/approve, HR
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
-    'inventory:read', 'inventory:approve',
-    'attendance:view', 'leave:approve',
-  ],
-
-  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications, Staff
-    'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
-    'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
-    'inventory:reconcile', 'inventory:audit', 'attendance:view', 'leave:approve', 'role:manage',
+    'inventory:read', 'inventory:approve', 'inventory:reconcile', 'inventory:audit',
+    'attendance:view', 'leave:approve', 'role:manage',
   ],
 
   role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents, Notifications
