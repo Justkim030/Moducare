@@ -193,35 +193,35 @@ const server = http.createServer((req, res) => {
     }
 
     if (url.startsWith('/api/patients')) {
-      if (req.method === 'GET' && url.match(/\/api\/patients\/[^/]+$/)) return enforceRole(AUTH_ROLES, patientsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/patients') return enforceRole(AUTH_ROLES, patientsController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/patients\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:read', patientsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/patients') return enforceRole(AUTH_ROLES, enforceCapability('patient:read', patientsController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/patients') return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', patientsController.handleCreate))(req, res);
       if (req.method === 'PUT' && url.match(/\/api\/patients\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', patientsController.handleUpdate))(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/patients\/[^/]+$/)) return enforceRole(AUTH_ROLES, patientsController.handleDelete)(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/patients\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', patientsController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/appointments')) {
-      if (req.method === 'GET' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, appointmentsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/appointments') return enforceRole(AUTH_ROLES, appointmentsController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('appointment:read', appointmentsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/appointments') return enforceRole(AUTH_ROLES, enforceCapability('appointment:read', appointmentsController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/appointments') return enforceRole(AUTH_ROLES, enforceCapability('appointment:write', appointmentsController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, appointmentsController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, appointmentsController.handleDelete)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('appointment:write', appointmentsController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/appointments\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('appointment:write', appointmentsController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/incidents')) {
-      if (req.method === 'GET' && url.match(/\/api\/incidents\/[^/]+$/)) return enforceRole(AUTH_ROLES, incidentsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/incidents') return enforceRole(AUTH_ROLES, incidentsController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/incidents\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('incident:read', incidentsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/incidents') return enforceRole(AUTH_ROLES, enforceCapability('incident:read', incidentsController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/incidents') return enforceRole(AUTH_ROLES, enforceCapability('incident:write', incidentsController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/incidents\/[^/]+$/)) return enforceRole(AUTH_ROLES, incidentsController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/incidents\/[^/]+$/)) return enforceRole(AUTH_ROLES, incidentsController.handleDelete)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/incidents\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('incident:write', incidentsController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/incidents\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('incident:write', incidentsController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/finance')) {
-      if (req.method === 'GET' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, financeController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/finance') return enforceRole(AUTH_ROLES, financeController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('finance:read', financeController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/finance') return enforceRole(AUTH_ROLES, enforceCapability('finance:read', financeController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/finance') return enforceRole(AUTH_ROLES, enforceCapability('finance:write', financeController.handleCreate))(req, res);
       if (req.method === 'PUT' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('finance:write', financeController.handleUpdate))(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, financeController.handleDelete)(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/finance\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('finance:write', financeController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/operations')) {
@@ -233,92 +233,92 @@ const server = http.createServer((req, res) => {
     }
 
     if (url.startsWith('/api/encounters')) {
-      if (req.method === 'GET' && url.match(/\/api\/encounters\/[^/]+$/)) return enforceRole(AUTH_ROLES, encountersController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/encounters') return enforceRole(AUTH_ROLES, encountersController.handleList)(req, res);
-      if (req.method === 'POST' && url === '/api/encounters') return enforceRole(AUTH_ROLES, encountersController.handleCreate)(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/encounters\/[^/]+$/)) return enforceRole(AUTH_ROLES, encountersController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/encounters\/[^/]+$/)) return enforceRole(AUTH_ROLES, encountersController.handleDelete)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/encounters\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('encounter:read', encountersController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/encounters') return enforceRole(AUTH_ROLES, enforceCapability('encounter:read', encountersController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/encounters') return enforceRole(AUTH_ROLES, enforceCapability('encounter:write', encountersController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/encounters\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('encounter:write', encountersController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/encounters\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('encounter:write', encountersController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/lab-orders')) {
-      if (req.method === 'GET' && url.match(/\/api\/lab-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, labOrdersController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/lab-orders') return enforceRole(AUTH_ROLES, labOrdersController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/lab-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('lab:read', labOrdersController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/lab-orders') return enforceRole(AUTH_ROLES, enforceCapability('lab:read', labOrdersController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/lab-orders') return enforceRole(AUTH_ROLES, enforceCapability('lab:order', labOrdersController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/lab-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, labOrdersController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/lab-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, labOrdersController.handleDelete)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/lab-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('lab:result_entry', labOrdersController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/lab-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('lab:order', labOrdersController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/pharmacy')) {
-      if (req.method === 'GET' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, pharmacyController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/pharmacy') return enforceRole(AUTH_ROLES, pharmacyController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('pharmacy:inventory_read', pharmacyController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/pharmacy') return enforceRole(AUTH_ROLES, enforceCapability('pharmacy:inventory_read', pharmacyController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/pharmacy') return enforceRole(AUTH_ROLES, enforceCapability('pharmacy:dispense', pharmacyController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, pharmacyController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, pharmacyController.handleDelete)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('pharmacy:dispense', pharmacyController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/pharmacy\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('pharmacy:dispense', pharmacyController.handleDelete))(req, res);
     }
 
     // Notifications
     if (url.startsWith('/api/notifications')) {
-      if (req.method === 'GET' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, notificationsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/notifications') return enforceRole(AUTH_ROLES, notificationsController.handleList)(req, res);
-      if (req.method === 'POST' && url === '/api/notifications') return enforceRole(AUTH_ROLES, notificationsController.handleCreate)(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, notificationsController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, notificationsController.handleDelete)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('communication:read', notificationsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/notifications') return enforceRole(AUTH_ROLES, enforceCapability('communication:read', notificationsController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/notifications') return enforceRole(AUTH_ROLES, enforceCapability('communication:write', notificationsController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('communication:write', notificationsController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/notifications\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('communication:write', notificationsController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/documents')) {
-      if (req.method === 'GET' && url.match(/\/api\/documents\/[^/]+$/)) return enforceRole(AUTH_ROLES, documentsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/documents') return enforceRole(AUTH_ROLES, documentsController.handleList)(req, res);
-      if (req.method === 'POST' && url === '/api/documents') return enforceRole(AUTH_ROLES, documentsController.handleCreate)(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/documents\/[^/]+$/)) return enforceRole(AUTH_ROLES, documentsController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/documents\/[^/]+$/)) return enforceRole(AUTH_ROLES, documentsController.handleDelete)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/documents\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:read', documentsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/documents') return enforceRole(AUTH_ROLES, enforceCapability('patient:read', documentsController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/documents') return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', documentsController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/documents\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', documentsController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/documents\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', documentsController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/referrals')) {
-      if (req.method === 'GET' && url.match(/\/api\/referrals\/[^/]+$/)) return enforceRole(AUTH_ROLES, referralsController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/referrals') return enforceRole(AUTH_ROLES, referralsController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/referrals\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('patient:read', referralsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/referrals') return enforceRole(AUTH_ROLES, enforceCapability('patient:read', referralsController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/referrals') return enforceRole(AUTH_ROLES, enforceCapability('referral:write', referralsController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/referrals\/[^/]+$/)) return enforceRole(AUTH_ROLES, referralsController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/referrals\/[^/]+$/)) return enforceRole(AUTH_ROLES, referralsController.handleDelete)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/referrals\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('referral:write', referralsController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/referrals\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('referral:write', referralsController.handleDelete))(req, res);
     }
 
     if (url.startsWith('/api/audit')) {
-      if (req.method === 'GET' && url === '/api/audit') return enforceRole(AUTH_ROLES, auditController.handleList)(req, res);
-      if (req.method === 'POST' && url === '/api/audit') return enforceRole(AUTH_ROLES, auditController.handleCreate)(req, res);
+      if (req.method === 'GET' && url === '/api/audit') return enforceRole(AUTH_ROLES, enforceCapability('audit:read', auditController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/audit') return enforceRole(AUTH_ROLES, enforceCapability('audit:read', auditController.handleCreate))(req, res);
     }
 
     if (url.startsWith('/api/inventory')) {
-      if (req.method === 'GET' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, inventoryController.handleGet)(req, res);
-      if (req.method === 'GET' && url === '/api/inventory') return enforceRole(AUTH_ROLES, inventoryController.handleList)(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', inventoryController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/inventory') return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', inventoryController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/inventory') return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', inventoryController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, inventoryController.handleUpdate)(req, res);
-      if (req.method === 'DELETE' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, inventoryController.handleDelete)(req, res);
-      if (req.method === 'GET' && url === '/api/inventory/alerts') return enforceRole(AUTH_ROLES, inventoryController.handleAlerts)(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', inventoryController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/inventory\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', inventoryController.handleDelete))(req, res);
+      if (req.method === 'GET' && url === '/api/inventory/alerts') return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', inventoryController.handleAlerts))(req, res);
     }
 
     if (url.startsWith('/api/analytics')) {
-      if (req.method === 'GET' && url === '/api/analytics/overview') return enforceRole(AUTH_ROLES, analyticsController.handleOverview)(req, res);
-      if (req.method === 'GET' && url === '/api/analytics') return enforceRole(AUTH_ROLES, analyticsController.handleList)(req, res);
-      if (req.method === 'POST' && url === '/api/analytics') return enforceRole(AUTH_ROLES, analyticsController.handleCreate)(req, res);
+      if (req.method === 'GET' && url === '/api/analytics/overview') return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', analyticsController.handleOverview))(req, res);
+      if (req.method === 'GET' && url === '/api/analytics') return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', analyticsController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/analytics') return enforceRole(AUTH_ROLES, enforceCapability('report:export', analyticsController.handleCreate))(req, res);
     }
 
     if (url.startsWith('/api/search')) {
-      if (req.method === 'GET') return enforceRole(AUTH_ROLES, handleSearch)(req, res);
+      if (req.method === 'GET') return enforceRole(AUTH_ROLES, enforceCapability('patient:read', handleSearch))(req, res);
     }
 
     if (url.startsWith('/api/documents') && req.method === 'POST') {
-      return enforceRole(AUTH_ROLES, handleDocumentUpload)(req, res);
+      return enforceRole(AUTH_ROLES, enforceCapability('patient:write_demographics', handleDocumentUpload))(req, res);
     }
 
     if (url.startsWith('/api/reminders') && req.method === 'POST') {
-      return enforceRole(AUTH_ROLES, handleReminderTrigger)(req, res);
+      return enforceRole(AUTH_ROLES, enforceCapability('communication:write', handleReminderTrigger))(req, res);
     }
 
     if (url.startsWith('/api/activities')) {
-      if (req.method === 'GET' && url === '/api/activities') return enforceRole(AUTH_ROLES, activitiesController.handleList)(req, res);
+      if (req.method === 'GET' && url === '/api/activities') return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', activitiesController.handleList))(req, res);
     }
 
     if (url.startsWith('/api/dashboard')) {
-      if (req.method === 'GET' && url === '/api/dashboard') return enforceRole(AUTH_ROLES, dashboardController.handleDashboard)(req, res);
+      if (req.method === 'GET' && url === '/api/dashboard') return enforceRole(AUTH_ROLES, enforceCapability('dashboard:view', dashboardController.handleDashboard))(req, res);
     }
 
     if (url.startsWith('/api/events')) {

@@ -57,7 +57,15 @@ const CAPABILITIES = {
 // staff:read, operations:read, clinical:read, etc.) encode the Admin
 // "Role Filtering Matrix"; functional caps encode Level 2 (CRUD) enforcement.
 const ROLE_CAPABILITY_SEED = {
-  role_admin:     Object.keys(CAPABILITIES), // full control — sees everything
+  role_admin: [
+    'dashboard:view', 'staff:read', 'operations:read',
+    'inventory:read', 'inventory:write',
+    'appointment:read', 'appointment:write',
+    'finance:read', 'finance:write',
+    'analytics:read', 'report:export',
+    'audit:read', 'user:manage', 'role:manage',
+    'system:health', 'backup:manage'
+  ],
 
   role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents)
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read',
@@ -137,11 +145,24 @@ function seedRolePermissions() {
         PRIMARY KEY (role_id, capability)
       )`, (err) => {
         if (err) return reject(err);
-        const stmt = db.prepare(`INSERT OR IGNORE INTO role_permissions (role_id, capability) VALUES (?, ?)`);
-        for (const [roleId, caps] of Object.entries(ROLE_CAPABILITY_SEED)) {
-          for (const cap of caps) stmt.run(roleId, cap);
-        }
-        stmt.finalize((ferr) => ferr ? reject(ferr) : resolve());
+
+        db.run(`DELETE FROM role_permissions WHERE role_id = 'role_admin'`, (err) => {
+          if (err) return reject(err);
+
+          const adminStmt = db.prepare(`INSERT INTO role_permissions (role_id, capability) VALUES (?, ?)`);
+          const adminCaps = ROLE_CAPABILITY_SEED['role_admin'] || [];
+          for (const cap of adminCaps) adminStmt.run('role_admin', cap);
+          adminStmt.finalize((ferr) => {
+            if (ferr) return reject(ferr);
+
+            const insertStmt = db.prepare(`INSERT OR IGNORE INTO role_permissions (role_id, capability) VALUES (?, ?)`);
+            for (const [roleId, caps] of Object.entries(ROLE_CAPABILITY_SEED)) {
+              if (roleId === 'role_admin') continue;
+              for (const cap of caps) insertStmt.run(roleId, cap);
+            }
+            insertStmt.finalize((ferr2) => ferr2 ? reject(ferr2) : resolve());
+          });
+        });
       });
     });
   });
