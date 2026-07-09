@@ -322,6 +322,33 @@ export function getQuickActions(roleId, departmentId) {
   return actions.filter(a => allowed(a.cap));
 }
 
+/**
+ * Builds the unified Dashboard tab structure shared by EVERY user:
+ *   - Tab 1 is always "Overview" — the landing page holding all of the user's
+ *     quick-navigation cards (rendered identically for all roles).
+ *   - The remaining tabs are that user's own role actions, each broken out into
+ *     its own single-page panel (e.g. "Add User", "View Audit Logs").
+ * The shape is identical for all users; only the action tabs differ per role.
+ * @param {string} roleId
+ * @param {string} [departmentId]
+ * @returns {{id:string,label:string,icon:string,kind:string,route?:string,cap?:string}[]}
+ */
+export function makeDashboardTabs(roleId, departmentId) {
+  const actions = getQuickActions(roleId, departmentId);
+  const tabs = [{ id: 'overview', label: 'Overview', icon: '🏠', kind: 'overview' }];
+  actions.forEach((a, i) => {
+    tabs.push({
+      id: `qa-${i}`,
+      label: a.label,
+      icon: a.icon || '•',
+      kind: 'action',
+      route: a.route,
+      cap: a.cap,
+    });
+  });
+  return tabs;
+}
+
 // ── Session Management ───────────────────────────────────────
 
 /**
