@@ -380,13 +380,13 @@ function seedData(db) {
     ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
 
   db.run(`INSERT OR IGNORE INTO roles (id, name, department_id) VALUES
-    ('role_dev', 'Staff', 'dept_tech'),
-    ('role_nurse', 'Nurse', 'dept_clin'),
-    ('role_admin', 'Administrator', 'dept_admin'),
-    ('role_lead', 'Team Lead', 'dept_clin'),
-    ('role_supervisor', 'Supervisor', 'dept_admin'),
-    ('role_director', 'Director', 'dept_admin'),
-    ('role_finance', 'Finance Officer', 'dept_admin')`);
+    ('role_dev', 'Front-Desk / Intake', 'dept_tech'),
+    ('role_nurse', 'Clinical Staff / Triage', 'dept_clin'),
+    ('role_admin', 'System Administrator', 'dept_admin'),
+    ('role_lead', 'Healthcare Provider', 'dept_clin'),
+    ('role_supervisor', 'M&E Officer', 'dept_admin'),
+    ('role_director', 'M&E Director', 'dept_admin'),
+    ('role_finance', 'Ancillary Services', 'dept_admin')`);
 
   db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id, department_id) VALUES
     ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin', 'dept_admin'),

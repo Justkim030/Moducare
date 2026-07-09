@@ -1,5 +1,15 @@
 import { showToast, escapeHTML, apiFetch } from '../../../js/utils.js';
 
+const ROLE_LABELS = {
+  role_admin: 'System Administrator',
+  role_dev: 'Front-Desk / Intake',
+  role_nurse: 'Clinical Staff / Triage',
+  role_lead: 'Healthcare Provider',
+  role_supervisor: 'M&E Officer',
+  role_director: 'M&E Director',
+  role_finance: 'Ancillary Services',
+};
+
 export async function init(mount, State) {
   mount.querySelector('#btn-new-user')?.addEventListener('click', () => openCreateModal(mount));
   mount.querySelector('#modal-close')?.addEventListener('click', () => closeModal(mount));
@@ -28,18 +38,18 @@ async function loadUsers(mount) {
     }
     empty?.classList.add('hidden');
 
-    wrap.innerHTML = users.map(u => `
-      <tr data-id="${u.id}">
-        <td class="name font-weight-500">${u.name || '—'}</td>
-        <td class="email text-secondary">${escapeHTML(u.email)}</td>
-        <td><span class="badge badge-primary">${u.role || 'staff'}</span></td>
-        <td class="text-secondary">${u.phone_number || '—'}</td>
-        <td class="text-right">
-          <button class="mc-btn mc-btn--sm" data-action="edit" data-id="${u.id}">Edit</button>
-          <button class="mc-btn mc-btn--sm btn-danger" data-action="delete" data-id="${u.id}">Delete</button>
-        </td>
-      </tr>
-    `).join('');
+      wrap.innerHTML = users.map(u => `
+        <tr data-id="${u.id}">
+          <td class="name font-weight-500">${u.name || '—'}</td>
+          <td class="email text-secondary">${escapeHTML(u.email)}</td>
+          <td><span class="badge badge-primary">${ROLE_LABELS[u.role] || u.role || 'staff'}</span></td>
+          <td class="text-secondary">${u.phone_number || '—'}</td>
+          <td class="text-right">
+            <button class="mc-btn mc-btn--sm" data-action="edit" data-id="${u.id}">Edit</button>
+            <button class="mc-btn mc-btn--sm btn-danger" data-action="delete" data-id="${u.id}">Delete</button>
+          </td>
+        </tr>
+      `).join('');
 
     wrap.querySelectorAll('[data-action="edit"]').forEach(b => b.addEventListener('click', () => openEditModal(mount, b.dataset.id)));
     wrap.querySelectorAll('[data-action="delete"]').forEach(b => b.addEventListener('click', () => deleteUser(mount, b.dataset.id)));
@@ -79,9 +89,13 @@ async function openCreateModal(mount) {
     <div class="input-group">
       <label class="input-label">Role *</label>
       <select id="u-role" class="input">
-        <option value="role_nurse">Nurse</option>
-        <option value="role_dev">Systems Engineer</option>
-        <option value="role_admin">Admin</option>
+        <option value="role_nurse">Clinical Staff / Triage</option>
+        <option value="role_dev">Front-Desk / Intake</option>
+        <option value="role_lead">Healthcare Provider</option>
+        <option value="role_supervisor">M&E Officer</option>
+        <option value="role_director">M&E Director</option>
+        <option value="role_finance">Ancillary Services</option>
+        <option value="role_admin">System Administrator</option>
       </select>
     </div>
     <div class="flex justify-between mt-sp-4">
@@ -133,9 +147,13 @@ async function openEditModal(mount, id) {
       <div class="input-group">
         <label class="input-label">Role</label>
         <select id="u-role" class="input">
-          <option value="role_nurse" ${user.role === 'role_nurse' ? 'selected' : ''}>Nurse</option>
-          <option value="role_dev" ${user.role === 'role_dev' ? 'selected' : ''}>Systems Engineer</option>
-          <option value="role_admin" ${user.role === 'role_admin' ? 'selected' : ''}>Admin</option>
+          <option value="role_nurse" ${user.role === 'role_nurse' ? 'selected' : ''}>Clinical Staff / Triage</option>
+          <option value="role_dev" ${user.role === 'role_dev' ? 'selected' : ''}>Front-Desk / Intake</option>
+          <option value="role_lead" ${user.role === 'role_lead' ? 'selected' : ''}>Healthcare Provider</option>
+          <option value="role_supervisor" ${user.role === 'role_supervisor' ? 'selected' : ''}>M&E Officer</option>
+          <option value="role_director" ${user.role === 'role_director' ? 'selected' : ''}>M&E Director</option>
+          <option value="role_finance" ${user.role === 'role_finance' ? 'selected' : ''}>Ancillary Services</option>
+          <option value="role_admin" ${user.role === 'role_admin' ? 'selected' : ''}>System Administrator</option>
         </select>
       </div>
     </div>
