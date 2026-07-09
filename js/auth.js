@@ -76,6 +76,9 @@ export const MODULE_CAPABILITIES = {
   'pharmacy':            'pharmacy:inventory_read',
   'analytics-reports':   'analytics:read',
   'admin':               'user:manage',
+  'inventory':           'inventory:read',
+  'time-attendance':     'attendance:view',
+  'leave':               'leave:create',
   'system-health':       'system:health',
 };
 
@@ -140,6 +143,8 @@ export const CLINICAL_PROFILES = {
       { id: 'defaulter-logs',  title: 'Retention & Defaulter Logs', route: '/dashboard', icon: '📉', cap: 'analytics:read' },
       { id: 'quality-assurance', title: 'Quality Assurance (QA)', route: '/audit-compliance', icon: '✅', cap: 'audit:read' },
       { id: 'finance-summaries', title: 'Finance & Billing Summaries', route: '/finance-billing', icon: '💰', cap: 'finance:read' },
+      { id: 'attendance-review', title: 'Attendance Review', route: '/time-attendance', icon: '⏰', cap: 'attendance:view' },
+      { id: 'leave-approvals', title: 'Leave Approvals', route: '/leave', icon: '📅', cap: 'leave:approve' },
     ],
   },
   ancillary: {
@@ -244,6 +249,7 @@ export const QUICK_ACTIONS = {
   // ── Clinical workspaces (resolved via CLINICAL_ROLE_MAP) ──
   admin: [
     { label: 'Add User',            icon: '➕', route: '/admin',              cap: 'user:manage' },
+    { label: 'Role Permissions',    icon: '🔐', route: '/admin',              cap: 'role:manage' },
     { label: 'View Audit Logs',     icon: '📝', route: '/audit-compliance',   cap: 'audit:read' },
     { label: 'System Health',       icon: '🖥️', route: '/dashboard/overview', cap: 'system:health' },
     { label: 'Manage Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
@@ -298,12 +304,16 @@ export const QUICK_ACTIONS = {
     { label: 'Staffing',            icon: '👥', route: '/staff',              cap: 'staff:read' },
     { label: 'Operations',          icon: '⚙️', route: '/operations',         cap: 'operations:read' },
     { label: 'Finance',             icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
+    { label: 'Leave Approvals',     icon: '📅', route: '/leave',              cap: 'leave:approve' },
   ],
   director: [
     { label: 'Hospital KPIs',       icon: '📈', route: '/dashboard/kpi-1',    cap: 'analytics:read' },
     { label: 'Finance',             icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
     { label: 'Staffing',            icon: '👥', route: '/staff',              cap: 'staff:read' },
     { label: 'Risk / Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+    { label: 'Inventory Audit',     icon: '📦', route: '/inventory',          cap: 'inventory:audit' },
+    { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
   ],
 };
 

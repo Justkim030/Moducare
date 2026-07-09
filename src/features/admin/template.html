@@ -1,28 +1,91 @@
 <section class="feature-admin">
   <header class="admin-header">
     <div>
-      <h1>User Management</h1>
-      <p class="admin-subtitle">Register staff, assign roles, and manage access.</p>
+      <h1>Administration</h1>
+      <p class="admin-subtitle">Manage users, role permissions, and review access audit logs.</p>
     </div>
-    <button class="mc-btn" id="btn-new-user">+ New User</button>
   </header>
 
-  <div class="card p-0">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Phone</th>
-          <th class="text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="users-table-wrap">
-        <tr><td colspan="5" class="mc-muted">Loading users...</td></tr>
-      </tbody>
-    </table>
-    <div id="users-empty" class="empty-state hidden">No users found.</div>
+  <div class="admin-tabs" id="admin-tabs">
+    <button class="admin-tab active" data-tab="users">Users</button>
+    <button class="admin-tab" data-tab="permissions">Role Permissions</button>
+    <button class="admin-tab" data-tab="audit">Audit Log</button>
+  </div>
+
+  <!-- Users panel -->
+  <div class="admin-panel" data-panel="users">
+    <header class="admin-header admin-panel-header">
+      <div>
+        <h2>User Management</h2>
+        <p class="admin-subtitle">Register staff, assign roles, and manage access.</p>
+      </div>
+      <button class="mc-btn" id="btn-new-user">+ New User</button>
+    </header>
+
+    <div class="card p-0">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Phone</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-table-wrap">
+          <tr><td colspan="5" class="mc-muted">Loading users...</td></tr>
+        </tbody>
+      </table>
+      <div id="users-empty" class="empty-state hidden">No users found.</div>
+    </div>
+  </div>
+
+  <!-- Role Permissions panel -->
+  <div class="admin-panel" data-panel="permissions" style="display:none;">
+    <header class="admin-header admin-panel-header">
+      <div>
+        <h2>Role Permissions Matrix</h2>
+        <p class="admin-subtitle">Toggle capabilities granted to each role, then save your changes.</p>
+      </div>
+      <button class="mc-btn btn-primary" id="btn-save-permissions">Save Changes</button>
+    </header>
+
+    <div class="card p-0">
+      <div class="perm-matrix" id="perm-matrix-wrap">
+        <div class="mc-muted p-sp-4">Loading permissions…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Log panel -->
+  <div class="admin-panel" data-panel="audit" style="display:none;">
+    <header class="admin-header admin-panel-header">
+      <div>
+        <h2>Role Audit Log</h2>
+        <p class="admin-subtitle">Recent changes to role permissions across the system.</p>
+      </div>
+      <button class="mc-btn" id="btn-refresh-audit">↻ Refresh</button>
+    </header>
+
+    <div class="card p-0">
+      <div class="audit-table-wrap">
+        <table class="mc-table audit-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Role</th>
+              <th>Capability</th>
+              <th>Action</th>
+              <th>Performed By</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-wrap">
+            <tr><td colspan="5" class="mc-muted">Loading audit log…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <div id="user-modal-root" class="modal-overlay hidden">

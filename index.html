@@ -126,12 +126,28 @@
   <!-- Audit & Compliance (supervisor+) -->
            <li class="mc-nav-item" data-capability="audit:read" data-feature="audit-compliance"><a href="/audit-compliance" data-route class="mc-nav-link">🔍 Audit & Compliance</a></li>
            
-           <!-- Admin (restricted) -->
-           <li class="mc-nav-item" data-capability="user:manage" data-feature="admin"><a href="/admin" data-route class="mc-nav-link mc-nav-admin">🛠️ Admin</a></li>
-           
-           <!-- Incident Reporting -->
-           <li class="mc-nav-item" data-capability="incident:read" data-feature="incident-reporting"><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incidents</a></li>
-        </ul>
+            <!-- Admin (restricted) -->
+            <li class="mc-nav-item" data-capability="user:manage" data-feature="admin"><a href="/admin" data-route class="mc-nav-link mc-nav-admin">🛠️ Admin</a></li>
+            
+            <!-- Incident Reporting -->
+            <li class="mc-nav-item" data-capability="incident:read" data-feature="incident-reporting"><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incidents</a></li>
+            
+            <!-- Inventory Dropdown -->
+            <li class="mc-nav-item" id="nav-inventory-item" data-capability="inventory:read" data-feature="inventory">
+              <a href="/inventory" data-route class="mc-nav-link" id="inventory-toggle">📦 Inventory <span class="mc-nav-chevron">▾</span></a>
+              <ul class="mc-nav-dropdown">
+                <li><a href="/inventory" data-route class="mc-nav-link sub">Items</a></li>
+                <li><a href="/inventory?tab=pos" data-route class="mc-nav-link sub">Purchase Orders</a></li>
+                <li><a href="/inventory?tab=suppliers" data-route class="mc-nav-link sub">Suppliers</a></li>
+              </ul>
+            </li>
+            
+            <!-- Time & Attendance -->
+            <li class="mc-nav-item" data-capability="attendance:view" data-feature="time-attendance"><a href="/time-attendance" data-route class="mc-nav-link">⏰ Time & Attendance</a></li>
+            
+            <!-- Leave Management -->
+            <li class="mc-nav-item" data-capability="leave:create" data-feature="leave"><a href="/leave" data-route class="mc-nav-link">📅 Leave Management</a></li>
+         </ul>
       </nav>
     </aside>
 

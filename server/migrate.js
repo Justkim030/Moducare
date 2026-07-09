@@ -321,6 +321,104 @@ function buildSchema(db, resolve, reject) {
       recorded_at TEXT DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // ERP Expansion: Inventory procurement, stock control, HR attendance & roles
+    db.run(`CREATE TABLE IF NOT EXISTS suppliers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      contact_person TEXT,
+      email TEXT,
+      phone TEXT,
+      address TEXT,
+      category TEXT DEFAULT 'general',
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS purchase_orders (
+      id TEXT PRIMARY KEY,
+      supplier_id TEXT,
+      po_number TEXT UNIQUE NOT NULL,
+      status TEXT DEFAULT 'draft',
+      total_amount REAL DEFAULT 0,
+      notes TEXT,
+      requested_by TEXT,
+      approved_by TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS purchase_order_items (
+      id TEXT PRIMARY KEY,
+      po_id TEXT NOT NULL,
+      inventory_id TEXT,
+      quantity REAL NOT NULL,
+      unit_cost REAL DEFAULT 0,
+      FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS stock_adjustments (
+      id TEXT PRIMARY KEY,
+      inventory_id TEXT NOT NULL,
+      adjustment_type TEXT NOT NULL,
+      quantity_change REAL NOT NULL,
+      reason TEXT,
+      reference_id TEXT,
+      performed_by TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS stock_transfers (
+      id TEXT PRIMARY KEY,
+      inventory_id TEXT NOT NULL,
+      from_location TEXT NOT NULL,
+      to_location TEXT NOT NULL,
+      quantity REAL NOT NULL,
+      status TEXT DEFAULT 'pending',
+      notes TEXT,
+      performed_by TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS time_attendance (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      clock_in TEXT,
+      clock_out TEXT,
+      date TEXT NOT NULL,
+      shift TEXT DEFAULT 'day',
+      total_hours REAL DEFAULT 0,
+      status TEXT DEFAULT 'present',
+      notes TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS leave_requests (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      leave_type TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      days_count REAL DEFAULT 0,
+      reason TEXT,
+      status TEXT DEFAULT 'pending',
+      approved_by TEXT,
+      rejection_reason TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS role_permission_audit (
+      id TEXT PRIMARY KEY,
+      role_id TEXT NOT NULL,
+      capability TEXT NOT NULL,
+      action TEXT NOT NULL,
+      performed_by TEXT,
+      performed_at TEXT DEFAULT (datetime('now'))
+    )`);
+
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
       'CREATE INDEX IF NOT EXISTS idx_patients_name ON patients(name)',
@@ -455,6 +553,11 @@ function seedData(db) {
     ('Rapid HIV Test Kits', 'consumable', 50, 20, 'kits', 'Egypt'),
     ('Blood Pressure Cuffs', 'equipment', 15, 5, 'units', 'Local Supplier'),
     ('Glucose Test Strips', 'consumable', 30, 15, 'strips', 'KAZ')`);
+
+  db.run(`INSERT OR IGNORE INTO suppliers (id, name, contact_person, email, phone, category) VALUES
+    ('sup_1', 'MediSupply Kenya', 'James Kipchoge', 'james@medisupply.co.ke', '+254722000111', 'medication'),
+    ('sup_2', 'LabTech Instruments', 'Sarah Wanjiku', 'sarah@labtech.co.ke', '+254733000222', 'equipment'),
+    ('sup_3', 'General Hospital Supplies', 'Michael Ochieng', 'mike@ghsupplies.co.ke', '+254744000333', 'consumable')`);
 
   db.run(`INSERT OR IGNORE INTO audit (user_id, action, details, resource_type, status) VALUES
     ('usr_dan', 'login', 'User logged in successfully', 'auth', 'success'),

@@ -30,7 +30,11 @@ const CAPABILITIES = {
   'pharmacy:dispense':        'Dispense medication',
   'pharmacy:inventory_read':  'View pharmaceutical inventory',
   'inventory:read':           'View facility inventory & stock alerts',
-  'inventory:write':          'Manage inventory stock',
+  'inventory:write':           'Manage inventory stock',
+  'inventory:reconcile':       'Reconcile inventory against physical counts',
+  'inventory:audit':           'View inventory audit / adjustment trail',
+  'inventory:adjust':          'Create stock adjustments',
+  'inventory:transfer':        'Create / approve stock transfers',
   'appointment:read':         'View appointments / schedule',
   'appointment:write':        'Create / update appointments',
   'encounter:read':           'View clinical encounters',
@@ -49,6 +53,11 @@ const CAPABILITIES = {
   'role:manage':              'Manage roles & permissions',
   'system:health':            'View system health',
   'backup:manage':            'Manage database backups',
+  'attendance:clock':         'Clock in / out (time & attendance)',
+  'attendance:approve':       'Manage / approve attendance records',
+  'attendance:view':          'View attendance records',
+  'leave:create':             'Create leave requests',
+  'leave:approve':            'Approve / reject leave requests',
 };
 
 // Seed mapping: role_id -> capabilities. This is the default that gets
@@ -60,9 +69,12 @@ const ROLE_CAPABILITY_SEED = {
   role_admin: [
     'dashboard:view', 'staff:read', 'operations:read',
     'inventory:read', 'inventory:write',
+    'inventory:reconcile', 'inventory:audit', 'inventory:adjust', 'inventory:transfer',
     'appointment:read', 'appointment:write',
     'finance:read', 'finance:write',
     'audit:read', 'user:manage', 'role:manage',
+    'attendance:clock', 'attendance:approve', 'attendance:view',
+    'leave:create', 'leave:approve',
     'system:health', 'backup:manage'
   ],
 
@@ -92,11 +104,13 @@ const ROLE_CAPABILITY_SEED = {
   role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents, Communications, Notifications)
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'communication:read',
+    'inventory:audit', 'attendance:view', 'leave:approve', 'role:manage',
   ],
 
   role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications, Staff
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
+    'inventory:reconcile', 'inventory:audit', 'attendance:view', 'leave:approve', 'role:manage',
   ],
 
   role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents, Notifications
@@ -125,6 +139,7 @@ const MODULE_CAPABILITIES = {
   'encounters':          'encounter:read',
   'lab-orders':          'lab:read',
   'pharmacy':            'pharmacy:inventory_read',
+  'inventory':           'inventory:read',
   'analytics-reports':   'analytics:read',
   'admin':               'user:manage',
   'system-health':       'system:health',
