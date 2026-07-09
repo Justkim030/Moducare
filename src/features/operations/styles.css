@@ -1,0 +1,113 @@
+/* ── Operations & Tasks Module — Scoped Styles ───────────── */
+
+/* Pipeline strip */
+.ops-pipeline { margin-bottom: var(--sp-5); }
+.ops-pipeline-row {
+  display: flex;
+  gap: 1px;
+  background: var(--border-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+.ops-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--surface-card);
+  text-align: center;
+  gap: 2px;
+}
+.ops-stage__count { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+.ops-stage__label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); }
+
+/* Task Board */
+.task-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-5);
+  align-items: start;
+}
+.task-col {
+  background: var(--clr-neutral-50);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+.task-col__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  background: var(--surface-card);
+}
+.task-col__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.task-col__body {
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-height: 120px;
+}
+
+/* Task Card */
+.task-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+.task-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.task-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.task-card__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+.task-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.task-card__assignee {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-top: var(--sp-1);
+}
+.task-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+/* View toggle active — shared style in /css/components.css */
+
+@media (max-width: 1100px) { .task-board { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px)  { .task-board { grid-template-columns: 1fr; } }

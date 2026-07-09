@@ -23,13 +23,13 @@ export const ROLES = {
 export const MODULE_PERMISSIONS = {
   'dashboard':          1,
   'hr-staff':           2,
-  'operations-tasks':   1,
+  'operations':         1,
   'finance-billing':    2,
   'analytics-reports':  3,
   'scheduling-calendar':1,
   'communications':     1,
   'notifications':      1,
-  'document-vault':     2,
+  'documents':          2,
   'audit-compliance':   3,
   'client-portal':      2,
   'integrations':       4,
@@ -39,9 +39,9 @@ export const MODULE_PERMISSIONS = {
 
 // Department-based card filtering (keyed by department ID from DB)
 export const DEPARTMENT_MODULES = {
-  'dept_tech': ['operations-tasks', 'communications', 'document-vault', 'patients'],
-  'dept_clin': ['patients', 'scheduling-calendar', 'operations-tasks', 'communications', 'notifications', 'encounters'],
-  'dept_admin': ['finance-billing', 'patients', 'notifications', 'audit-compliance', 'document-vault'],
+  'dept_tech': ['operations', 'communications', 'documents', 'patients'],
+  'dept_clin': ['patients', 'scheduling-calendar', 'operations', 'communications', 'notifications', 'encounters'],
+  'dept_admin': ['finance-billing', 'patients', 'notifications', 'audit-compliance', 'documents'],
 };
 
 // ── Clinical RBAC (Level 1 + Level 2) ──────────────────────────
@@ -64,13 +64,13 @@ export const MODULE_CAPABILITIES = {
   'patients':            'patient:read',
   'staff':               'staff:read',
   'finance-billing':     'finance:read',
-  'operations-tasks':    'operations:read',
+  'operations':          'operations:read',
   'clinical':            'clinical:read',
   'communications':      'communication:read',
   'audit-compliance':    'audit:read',
   'incident-reporting':  'incident:read',
   'scheduling-calendar': 'appointment:read',
-  'document-vault':      'patient:read',
+  'documents':           'patient:read',
   'encounters':          'encounter:read',
   'lab-orders':          'lab:read',
   'pharmacy':            'pharmacy:inventory_read',
@@ -162,19 +162,19 @@ export const DASHBOARD_PROFILES = {
     title: 'My Workspace',
     description: 'Your daily tasks, appointments, and patient queue.',
     cards: [
-      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', data: 'tasks', module: 'operations-tasks' },
+      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', data: 'tasks', module: 'operations' },
       { id: 'appointments', title: 'Appointments', route: '/scheduling-calendar', icon: '📅', data: 'appointments', module: 'scheduling-calendar' },
       { id: 'patients', title: 'My Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
       { id: 'incidents', title: 'Incident Reporting', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', data: 'notifications', module: 'communications' },
-      { id: 'documents', title: 'Document Vault', route: '/document-vault', icon: '📁', data: 'documents', module: 'document-vault' },
+      { id: 'documents', title: 'Document Vault', route: '/documents', icon: '📁', data: 'documents', module: 'documents' },
     ],
   },
   lead: {
     title: 'Team Lead Workspace',
     description: 'Team performance, scheduling, approvals, and reports.',
     cards: [
-      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', data: 'teamTasks', module: 'operations-tasks' },
+      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', data: 'teamTasks', module: 'operations' },
       { id: 'schedule', title: 'Schedule', route: '/scheduling-calendar', icon: '📅', data: 'appointments', module: 'scheduling-calendar' },
       { id: 'timesheets', title: 'Timesheets', route: '/finance-billing', icon: '⏱️', data: 'finance', module: 'finance-billing' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
@@ -188,7 +188,7 @@ export const DASHBOARD_PROFILES = {
     cards: [
       { id: 'compliance', title: 'Compliance', route: '/audit-compliance', icon: '🛡️', data: 'totalIncidents', module: 'audit-compliance' },
       { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'staffCount', module: 'patients' },
-      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
@@ -198,11 +198,11 @@ export const DASHBOARD_PROFILES = {
     title: 'Director Dashboard',
     description: 'Hospital-wide KPIs, financials, staffing, and risk.',
     cards: [
-      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations', module: 'operations' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'staffCount', module: 'patients' },
       { id: 'incidents', title: 'Risk / Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
-      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
     ],
   },
@@ -212,7 +212,7 @@ export const DASHBOARD_PROFILES = {
     cards: [
       { id: 'users', title: 'Users', route: '/admin', icon: '👤', data: 'users', module: 'system-admin' },
       { id: 'audit', title: 'Audit Logs', route: '/audit-compliance', icon: '📝', data: 'audit', module: 'audit-compliance' },
-      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'audit', module: 'operations-tasks' },
+      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'audit', module: 'operations' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },

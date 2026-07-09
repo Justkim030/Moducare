@@ -1,0 +1,10 @@
+.refs-layout { padding: 24px; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-out; }
+.refs-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; }
+.refs-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.refs-table-wrap { overflow-x: auto; background: var(--surface-card); border: 1px solid var(--border-light); border-radius: var(--border-radius-md); }
+.refs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.refs-table th, .refs-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); }
+.refs-table th { color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border-light); background: var(--surface-page); text-align: left; }
+.ref-form { display: flex; flex-direction: column; gap: 18px; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-light); padding-top: 16px; }

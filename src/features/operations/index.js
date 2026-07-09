@@ -10,7 +10,7 @@ let _cssLoaded = false;
 function injectCSS() {
   if (_cssLoaded) return;
   const l = document.createElement('link');
-  l.rel = 'stylesheet';   l.href = '/src/features/operations/operations-tasks.css';
+  l.rel = 'stylesheet';   l.href = '/src/features/operations/styles.css';
   document.head.appendChild(l); _cssLoaded = true;
 }
 

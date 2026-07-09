@@ -62,7 +62,6 @@ const ROLE_CAPABILITY_SEED = {
     'inventory:read', 'inventory:write',
     'appointment:read', 'appointment:write',
     'finance:read', 'finance:write',
-    'analytics:read', 'report:export',
     'audit:read', 'user:manage', 'role:manage',
     'system:health', 'backup:manage'
   ],
@@ -79,7 +78,7 @@ const ROLE_CAPABILITY_SEED = {
     'patient:write_demographics', 'patient:write_vitals',
     'encounter:read', 'encounter:write',
     'appointment:read', 'incident:write',
-    'communication:read', 'referral:write',
+    'communication:read', 'communication:write', 'referral:write',
   ],
 
   role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents)
@@ -95,8 +94,8 @@ const ROLE_CAPABILITY_SEED = {
     'analytics:read', 'report:export', 'communication:read',
   ],
 
-  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications
-    'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
+  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications, Staff
+    'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
   ],
 
@@ -115,14 +114,14 @@ const MODULE_CAPABILITIES = {
   'patients':            'patient:read',
   'staff':               'staff:read',
   'finance-billing':     'finance:read',
-  'operations-tasks':    'operations:read',
+  'operations':          'operations:read',
   'clinical':            'clinical:read',
   'communications':      'communication:read',
   'audit-compliance':    'audit:read',
   'incident-reporting':  'incident:read',
   // supporting / nested views
   'scheduling-calendar': 'appointment:read',
-  'document-vault':      'patient:read',
+  'documents':           'patient:read',
   'encounters':          'encounter:read',
   'lab-orders':          'lab:read',
   'pharmacy':            'pharmacy:inventory_read',

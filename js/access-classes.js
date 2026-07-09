@@ -38,7 +38,7 @@ export const FEATURE_NAV = [
   { feature_id: 'audit-compliance',    display_name: 'Audit & Compliance',   base_folder: 'src/features/audit-compliance',   accessible_by_classes: ['A','D'],          explicit_denials: ['B','C'] },
   { feature_id: 'audit',               display_name: 'Audit Logs',          base_folder: 'src/features/audit',              accessible_by_classes: ['A','D'],          explicit_denials: ['B','C'] },
   { feature_id: 'analytics-reports',   display_name: 'Analytics & Reports',  base_folder: 'src/features/analytics-reports',  accessible_by_classes: ['D'],               explicit_denials: ['A','B','C'] },
-  { feature_id: 'documents',           display_name: 'Document Vault',      base_folder: 'src/features/document-vault',     accessible_by_classes: ['D'],               explicit_denials: ['A','B','C'] },
+  { feature_id: 'documents',           display_name: 'Document Vault',      base_folder: 'src/features/documents',        accessible_by_classes: ['D'],               explicit_denials: ['A','B','C'] },
   { feature_id: 'notifications',       display_name: 'Notifications',       base_folder: 'src/features/notifications',      accessible_by_classes: ['B','C','D'],      explicit_denials: ['A'] },
   { feature_id: 'profile',             display_name: 'Profile',             base_folder: 'src/features/profile',            accessible_by_classes: ['B','C','D'],      explicit_denials: ['A'] },
   { feature_id: 'referrals',           display_name: 'Referrals',           base_folder: 'src/features/referrals',          accessible_by_classes: ['B'],               explicit_denials: ['A','C','D'] },
