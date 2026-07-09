@@ -76,10 +76,12 @@ export const MODULE_CAPABILITIES = {
   'pharmacy':            'pharmacy:inventory_read',
   'analytics-reports':   'analytics:read',
   'admin':               'user:manage',
+  'system-health':       'system:health',
   'inventory':           'inventory:read',
   'time-attendance':     'attendance:view',
   'leave':               'leave:create',
-  'system-health':       'system:health',
+  'hr':                  'staff:read',
+  'reports':             'analytics:read',
 };
 
 // Clinical dashboard blueprint (6 cards per role) — rendered only if the
@@ -279,6 +281,23 @@ export const QUICK_ACTIONS = {
     { label: 'MoH Reporting Export',icon: '📤', route: '/dashboard',          cap: 'report:export' },
     { label: 'Quality Assurance',   icon: '✅', route: '/audit-compliance',   cap: 'audit:read' },
     { label: 'Finance Summary',     icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
+    { label: 'Leave Approvals',     icon: '📅', route: '/leave',              cap: 'leave:approve' },
+  ],
+  ancillary: [
+    { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
+    { label: 'Prescription Queue',  icon: '💊', route: '/pharmacy',           cap: 'pharmacy:dispense' },
+    { label: 'Pharmacy Inventory',  icon: '📦', route: '/pharmacy',           cap: 'pharmacy:inventory_read' },
+    { label: 'Stock Alerts',        icon: '⚠️', route: '/inventory',          cap: 'inventory:read' },
+  ],
+  admin: [
+    { label: 'Add User',            icon: '➕', route: '/admin',              cap: 'user:manage' },
+    { label: 'Role Permissions',    icon: '🔐', route: '/admin',              cap: 'role:manage' },
+    { label: 'View Audit Logs',     icon: '📝', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'System Health',       icon: '🖥️', route: '/dashboard/overview', cap: 'system:health' },
+    { label: 'Manage Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+    { label: 'Finance Overview',    icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Staff Directory',     icon: '👥', route: '/staff',              cap: 'staff:read' },
   ],
   ancillary: [
     { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
@@ -421,10 +440,12 @@ export function setSession(user, token, remember = false) {
   if (!session.role && session.role_id) {
     const rid = String(session.role_id).toLowerCase();
     if (rid === 'role_admin') session.role = 'admin';
-    else if (rid === 'role_director') session.role = 'director';
-    else if (rid === 'role_supervisor') session.role = 'supervisor';
-    else if (rid === 'role_lead') session.role = 'lead';
-    else if (rid === 'role_finance' || rid === 'role_dev' || rid === 'role_nurse') session.role = 'staff';
+    else if (rid === 'role_dev') session.role = 'intake';
+    else if (rid === 'role_nurse') session.role = 'triage';
+    else if (rid === 'role_lead') session.role = 'provider';
+    else if (rid === 'role_supervisor') session.role = 'mande';
+    else if (rid === 'role_director') session.role = 'mande';
+    else if (rid === 'role_finance') session.role = 'ancillary';
     else session.role = rid.replace(/^role_/, '');
   }
 

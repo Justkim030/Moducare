@@ -419,6 +419,93 @@ function buildSchema(db, resolve, reject) {
       performed_at TEXT DEFAULT (datetime('now'))
     )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS employee_profiles (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      position TEXT,
+      department_id TEXT,
+      hire_date TEXT,
+      employment_type TEXT DEFAULT 'full_time',
+      salary REAL,
+      emergency_contact TEXT,
+      emergency_phone TEXT,
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS contracts (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      contract_type TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      salary REAL,
+      terms TEXT,
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS training_records (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      training_name TEXT NOT NULL,
+      training_type TEXT,
+      provider TEXT,
+      start_date TEXT,
+      end_date TEXT,
+      status TEXT DEFAULT 'completed',
+      certificate_url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS performance_reviews (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      review_period TEXT NOT NULL,
+      rating REAL,
+      goals TEXT,
+      achievements TEXT,
+      reviewer_id TEXT,
+      status TEXT DEFAULT 'draft',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS payroll_records (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      pay_period_start TEXT NOT NULL,
+      pay_period_end TEXT NOT NULL,
+      basic_salary REAL DEFAULT 0,
+      allowances REAL DEFAULT 0,
+      deductions REAL DEFAULT 0,
+      net_pay REAL DEFAULT 0,
+      status TEXT DEFAULT 'pending',
+      paid_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS reports (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      source TEXT NOT NULL,
+      columns TEXT NOT NULL,
+      filters TEXT DEFAULT '{}',
+      sort TEXT DEFAULT '',
+      limit INTEGER DEFAULT 100,
+      schedule TEXT DEFAULT '',
+      recipients TEXT DEFAULT '',
+      created_by TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
       'CREATE INDEX IF NOT EXISTS idx_patients_name ON patients(name)',
@@ -465,14 +552,16 @@ function buildSchema(db, resolve, reject) {
 function seedData(db) {
   const pwdHash = hash(SEED_PASSWORD);
 
-  // 5 role accounts (one per role) + a field worker with no portal login
+  // 7 role accounts (one per role) + a field worker with no portal login
   db.run(`INSERT OR IGNORE INTO users (id, email, phone_number, passwordHash) VALUES
     ('usr_admin', 'alice@acme.org', '+254700000000', ?),
     ('usr_dan', 'danreech@acme.org', '+254711111111', ?),
     ('usr_lead', 'lead@acme.org', '+254722222222', ?),
     ('usr_supervisor', 'supervisor@acme.org', '+254733333333', ?),
-    ('usr_director', 'director@acme.org', '+254744444444', ?)`,
-    [pwdHash, pwdHash, pwdHash, pwdHash, pwdHash]);
+    ('usr_director', 'director@acme.org', '+254744444444', ?),
+    ('usr_nurse', 'nurse@acme.org', '+254755555555', ?),
+    ('usr_finance', 'finance@acme.org', '+254766666666', ?)`,
+    [pwdHash, pwdHash, pwdHash, pwdHash, pwdHash, pwdHash, pwdHash]);
 
   db.run(`INSERT OR IGNORE INTO departments (id, name) VALUES
     ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
@@ -492,6 +581,8 @@ function seedData(db) {
     ('emp_lead', 'Dr. James Lead', 'usr_lead', 'role_lead', 'dept_clin'),
     ('emp_supervisor', 'Jane Supervisor', 'usr_supervisor', 'role_supervisor', 'dept_admin'),
     ('emp_director', 'Dr. Robert Director', 'usr_director', 'role_director', 'dept_admin'),
+    ('emp_nurse', 'John Nurse', 'usr_nurse', 'role_nurse', 'dept_clin'),
+    ('emp_finance', 'Mary Finance', 'usr_finance', 'role_finance', 'dept_admin'),
     ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse', 'dept_clin')`);
 
   db.run(`INSERT OR IGNORE INTO patients (id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status) VALUES

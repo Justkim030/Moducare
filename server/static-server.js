@@ -28,6 +28,12 @@ const leaveController = require('./controllers/leaveController');
 const rolesController = require('./controllers/rolesController');
 const eventsController = require('./controllers/eventsController');
 const auditController = require('./controllers/auditController');
+const employeesController = require('./controllers/employeesController');
+const contractsController = require('./controllers/contractsController');
+const trainingController = require('./controllers/trainingController');
+const performanceController = require('./controllers/performanceController');
+const payrollController = require('./controllers/payrollController');
+const reportsController = require('./controllers/reportsController');
 const { checkRateLimit, resetRateLimit, checkBodySize } = require('./middleware/rateLimit');
 const { hasCapability } = require('./config/permissions');
 const db = require('./config/db');
@@ -400,6 +406,55 @@ const server = http.createServer((req, res) => {
 
     if (url.startsWith('/api/capabilities') && req.method === 'GET') {
       return enforceRole(AUTH_ROLES, rolesController.handleCapabilities)(req, res);
+    }
+
+    if (url.startsWith('/api/reports')) {
+      if (req.method === 'POST' && url.match(/\/api\/reports\/scheduled\/[^/]+\/run$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', reportsController.handleRunScheduled))(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/reports\/scheduled$/)) return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', reportsController.handleScheduled))(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/reports\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', reportsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/reports') return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', reportsController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/reports') return enforceRole(AUTH_ROLES, enforceCapability('analytics:read', reportsController.handleCreate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/reports\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', reportsController.handleDelete))(req, res);
+    }
+
+    if (url.startsWith('/api/employees')) {
+      if (req.method === 'GET' && url.match(/\/api\/employees\/[^/]+\/profile$/)) return enforceRole(AUTH_ROLES, enforceCapability('staff:read', employeesController.handleUpdateProfile))(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/employees\/[^/]+\/status$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', employeesController.handleUpdateStatus))(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/employees\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('staff:read', employeesController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/employees') return enforceRole(AUTH_ROLES, enforceCapability('staff:read', employeesController.handleList))(req, res);
+    }
+
+    if (url.startsWith('/api/contracts')) {
+      if (req.method === 'GET' && url.match(/\/api\/contracts\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('staff:read', contractsController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/contracts') return enforceRole(AUTH_ROLES, enforceCapability('staff:read', contractsController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/contracts') return enforceRole(AUTH_ROLES, enforceCapability('user:manage', contractsController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/contracts\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', contractsController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/contracts\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', contractsController.handleDelete))(req, res);
+    }
+
+    if (url.startsWith('/api/training')) {
+      if (req.method === 'GET' && url.match(/\/api\/training\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('staff:read', trainingController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/training') return enforceRole(AUTH_ROLES, enforceCapability('staff:read', trainingController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/training') return enforceRole(AUTH_ROLES, enforceCapability('user:manage', trainingController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/training\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', trainingController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/training\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', trainingController.handleDelete))(req, res);
+    }
+
+    if (url.startsWith('/api/performance')) {
+      if (req.method === 'GET' && url.match(/\/api\/performance\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('staff:read', performanceController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/performance') return enforceRole(AUTH_ROLES, enforceCapability('staff:read', performanceController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/performance') return enforceRole(AUTH_ROLES, enforceCapability('user:manage', performanceController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/performance\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', performanceController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/performance\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', performanceController.handleDelete))(req, res);
+    }
+
+    if (url.startsWith('/api/payroll')) {
+      if (req.method === 'POST' && url.match(/\/api\/payroll\/[^/]+\/mark-paid$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', payrollController.handleMarkPaid))(req, res);
+      if (req.method === 'GET' && url.match(/\/api\/payroll\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('staff:read', payrollController.handleGet))(req, res);
+      if (req.method === 'GET' && url === '/api/payroll') return enforceRole(AUTH_ROLES, enforceCapability('staff:read', payrollController.handleList))(req, res);
+      if (req.method === 'POST' && url === '/api/payroll') return enforceRole(AUTH_ROLES, enforceCapability('user:manage', payrollController.handleCreate))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/payroll\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', payrollController.handleUpdate))(req, res);
+      if (req.method === 'DELETE' && url.match(/\/api\/payroll\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('user:manage', payrollController.handleDelete))(req, res);
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });

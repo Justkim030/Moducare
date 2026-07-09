@@ -211,9 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sess){ if (sess.role) sess.role = sess.role.toLowerCase(); State.setUser(sess); }
   }catch(e){ /* ignore */ }
 
-  // Filter nav by department for staff users
+  // Filter nav by department for non-admin users
   const sess = getSession();
-  if (sess && sess.role === 'staff' && sess.department_id) {
+  if (sess && sess.role !== 'admin' && sess.department_id) {
     const allowedModules = DEPARTMENT_MODULES[sess.department_id] || [];
     document.querySelectorAll('.mc-nav-link:not(.sub)').forEach(link => {
       const href = link.getAttribute('href');

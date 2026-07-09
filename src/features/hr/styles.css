@@ -1,0 +1,16 @@
+.hr-layout { padding: 24px; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-out; }
+.hr-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; }
+.hr-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.hr-tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--border-light); }
+.hr-tab { padding: var(--sp-3) var(--sp-5); font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; background: none; border-top: none; border-left: none; border-right: none; }
+.hr-tab:hover { color: var(--text-primary); }
+.hr-tab.active { color: var(--clr-primary-500); border-bottom-color: var(--clr-primary-500); }
+.hr-panel { display: none; }
+.hr-panel.active { display: block; }
+.hr-table-wrap { overflow-x: auto; }
+.hr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.hr-table th, .hr-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-light); text-align: left; }
+.hr-table th { color: var(--text-secondary); font-weight: 600; background: var(--surface-page); }
+.emp-form, .contract-form, .training-form, .perf-form, .payroll-form { display: flex; flex-direction: column; gap: 18px; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-light); padding-top: 16px; }

@@ -1,0 +1,361 @@
+<section class="feature-hr">
+  <div class="hr-layout">
+    <div class="hr-header">
+      <h1>👥 Human Resources</h1>
+    </div>
+    
+    <div class="hr-tabs">
+      <button class="hr-tab active" data-tab="employees">Employees</button>
+      <button class="hr-tab" data-tab="contracts">Contracts</button>
+      <button class="hr-tab" data-tab="training">Training</button>
+      <button class="hr-tab" data-tab="performance">Performance</button>
+      <button class="hr-tab" data-tab="payroll">Payroll</button>
+    </div>
+    
+    <div class="hr-panel active" data-panel="employees">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Employee Directory</div>
+          <button class="mc-btn btn-primary" id="new-emp-btn">+ Add Employee</button>
+        </div>
+        <div class="filter-bar">
+          <input type="search" id="emp-search" class="input" placeholder="Search by name, email, position..." style="max-width:320px">
+          <select id="emp-dept-filter" class="input" style="width:auto;">
+            <option value="">All Departments</option>
+          </select>
+          <select id="emp-status-filter" class="input" style="width:auto;">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+            <option value="terminated">Terminated</option>
+          </select>
+        </div>
+        <div id="emp-table-wrap"></div>
+        <div id="emp-pagination"></div>
+      </div>
+    </div>
+    
+    <div class="hr-panel" data-panel="contracts">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Contracts</div>
+          <button class="mc-btn btn-primary" id="new-contract-btn">+ New Contract</button>
+        </div>
+        <div id="contract-table-wrap"></div>
+        <div id="contract-pagination"></div>
+      </div>
+    </div>
+    
+    <div class="hr-panel" data-panel="training">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Training Records</div>
+          <button class="mc-btn btn-primary" id="new-training-btn">+ Add Training</button>
+        </div>
+        <div id="training-table-wrap"></div>
+        <div id="training-pagination"></div>
+      </div>
+    </div>
+    
+    <div class="hr-panel" data-panel="performance">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Performance Reviews</div>
+          <button class="mc-btn btn-primary" id="new-perf-btn">+ New Review</button>
+        </div>
+        <div id="perf-table-wrap"></div>
+        <div id="perf-pagination"></div>
+      </div>
+    </div>
+    
+    <div class="hr-panel" data-panel="payroll">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Payroll</div>
+          <button class="mc-btn btn-primary" id="new-payroll-btn">+ New Payroll Entry</button>
+        </div>
+        <div id="payroll-table-wrap"></div>
+        <div id="payroll-pagination"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Employee Modal -->
+  <div id="emp-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 id="emp-modal-title">Add Employee</h2>
+        <button class="modal-close" id="close-emp-modal">&times;</button>
+      </div>
+      <form id="emp-form" class="emp-form">
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Full Name *</label>
+            <input type="text" id="emp-name" class="input" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Email *</label>
+            <input type="email" id="emp-email" class="input" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Phone</label>
+            <input type="text" id="emp-phone" class="input">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Role *</label>
+            <select id="emp-role" class="input">
+              <option value="role_nurse">Clinical Staff / Triage</option>
+              <option value="role_dev">Front-Desk / Intake</option>
+              <option value="role_lead">Healthcare Provider</option>
+              <option value="role_supervisor">M&E Officer</option>
+              <option value="role_director">M&E Director</option>
+              <option value="role_finance">Ancillary Services</option>
+              <option value="role_admin">System Administrator</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Position</label>
+            <input type="text" id="emp-position" class="input">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Employment Type</label>
+            <select id="emp-etype" class="input">
+              <option value="full_time">Full Time</option>
+              <option value="part_time">Part Time</option>
+              <option value="contract">Contract</option>
+              <option value="intern">Intern</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Hire Date</label>
+            <input type="date" id="emp-hire" class="input">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Salary</label>
+            <input type="number" id="emp-salary" class="input" step="0.01">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Emergency Contact</label>
+          <input type="text" id="emp-emergency" class="input" placeholder="Name - Phone">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="mc-btn-secondary" id="cancel-emp">Cancel</button>
+          <button type="submit" class="mc-btn btn-primary">Save Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Contract Modal -->
+  <div id="contract-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 id="contract-modal-title">New Contract</h2>
+        <button class="modal-close" id="close-contract-modal">&times;</button>
+      </div>
+      <form id="contract-form" class="contract-form">
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Employee *</label>
+            <select id="contract-emp" class="input" required></select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Contract Type *</label>
+            <select id="contract-type" class="input">
+              <option value="permanent">Permanent</option>
+              <option value="fixed_term">Fixed Term</option>
+              <option value="casual">Casual</option>
+              <option value="internship">Internship</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Start Date *</label>
+            <input type="date" id="contract-start" class="input" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">End Date</label>
+            <input type="date" id="contract-end" class="input">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Salary</label>
+          <input type="number" id="contract-salary" class="input" step="0.01">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Terms</label>
+          <textarea id="contract-terms" class="input" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="mc-btn-secondary" id="cancel-contract">Cancel</button>
+          <button type="submit" class="mc-btn btn-primary">Save Contract</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Training Modal -->
+  <div id="training-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 id="training-modal-title">Add Training</h2>
+        <button class="modal-close" id="close-training-modal">&times;</button>
+      </div>
+      <form id="training-form" class="training-form">
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Employee *</label>
+            <select id="training-emp" class="input" required></select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Training Name *</label>
+            <input type="text" id="training-name" class="input" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Training Type</label>
+            <select id="training-type" class="input">
+              <option value="onboarding">Onboarding</option>
+              <option value="technical">Technical</option>
+              <option value="leadership">Leadership</option>
+              <option value="compliance">Compliance</option>
+              <option value="clinical">Clinical</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Provider</label>
+            <input type="text" id="training-provider" class="input">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Start Date</label>
+            <input type="date" id="training-start" class="input">
+          </div>
+          <div class="input-group">
+            <label class="input-label">End Date</label>
+            <input type="date" id="training-end" class="input">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Certificate URL</label>
+          <input type="url" id="training-cert" class="input" placeholder="https://...">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="mc-btn-secondary" id="cancel-training">Cancel</button>
+          <button type="submit" class="mc-btn btn-primary">Save Training</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Performance Modal -->
+  <div id="perf-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 id="perf-modal-title">Performance Review</h2>
+        <button class="modal-close" id="close-perf-modal">&times;</button>
+      </div>
+      <form id="perf-form" class="perf-form">
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Employee *</label>
+            <select id="perf-emp" class="input" required></select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Review Period *</label>
+            <input type="text" id="perf-period" class="input" required placeholder="e.g. 2026-Q2">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Rating (1-5)</label>
+          <input type="number" id="perf-rating" class="input" min="1" max="5" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Goals</label>
+          <textarea id="perf-goals" class="input" rows="2"></textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Achievements</label>
+          <textarea id="perf-achievements" class="input" rows="2"></textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Status</label>
+          <select id="perf-status" class="input">
+            <option value="draft">Draft</option>
+            <option value="submitted">Submitted</option>
+            <option value="approved">Approved</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="mc-btn-secondary" id="cancel-perf">Cancel</button>
+          <button type="submit" class="mc-btn btn-primary">Save Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Payroll Modal -->
+  <div id="payroll-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 id="payroll-modal-title">Payroll Entry</h2>
+        <button class="modal-close" id="close-payroll-modal">&times;</button>
+      </div>
+      <form id="payroll-form" class="payroll-form">
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Employee *</label>
+            <select id="payroll-emp" class="input" required></select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Status</label>
+            <select id="payroll-status" class="input">
+              <option value="pending">Pending</option>
+              <option value="processed">Processed</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Period Start *</label>
+            <input type="date" id="payroll-start" class="input" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Period End *</label>
+            <input type="date" id="payroll-end" class="input" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Basic Salary</label>
+            <input type="number" id="payroll-basic" class="input" step="0.01">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Allowances</label>
+            <input type="number" id="payroll-allowances" class="input" step="0.01">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Deductions</label>
+          <input type="number" id="payroll-deductions" class="input" step="0.01">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="mc-btn-secondary" id="cancel-payroll">Cancel</button>
+          <button type="submit" class="mc-btn btn-primary">Save Payroll</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

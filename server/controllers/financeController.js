@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { validateRequired, validateUUID } = require('../middleware/validation');
+const { hasCapability } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -12,51 +13,89 @@ function sendSecureJSON(res, status, data) {
   res.end(payload);
 }
 
+function logAudit(userId, action, details, resourceType, resourceId) {
+  db.run(
+    'INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, ?, ?, ?, ?, ?)',
+    [userId, action, details, resourceType, resourceId || '', 'success'],
+    function (err) {
+      if (err) console.error(`[AUDIT ERROR] ${err.message}`);
+    }
+  );
+}
+
 function handleList(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'finance:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const q = req.url.split('?')[1] || '';
   const params = new URLSearchParams(q);
   const status = params.get('status') || '';
   const type = params.get('type') || '';
+  const page = Math.max(1, parseInt(params.get('page')) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(params.get('limit')) || 25));
+  const offset = (page - 1) * limit;
 
-  let sql = `SELECT f.id, f.type, f.reference, f.amount, f.status, f.date, f.due, f.employee_id, e.name as staff, f.patient_id, p.name as patient FROM finance f LEFT JOIN employees e ON e.id = f.employee_id LEFT JOIN patients p ON p.id = f.patient_id WHERE 1=1`;
+  let whereClause = ' WHERE 1=1';
   const args = [];
 
   if (status) {
-    sql += ` AND f.status = ?`;
+    whereClause += ' AND f.status = ?';
     args.push(status);
   }
   if (type) {
-    sql += ` AND f.type = ?`;
+    whereClause += ' AND f.type = ?';
     args.push(type);
   }
 
-  sql += ` ORDER BY f.date DESC`;
+  const countSql = 'SELECT COUNT(*) as total FROM finance f LEFT JOIN employees e ON e.id = f.employee_id LEFT JOIN patients p ON p.id = f.patient_id' + whereClause;
 
-  db.all(sql, args, (err, rows) => {
-    if (err) {
-      console.error(`[SECURE EXCEPTION] Finance List Error: ${err.message}`);
+  db.get(countSql, args, function (countErr, countRow) {
+    if (countErr) {
+      console.error(`[SECURE EXCEPTION] Finance List Count Error: ${countErr.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
-    const records = (rows || []).map(r => ({
-      id: r.id,
-      type: r.type,
-      reference: r.reference,
-      amount: r.amount,
-      status: r.status,
-      date: r.date,
-      due: r.due,
-      employee_id: r.employee_id,
-      staff: r.staff,
-      patient_id: r.patient_id,
-      patient: r.patient,
-    }));
-    return sendSecureJSON(res, 200, { ok: true, records });
+
+    const total = countRow ? countRow.total : 0;
+    const dataSql = 'SELECT f.id, f.type, f.reference, f.amount, f.status, f.date, f.due, f.employee_id, e.name as staff, f.patient_id, p.name as patient FROM finance f LEFT JOIN employees e ON e.id = f.employee_id LEFT JOIN patients p ON p.id = f.patient_id' + whereClause + ' ORDER BY f.date DESC LIMIT ? OFFSET ?';
+    const dataArgs = args.concat([limit, offset]);
+
+    db.all(dataSql, dataArgs, function (err, rows) {
+      if (err) {
+        console.error(`[SECURE EXCEPTION] Finance List Error: ${err.message}`);
+        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+      }
+      const records = (rows || []).map(function (r) {
+        return {
+          id: r.id,
+          type: r.type,
+          reference: r.reference,
+          amount: r.amount,
+          status: r.status,
+          date: r.date,
+          due: r.due,
+          employee_id: r.employee_id,
+          staff: r.staff,
+          patient_id: r.patient_id,
+          patient: r.patient,
+        };
+      });
+      return sendSecureJSON(res, 200, {
+        ok: true,
+        records: records,
+        pagination: { page: page, limit: limit, total: total, totalPages: Math.ceil(total / limit) }
+      });
+    });
   });
 }
 
 function handleGet(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'finance:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
-  db.get(`SELECT f.id, f.type, f.reference, f.amount, f.status, f.date, f.due, f.employee_id, e.name as staff, f.patient_id, p.name as patient FROM finance f LEFT JOIN employees e ON e.id = f.employee_id LEFT JOIN patients p ON p.id = f.patient_id WHERE f.id = ?`, [id], (err, row) => {
+  db.get('SELECT f.id, f.type, f.reference, f.amount, f.status, f.date, f.due, f.employee_id, e.name as staff, f.patient_id, p.name as patient FROM finance f LEFT JOIN employees e ON e.id = f.employee_id LEFT JOIN patients p ON p.id = f.patient_id WHERE f.id = ?', [id], function (err, row) {
     if (err) {
       console.error(`[SECURE EXCEPTION] Finance Detail Error: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
@@ -69,12 +108,23 @@ function handleGet(req, res) {
 }
 
 function handleCreate(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'finance:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   let body = '';
-  req.on('data', (ch) => (body += ch));
-  req.on('end', () => {
+  req.on('data', function (ch) { body += ch; });
+  req.on('end', function () {
     try {
       const p = JSON.parse(body || '{}');
-      const { type, reference, amount, status, date, due, employee_id, patient_id } = p;
+      const type = p.type;
+      const reference = p.reference;
+      const amount = p.amount;
+      const status = p.status;
+      const date = p.date;
+      const due = p.due;
+      const employee_id = p.employee_id;
+      const patient_id = p.patient_id;
 
       const missing = validateRequired([type, amount, employee_id]);
       if (missing.length > 0) {
@@ -94,16 +144,18 @@ function handleCreate(req, res) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Invalid patient ID format.' });
       }
 
-      db.run(`INSERT INTO finance (type, reference, amount, status, date, due, employee_id, patient_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      db.run('INSERT INTO finance (type, reference, amount, status, date, due, employee_id, patient_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [type, reference || '', numAmount, status || 'pending', date || new Date().toISOString().split('T')[0], due || '', employee_id, patient_id || ''],
         function (err) {
           if (err) {
             console.error(`[SECURE EXCEPTION] Finance Create Trace: ${err.message}`);
             return sendSecureJSON(res, 400, { ok: false, error: 'Record creation failed.' });
           }
+          const newId = this.lastID;
+          logAudit(req.user.id, 'create_finance', 'Created finance record ' + newId, 'finance', String(newId));
           return sendSecureJSON(res, 201, {
             ok: true,
-            record: { id: this.lastID, type, reference, amount: numAmount, status, date, due, employee_id, patient_id },
+            record: { id: newId, type: type, reference: reference, amount: numAmount, status: status, date: date, due: due, employee_id: employee_id, patient_id: patient_id },
           });
         }
       );
@@ -114,13 +166,24 @@ function handleCreate(req, res) {
 }
 
 function handleUpdate(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'finance:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   let body = '';
-  req.on('data', (ch) => (body += ch));
-  req.on('end', () => {
+  req.on('data', function (ch) { body += ch; });
+  req.on('end', function () {
     try {
       const p = JSON.parse(body || '{}');
-      const { type, reference, amount, status, date, due, employee_id, patient_id } = p;
+      const type = p.type;
+      const reference = p.reference;
+      const amount = p.amount;
+      const status = p.status;
+      const date = p.date;
+      const due = p.due;
+      const employee_id = p.employee_id;
+      const patient_id = p.patient_id;
 
       const fields = [];
       const values = [];
@@ -141,7 +204,7 @@ function handleUpdate(req, res) {
       if (patient_id !== undefined) { fields.push('patient_id = ?'); values.push(patient_id); }
       values.push(id);
 
-      db.run(`UPDATE finance SET ${fields.join(', ')} WHERE id = ?`, values, function (err) {
+      db.run('UPDATE finance SET ' + fields.join(', ') + ' WHERE id = ?', values, function (err) {
         if (err) {
           console.error(`[SECURE EXCEPTION] Finance Update Trace: ${err.message}`);
           return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
@@ -149,6 +212,7 @@ function handleUpdate(req, res) {
         if (this.changes === 0) {
           return sendSecureJSON(res, 404, { ok: false, error: 'Record not found.' });
         }
+        logAudit(req.user.id, 'update_finance', 'Updated finance record ' + id, 'finance', String(id));
         return sendSecureJSON(res, 200, { ok: true });
       });
     } catch (e) {
@@ -158,8 +222,12 @@ function handleUpdate(req, res) {
 }
 
 function handleDelete(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'finance:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
-  db.run(`DELETE FROM finance WHERE id = ?`, [id], function (err) {
+  db.run('DELETE FROM finance WHERE id = ?', [id], function (err) {
     if (err) {
       console.error(`[SECURE EXCEPTION] Finance Delete Trace: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Delete failed.' });
@@ -167,6 +235,7 @@ function handleDelete(req, res) {
     if (this.changes === 0) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Record not found.' });
     }
+    logAudit(req.user.id, 'delete_finance', 'Deleted finance record ' + id, 'finance', String(id));
     return sendSecureJSON(res, 200, { ok: true });
   });
 }

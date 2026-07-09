@@ -44,6 +44,8 @@ export const FEATURE_NAV = [
   { feature_id: 'notifications',       display_name: 'Notifications',       base_folder: 'src/features/notifications',      accessible_by_classes: ['B','C','D'],      explicit_denials: ['A'] },
   { feature_id: 'profile',             display_name: 'Profile',             base_folder: 'src/features/profile',            accessible_by_classes: ['B','C','D'],      explicit_denials: ['A'] },
   { feature_id: 'referrals',           display_name: 'Referrals',           base_folder: 'src/features/referrals',          accessible_by_classes: ['B'],               explicit_denials: ['A','C','D'] },
+  { feature_id: 'hr',                  display_name: 'Human Resources',     base_folder: 'src/features/hr',                 accessible_by_classes: ['A','D'],               explicit_denials: ['B','C'] },
+  { feature_id: 'reports',             display_name: 'Reports',             base_folder: 'src/features/reports',            accessible_by_classes: ['A','B','C','D'],      explicit_denials: [] },
   { feature_id: 'settings',            display_name: 'Settings',            base_folder: 'src/features/settings',           accessible_by_classes: ['A'],               explicit_denials: ['B','C','D'] },
   { feature_id: 'secret-login',        display_name: 'Emergency Backdoor',   base_folder: 'src/features/secret-login',       accessible_by_classes: ['A'],               explicit_denials: ['B','C','D'] },
 ];

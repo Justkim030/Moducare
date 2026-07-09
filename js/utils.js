@@ -268,3 +268,60 @@ export function exportCSV(rows, filename = 'export.csv') {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ── List / Pagination Helpers ────────────────────────────
+/**
+ * Extract a list array from a paginated API response. Supports both the
+ * unified `data` key and legacy module-specific keys (e.g. `labOrders`).
+ * @param {object} res API response ({ data: [...] } or { <key>: [...] })
+ * @param {string} [fallbackKey] legacy module-specific key
+ * @returns {Array}
+ */
+export function extractList(res, fallbackKey) {
+  if (!res) return [];
+  if (Array.isArray(res.data)) return res.data;
+  if (fallbackKey && Array.isArray(res[fallbackKey])) return res[fallbackKey];
+  return [];
+}
+
+/**
+ * Build the standard pagination control markup. The prev/next buttons are
+ * disabled at the page boundaries.
+ * @param {number} currentPage
+ * @param {number} pageSize
+ * @param {number} total
+ * @returns {string}
+ */
+export function buildPaginationHTML(currentPage, pageSize, total) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, total);
+  const prevDisabled = currentPage <= 1 ? 'disabled' : '';
+  const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+  return `
+    <div class="pagination">
+      <button class="page-btn" data-page="prev" ${prevDisabled}>&larr;</button>
+      <span class="pagination-info">Showing ${start}-${end} of ${total}</span>
+      <button class="page-btn" data-page="next" ${nextDisabled}>&rarr;</button>
+    </div>`;
+}
+
+/**
+ * Wire up the prev/next buttons inside a rendered pagination control.
+ * `state` must expose `{ page, totalPages }` and is mutated in place.
+ * @param {HTMLElement} pgEl element containing `.page-btn` buttons
+ * @param {{page:number,totalPages:number}} state
+ * @param {Function} reload called after the page changes
+ */
+export function attachPagination(pgEl, state, reload) {
+  if (!pgEl) return;
+  pgEl.querySelectorAll('.page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const action = btn.dataset.page;
+      if (action === 'prev' && state.page > 1) state.page -= 1;
+      else if (action === 'next' && state.page < state.totalPages) state.page += 1;
+      reload();
+    });
+  });
+}

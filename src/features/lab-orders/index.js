@@ -2,8 +2,14 @@
  * ModuCare MS — Lab Orders & Results Module
  * Features: Order entry, result entry, abnormal flagging, status tracking
  */
-import { showToast, formatDate, escapeHTML, apiFetch } from '../../../js/utils.js';
+import { showToast, formatDate, escapeHTML, apiFetch, extractList, buildPaginationHTML, attachPagination } from '../../../js/utils.js';
 import { hasRole } from '../../../js/auth.js';
+
+let labPage = 1;
+const LAB_PAGE_SIZE = 25;
+let labTotal = 0;
+let labTotalPages = 1;
+let editingLabId = null;
 
 let _cssLoaded = false;
 function injectCSS() {
@@ -82,6 +88,16 @@ function buildShell() {
               </select>
             </div>
             <div class="input-group">
+              <label class="input-label">Status</label>
+              <select id="lab-status" class="input">
+                <option value="ordered">Ordered</option>
+                <option value="collected">Collected</option>
+                <option value="processing">Processing</option>
+                <option value="resulted">Resulted</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="input-group">
               <label class="input-label">Test Name</label>
               <input type="text" id="lab-test-name" class="input" placeholder="e.g. Viral Load, CD4, Creatinine">
             </div>
@@ -113,6 +129,12 @@ function buildShell() {
                 </select>
               </div>
             </div>
+            <div class="form-row">
+              <div class="input-group">
+                <label class="input-label">Result Date</label>
+                <input type="datetime-local" id="lab-result-date" class="input">
+              </div>
+            </div>
           </div>
 
           <div class="input-group">
@@ -133,14 +155,29 @@ function buildShell() {
 async function refreshList(container) {
   const list = container.querySelector('#lab-list');
   if (!list) return;
-  const status = container.querySelector('#lab-filter-status')?.value || '';
-  const testType = container.querySelector('#lab-filter-type')?.value || '';
+  const status = container.querySelector('#lab-filter-status').value || '';
+  const testType = container.querySelector('#lab-filter-type').value || '';
   const qs = new URLSearchParams();
+  qs.set('page', labPage);
+  qs.set('limit', LAB_PAGE_SIZE);
   if (status) qs.set('status', status);
   if (testType) qs.set('test_type', testType);
-  const qsStr = qs.toString() ? `?${qs.toString()}` : '';
-  const data = await apiFetch(`/lab-orders${qsStr}`);
-  const orders = data.labOrders || [];
+
+  let data;
+  try {
+    data = await apiFetch(`/lab-orders?${qs.toString()}`);
+  } catch (err) {
+    showToast(err.message || 'Failed to load lab orders', 'error');
+    list.innerHTML = `<div class="empty-state"><h3>Failed to load lab orders</h3></div>`;
+    return;
+  }
+
+  const orders = extractList(data, 'labOrders');
+  const pag = data.pagination || {};
+  labTotal = pag.total || orders.length;
+  labTotalPages = pag.totalPages || 1;
+  if (labPage > labTotalPages) { labPage = labTotalPages; return refreshList(container); }
+
   if (orders.length === 0) {
     list.innerHTML = `<div class="empty-state"><h3>No lab orders found</h3><p>Create a new lab order to get started.</p></div>`;
     return;
@@ -158,6 +195,7 @@ async function refreshList(container) {
             <th>Result</th>
             <th>Flag</th>
             <th>Provider</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -171,11 +209,39 @@ async function refreshList(container) {
               <td>${escapeHTML(o.result_value || '—')} ${escapeHTML(o.result_unit || '')}</td>
               <td>${renderFlag(o.abnormal_flag)}</td>
               <td>${escapeHTML(o.provider_name || 'Unassigned')}</td>
+              <td class="lab-actions">
+                <button class="mc-btn btn-sm btn-ghost lab-edit" data-id="${escapeHTML(String(o.id))}">Edit</button>
+                <button class="mc-btn btn-sm btn-danger lab-delete" data-id="${escapeHTML(String(o.id))}">Delete</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
+      ${buildPaginationHTML(labPage, LAB_PAGE_SIZE, labTotal)}
     </div>`;
+
+  list.querySelectorAll('.lab-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ord = orders.find(x => String(x.id) === btn.dataset.id);
+      if (ord) showEditForm(container, ord);
+    });
+  });
+  list.querySelectorAll('.lab-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteLab(container, btn.dataset.id));
+  });
+
+  attachPagination(list.querySelector('.pagination'), { get page() { return labPage; }, set page(v) { labPage = v; } }, () => refreshList(container));
+}
+
+async function deleteLab(container, id) {
+  if (!confirm('Delete this lab order?')) return;
+  try {
+    await apiFetch(`/lab-orders/${id}`, { method: 'DELETE' });
+    showToast('Lab order deleted', 'success');
+    refreshList(container);
+  } catch (err) {
+    showToast(err.message || 'Failed to delete lab order', 'error');
+  }
 }
 
 function renderStatus(s) {
@@ -193,41 +259,76 @@ async function bindEvents(container) {
   const modal = container.querySelector('#lab-modal');
   const form = container.querySelector('#lab-form');
 
-  container.querySelector('#new-lab-btn')?.addEventListener('click', async () => {
+  container.querySelector('#new-lab-btn').addEventListener('click', async () => {
+    editingLabId = null;
     await populatePatients(container);
+    form.reset();
     modal.style.display = 'flex';
   });
 
-  container.querySelector('#close-lab-modal')?.addEventListener('click', () => { modal.style.display = 'none'; });
-  container.querySelector('#cancel-lab')?.addEventListener('click', () => { modal.style.display = 'none'; });
+  container.querySelector('#close-lab-modal').addEventListener('click', () => { modal.style.display = 'none'; });
+  container.querySelector('#cancel-lab').addEventListener('click', () => { modal.style.display = 'none'; });
 
-  form?.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const payload = {
-      patient_id: container.querySelector('#lab-patient')?.value,
-      test_type: container.querySelector('#lab-test-type')?.value,
-      test_name: container.querySelector('#lab-test-name')?.value,
-      status: 'ordered',
-      result_value: container.querySelector('#lab-result-value')?.value,
-      result_unit: container.querySelector('#lab-result-unit')?.value,
-      reference_range: container.querySelector('#lab-ref-range')?.value,
-      abnormal_flag: container.querySelector('#lab-flag')?.value,
-      result_date: new Date().toISOString(),
-      notes: container.querySelector('#lab-notes')?.value,
+      patient_id: container.querySelector('#lab-patient').value,
+      test_type: container.querySelector('#lab-test-type').value,
+      test_name: container.querySelector('#lab-test-name').value,
+      status: container.querySelector('#lab-status').value || 'ordered',
+      result_value: container.querySelector('#lab-result-value').value,
+      result_unit: container.querySelector('#lab-result-unit').value,
+      reference_range: container.querySelector('#lab-ref-range').value,
+      abnormal_flag: container.querySelector('#lab-flag').value,
+      result_date: container.querySelector('#lab-result-date').value || new Date().toISOString(),
+      notes: container.querySelector('#lab-notes').value,
     };
     try {
-      await apiFetch('/lab-orders', { method: 'POST', body: JSON.stringify(payload) });
-      showToast('Lab order created', 'success');
+      if (editingLabId) {
+        await apiFetch(`/lab-orders/${editingLabId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        showToast('Lab order updated', 'success');
+      } else {
+        await apiFetch('/lab-orders', { method: 'POST', body: JSON.stringify(payload) });
+        showToast('Lab order created', 'success');
+      }
+      editingLabId = null;
       modal.style.display = 'none';
       form.reset();
       refreshList(container);
     } catch (err) {
-      showToast(err.message || 'Failed to create lab order', 'error');
+      showToast(err.message || 'Failed to save lab order', 'error');
     }
   });
 
-  container.querySelector('#lab-filter-status')?.addEventListener('change', () => refreshList(container));
-  container.querySelector('#lab-filter-type')?.addEventListener('change', () => refreshList(container));
+  container.querySelector('#lab-filter-status').addEventListener('change', () => { labPage = 1; refreshList(container); });
+  container.querySelector('#lab-filter-type').addEventListener('change', () => { labPage = 1; refreshList(container); });
+}
+
+async function showEditForm(container, ord) {
+  editingLabId = ord.id;
+  const modal = container.querySelector('#lab-modal');
+  const form = container.querySelector('#lab-form');
+  if (!modal || !form) return;
+  await populatePatients(container);
+  const set = (id, val) => { const el = form.querySelector(`#${id}`); if (el && val !== undefined && val !== null) el.value = val; };
+  set('lab-patient', ord.patient_id);
+  set('lab-test-type', ord.test_type);
+  set('lab-status', ord.status);
+  set('lab-test-name', ord.test_name);
+  set('lab-result-value', ord.result_value);
+  set('lab-result-unit', ord.result_unit);
+  set('lab-ref-range', ord.reference_range);
+  set('lab-flag', ord.abnormal_flag);
+  set('lab-notes', ord.notes);
+  let rd = ord.result_date;
+  if (rd) {
+    try {
+      const d = new Date(rd);
+      if (!isNaN(d.getTime())) rd = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    } catch (e) { rd = ''; }
+  }
+  set('lab-result-date', rd);
+  modal.style.display = 'flex';
 }
 
 async function populatePatients(container) {

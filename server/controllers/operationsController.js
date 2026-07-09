@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { hasCapability } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -11,57 +12,97 @@ function sendSecureJSON(res, status, data) {
   res.end(payload);
 }
 
+function logAudit(userId, action, details, resourceType, resourceId) {
+  db.run(
+    'INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, ?, ?, ?, ?, ?)',
+    [userId, action, details, resourceType, resourceId || '', 'success'],
+    function (err) {
+      if (err) console.error(`[AUDIT ERROR] ${err.message}`);
+    }
+  );
+}
+
 function handleList(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'operations:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const q = req.url.split('?')[1] || '';
   const params = new URLSearchParams(q);
   const status = params.get('status') || '';
   const priority = params.get('priority') || '';
   const search = (params.get('q') || '').toLowerCase();
+  const page = Math.max(1, parseInt(params.get('page')) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(params.get('limit')) || 25));
+  const offset = (page - 1) * limit;
 
-  let sql = `SELECT o.id, o.title, o.description, o.department, o.priority, o.status, o.assignee, o.due, o.tags, o.notes, o.employee_id, e.name as owner FROM operations o LEFT JOIN employees e ON e.id = o.employee_id WHERE 1=1`;
+  let whereClause = ' WHERE 1=1';
   const args = [];
 
   if (status) {
-    sql += ` AND o.status = ?`;
+    whereClause += ' AND o.status = ?';
     args.push(status);
   }
   if (priority) {
-    sql += ` AND o.priority = ?`;
+    whereClause += ' AND o.priority = ?';
     args.push(priority);
   }
   if (search) {
-    sql += ` AND (LOWER(o.title) LIKE ? OR LOWER(o.description) LIKE ? OR LOWER(o.assignee) LIKE ?)`;
-    args.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    whereClause += ' AND (LOWER(o.title) LIKE ? OR LOWER(o.description) LIKE ? OR LOWER(o.assignee) LIKE ?)';
+    args.push('%' + search + '%', '%' + search + '%', '%' + search + '%');
   }
 
-  sql += ` ORDER BY o.due ASC`;
+  const countSql = 'SELECT COUNT(*) as total FROM operations o LEFT JOIN employees e ON e.id = o.employee_id' + whereClause;
 
-  db.all(sql, args, (err, rows) => {
-    if (err) {
-      console.error(`[SECURE EXCEPTION] Operations List Error: ${err.message}`);
+  db.get(countSql, args, function (countErr, countRow) {
+    if (countErr) {
+      console.error(`[SECURE EXCEPTION] Operations List Count Error: ${countErr.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
-    const operations = (rows || []).map(r => ({
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      department: r.department,
-      priority: r.priority,
-      status: r.status,
-      assignee: r.assignee,
-      due: r.due,
-      tags: (() => { try { return r.tags ? JSON.parse(r.tags) : []; } catch { return []; } })(),
-      notes: r.notes,
-      employee_id: r.employee_id,
-      owner: r.owner,
-    }));
-    return sendSecureJSON(res, 200, { ok: true, operations });
+
+    const total = countRow ? countRow.total : 0;
+    const dataSql = 'SELECT o.id, o.title, o.description, o.department, o.priority, o.status, o.assignee, o.due, o.tags, o.notes, o.employee_id, e.name as owner FROM operations o LEFT JOIN employees e ON e.id = o.employee_id' + whereClause + ' ORDER BY o.due ASC LIMIT ? OFFSET ?';
+    const dataArgs = args.concat([limit, offset]);
+
+    db.all(dataSql, dataArgs, function (err, rows) {
+      if (err) {
+        console.error(`[SECURE EXCEPTION] Operations List Error: ${err.message}`);
+        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+      }
+      const operations = (rows || []).map(function (r) {
+        var tags = [];
+        try { tags = r.tags ? JSON.parse(r.tags) : []; } catch (e) { tags = []; }
+        return {
+          id: r.id,
+          title: r.title,
+          description: r.description,
+          department: r.department,
+          priority: r.priority,
+          status: r.status,
+          assignee: r.assignee,
+          due: r.due,
+          tags: tags,
+          notes: r.notes,
+          employee_id: r.employee_id,
+          owner: r.owner,
+        };
+      });
+      return sendSecureJSON(res, 200, {
+        ok: true,
+        operations: operations,
+        pagination: { page: page, limit: limit, total: total, totalPages: Math.ceil(total / limit) }
+      });
+    });
   });
 }
 
 function handleGet(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'operations:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
-  db.get(`SELECT o.id, o.title, o.description, o.department, o.priority, o.status, o.assignee, o.due, o.tags, o.notes, o.employee_id, e.name as owner FROM operations o LEFT JOIN employees e ON e.id = o.employee_id WHERE o.id = ?`, [id], (err, row) => {
+  db.get('SELECT o.id, o.title, o.description, o.department, o.priority, o.status, o.assignee, o.due, o.tags, o.notes, o.employee_id, e.name as owner FROM operations o LEFT JOIN employees e ON e.id = o.employee_id WHERE o.id = ?', [id], function (err, row) {
     if (err) {
       console.error(`[SECURE EXCEPTION] Operation Detail Error: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
@@ -69,30 +110,55 @@ function handleGet(req, res) {
     if (!row) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Operation not found' });
     }
+    var tags = [];
+    try { tags = row.tags ? JSON.parse(row.tags) : []; } catch (e) { tags = []; }
     return sendSecureJSON(res, 200, {
       ok: true,
       operation: {
-        ...row,
-        tags: (() => { try { return row.tags ? JSON.parse(row.tags) : []; } catch { return []; } })(),
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        department: row.department,
+        priority: row.priority,
+        status: row.status,
+        assignee: row.assignee,
+        due: row.due,
+        tags: tags,
+        notes: row.notes,
+        employee_id: row.employee_id,
+        owner: row.owner,
       }
     });
   });
 }
 
 function handleCreate(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'operations:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   let body = '';
-  req.on('data', (ch) => (body += ch));
-  req.on('end', () => {
+  req.on('data', function (ch) { body += ch; });
+  req.on('end', function () {
     try {
       const p = JSON.parse(body || '{}');
-      const { title, description, department, priority, status, assignee, due, tags, notes, employee_id } = p;
+      const title = p.title;
+      const description = p.description;
+      const department = p.department;
+      const priority = p.priority;
+      const status = p.status;
+      const assignee = p.assignee;
+      const due = p.due;
+      const tags = p.tags;
+      const notes = p.notes;
+      const employee_id = p.employee_id;
 
       if (!title) {
         return sendSecureJSON(res, 400, { ok: false, error: 'Title is required.' });
       }
 
       db.run(
-        `INSERT INTO operations (title, description, department, priority, status, assignee, due, tags, notes, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        'INSERT INTO operations (title, description, department, priority, status, assignee, due, tags, notes, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           title,
           description || '',
@@ -110,9 +176,11 @@ function handleCreate(req, res) {
             console.error(`[SECURE EXCEPTION] Operation Create Trace: ${err.message}`);
             return sendSecureJSON(res, 400, { ok: false, error: 'Operation creation failed.' });
           }
+          const newId = this.lastID;
+          logAudit(req.user.id, 'create_operation', 'Created operation ' + newId, 'operation', String(newId));
           return sendSecureJSON(res, 201, {
             ok: true,
-            operation: { id: this.lastID, title, description, department, priority, status, assignee, due, tags, notes, employee_id },
+            operation: { id: newId, title: title, description: description, department: department, priority: priority, status: status, assignee: assignee, due: due, tags: tags, notes: notes, employee_id: employee_id },
           });
         }
       );
@@ -123,13 +191,26 @@ function handleCreate(req, res) {
 }
 
 function handleUpdate(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'operations:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   let body = '';
-  req.on('data', (ch) => (body += ch));
-  req.on('end', () => {
+  req.on('data', function (ch) { body += ch; });
+  req.on('end', function () {
     try {
       const p = JSON.parse(body || '{}');
-      const { title, description, department, priority, status, assignee, due, tags, notes, employee_id } = p;
+      const title = p.title;
+      const description = p.description;
+      const department = p.department;
+      const priority = p.priority;
+      const status = p.status;
+      const assignee = p.assignee;
+      const due = p.due;
+      const tags = p.tags;
+      const notes = p.notes;
+      const employee_id = p.employee_id;
 
       const fields = [];
       const values = [];
@@ -145,7 +226,7 @@ function handleUpdate(req, res) {
       if (employee_id !== undefined) { fields.push('employee_id = ?'); values.push(employee_id); }
       values.push(id);
 
-      db.run(`UPDATE operations SET ${fields.join(', ')} WHERE id = ?`, values, function (err) {
+      db.run('UPDATE operations SET ' + fields.join(', ') + ' WHERE id = ?', values, function (err) {
         if (err) {
           console.error(`[SECURE EXCEPTION] Operation Update Trace: ${err.message}`);
           return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
@@ -153,6 +234,7 @@ function handleUpdate(req, res) {
         if (this.changes === 0) {
           return sendSecureJSON(res, 404, { ok: false, error: 'Operation not found.' });
         }
+        logAudit(req.user.id, 'update_operation', 'Updated operation ' + id, 'operation', String(id));
         return sendSecureJSON(res, 200, { ok: true });
       });
     } catch (e) {
@@ -162,8 +244,12 @@ function handleUpdate(req, res) {
 }
 
 function handleDelete(req, res) {
+  if (!req.user || !hasCapability(req.user.role_id, 'operations:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
-  db.run(`DELETE FROM operations WHERE id = ?`, [id], function (err) {
+  db.run('DELETE FROM operations WHERE id = ?', [id], function (err) {
     if (err) {
       console.error(`[SECURE EXCEPTION] Operation Delete Trace: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Delete failed.' });
@@ -171,6 +257,7 @@ function handleDelete(req, res) {
     if (this.changes === 0) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Operation not found.' });
     }
+    logAudit(req.user.id, 'delete_operation', 'Deleted operation ' + id, 'operation', String(id));
     return sendSecureJSON(res, 200, { ok: true });
   });
 }
