@@ -1,10 +1,11 @@
 /**
  * Dashboard Feature Logic
  * One unified dashboard for every user:
- *   - Tab 1 "Overview": all quick-navigation cards + stats + activity + quick report
+ *   - Tab 1 "Overview": stats + recent activity + quick incident report
  *   - Remaining tabs: the signed-in user's own role actions, each a single page
+ *     (the per-user action tabs are the in-dashboard quick-navigation)
  */
-import { apiFetch, escapeHTML, timeAgo, exportCSV, renderQuickActions } from '../../../js/utils.js';
+import { apiFetch, escapeHTML, timeAgo, exportCSV } from '../../../js/utils.js';
 import { getQuickActions, makeDashboardTabs } from '../../../js/auth.js';
 import { showToast } from '../../../js/utils.js';
 
@@ -24,9 +25,6 @@ export async function init(mount, State, subView) {
   const subtitle = mount.querySelector('#dashboard-subtitle');
   if (title) title.textContent = 'Dashboard';
   if (subtitle) subtitle.textContent = 'Your unified workspace — quick navigation and role actions.';
-
-  const qaHost = mount.querySelector('#dashboard-quick-actions');
-  if (qaHost) renderQuickActions(qaHost, actions, 'Quick Actions');
 
   renderTabs(mount, tabs, viewId);
   renderPanels(mount, tabs, actions);
@@ -79,7 +77,6 @@ function renderPanels(mount, tabs, actions) {
     t.kind === 'overview' ? renderOverviewPanel(t) : renderActionPanel(t)
   ).join('');
 
-  renderRoleCards(host, actions);
   wireIncidentForm(host);
   wireActivitySearch(host);
   wireExportCSV(host);
@@ -88,8 +85,6 @@ function renderPanels(mount, tabs, actions) {
 function renderOverviewPanel(t) {
   return `
   <div class="dashboard-panel" data-panel="${t.id}" role="tabpanel">
-    <div id="role-cards" class="role-kpi-grid"></div>
-
     <div class="stats-summary" id="stats-summary">
       <div class="stat-card"><div class="stat-card__label">Patients</div><div class="stat-card__value" id="stat-patients">0</div></div>
       <div class="stat-card"><div class="stat-card__label">Appointments</div><div class="stat-card__value" id="stat-appointments">0</div></div>
@@ -144,16 +139,6 @@ function renderActionPanel(t) {
       <a href="${t.route || '#'}" data-route class="mc-btn btn-primary">Open ${escapeHTML(t.label)}</a>
     </section>
   </div>`;
-}
-
-function renderRoleCards(host, cards) {
-  const grid = host.querySelector('#role-cards');
-  if (!grid) return;
-  grid.innerHTML = cards.map(card => `
-    <a href="${card.route}" data-route class="role-card" title="${escapeHTML(card.label)}">
-      <span class="role-card__icon">${card.icon || '•'}</span>
-      <span class="role-card__title">${escapeHTML(card.label)}</span>
-    </a>`).join('');
 }
 
 /* ── Data ─────────────────────────────────────────────────── */
