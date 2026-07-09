@@ -248,7 +248,7 @@ function applyNavPermissions() {
 
   // Structural-class-gated nav (UI framework): hide features not allowed for
   // the user's class. Rendering source of truth = FEATURE_NAV allowlist.
-  document.querySelectorAll('.mc-nav-item[data-feature]').forEach(el => {
+  document.querySelectorAll('[data-feature]').forEach(el => {
     if (!isFeatureAllowed(el.dataset.feature, userClass)) el.style.display = 'none';
   });
 
@@ -261,6 +261,19 @@ function applyNavPermissions() {
       parent.style.display = 'none';
     }
   });
+
+  // Blank-state fallback when every sidebar item is hidden.
+  const visibleNavItems = document.querySelectorAll('.mc-nav-item:not([style*="display: none"])');
+  const allNavItems = document.querySelectorAll('.mc-nav-item');
+  if (allNavItems.length > 0 && visibleNavItems.length === 0) {
+    const navList = document.querySelector('.mc-nav-list');
+    if (navList && !navList.querySelector('.mc-nav-empty')) {
+      const empty = document.createElement('li');
+      empty.className = 'mc-nav-empty';
+      empty.innerHTML = '<span class="muted">No modules available for your role.</span>';
+      navList.appendChild(empty);
+    }
+  }
 
   // Legacy module-gated nav (fallback).
   document.querySelectorAll('.nav-item[data-module]').forEach(el => {

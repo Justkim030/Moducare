@@ -67,18 +67,19 @@ const ROLE_CAPABILITY_SEED = {
     'system:health', 'backup:manage'
   ],
 
-  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents)
+  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents, Notifications)
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read',
     'patient:register', 'patient:write_demographics',
     'appointment:read', 'appointment:write',
-    'incident:write',
+    'incident:write', 'communication:read',
   ],
 
-  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents)
+  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents, Communications, Notifications, Referrals)
     'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'incident:read',
     'patient:write_demographics', 'patient:write_vitals',
     'encounter:read', 'encounter:write',
     'appointment:read', 'incident:write',
+    'communication:read', 'referral:write',
   ],
 
   role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents)
@@ -89,19 +90,19 @@ const ROLE_CAPABILITY_SEED = {
     'referral:write', 'incident:write', 'appointment:read',
   ],
 
-  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents)
+  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents, Communications, Notifications)
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
-    'analytics:read', 'report:export',
+    'analytics:read', 'report:export', 'communication:read',
   ],
 
-  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage
+  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
-    'analytics:read', 'report:export', 'finance:write', 'system:health',
+    'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
   ],
 
-  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents
+  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents, Notifications
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'clinical:read', 'incident:read',
-    'finance:write',
+    'finance:write', 'communication:read',
     'pharmacy:inventory_read', 'inventory:read', 'inventory:write',
     'lab:result_entry', 'pharmacy:dispense', 'lab:read',
   ],

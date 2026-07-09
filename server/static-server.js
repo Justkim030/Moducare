@@ -353,6 +353,7 @@ function handleSearch(req, res) {
   const params = new URLSearchParams(q);
   const query = (params.get('q') || '').toLowerCase();
   const type = params.get('type') || 'all';
+  const roleId = req.user && req.user.role_id;
 
   if (!query || query.length < 2) {
     return sendSecureJSON(res, 400, { ok: false, error: 'Search query must be at least 2 characters.' });
@@ -360,21 +361,60 @@ function handleSearch(req, res) {
 
   let results = { patients: [], encounters: [], labOrders: [] };
 
+  const done = () => sendSecureJSON(res, 200, { ok: true, ...results });
+
   if (type === 'all' || type === 'patients') {
     db.all(`SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.county, p.hiv_status FROM patients p WHERE LOWER(p.name) LIKE ? OR LOWER(p.email) LIKE ? OR LOWER(p.phone_number) LIKE ? OR p.id LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
       if (!err && rows) results.patients = rows;
-      if (type === 'patients') return sendSecureJSON(res, 200, { ok: true, ...results });
+      if (type === 'patients') return done();
       if (type === 'all' || type === 'encounters') {
-        db.all(`SELECT e.id, e.patient_id, e.encounter_date, e.visit_type, e.chief_complaint, p.name as patient_name FROM encounters e LEFT JOIN patients p ON p.id = e.patient_id WHERE LOWER(e.chief_complaint) LIKE ? OR LOWER(e.visit_type) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
-          if (!err && rows) results.encounters = rows;
-          if (type === 'encounters') return sendSecureJSON(res, 200, { ok: true, ...results });
-          db.all(`SELECT lo.id, lo.patient_id, lo.test_type, lo.test_name, lo.status, lo.result_value, p.name as patient_name FROM lab_orders lo LEFT JOIN patients p ON p.id = lo.patient_id WHERE LOWER(lo.test_name) LIKE ? OR LOWER(lo.result_value) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
-            if (!err && rows) results.labOrders = rows;
-            return sendSecureJSON(res, 200, { ok: true, ...results });
-          });
+        if (!hasCapability(roleId, 'encounter:read')) {
+          if (type === 'encounters') return done();
+          if (type === 'all' || type === 'lab-orders') {
+            if (!hasCapability(roleId, 'lab:read')) return done();
+            db.all(`SELECT lo.id, lo.patient_id, lo.test_type, lo.test_name, lo.status, lo.result_value, p.name as patient_name FROM lab_orders lo LEFT JOIN patients p ON p.id = lo.patient_id WHERE LOWER(lo.test_name) LIKE ? OR LOWER(lo.result_value) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err3, rows3) => {
+              if (!err3 && rows3) results.labOrders = rows3;
+              return done();
+            });
+          }
+          return done();
+        }
+        db.all(`SELECT e.id, e.patient_id, e.encounter_date, e.visit_type, e.chief_complaint, p.name as patient_name FROM encounters e LEFT JOIN patients p ON p.id = e.patient_id WHERE LOWER(e.chief_complaint) LIKE ? OR LOWER(e.visit_type) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err2, rows2) => {
+          if (!err2 && rows2) results.encounters = rows2;
+          if (type === 'encounters') return done();
+          if (type === 'all' || type === 'lab-orders') {
+            if (!hasCapability(roleId, 'lab:read')) return done();
+            db.all(`SELECT lo.id, lo.patient_id, lo.test_type, lo.test_name, lo.status, lo.result_value, p.name as patient_name FROM lab_orders lo LEFT JOIN patients p ON p.id = lo.patient_id WHERE LOWER(lo.test_name) LIKE ? OR LOWER(lo.result_value) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err3, rows3) => {
+              if (!err3 && rows3) results.labOrders = rows3;
+              return done();
+            });
+          }
+          return done();
         });
       }
+      if (type === 'all' || type === 'lab-orders') {
+        if (!hasCapability(roleId, 'lab:read')) return done();
+        db.all(`SELECT lo.id, lo.patient_id, lo.test_type, lo.test_name, lo.status, lo.result_value, p.name as patient_name FROM lab_orders lo LEFT JOIN patients p ON p.id = lo.patient_id WHERE LOWER(lo.test_name) LIKE ? OR LOWER(lo.result_value) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err2, rows2) => {
+          if (!err2 && rows2) results.labOrders = rows2;
+          return done();
+        });
+      }
+      return done();
     });
+  } else if (type === 'encounters') {
+    if (!hasCapability(roleId, 'encounter:read')) return done();
+    db.all(`SELECT e.id, e.patient_id, e.encounter_date, e.visit_type, e.chief_complaint, p.name as patient_name FROM encounters e LEFT JOIN patients p ON p.id = e.patient_id WHERE LOWER(e.chief_complaint) LIKE ? OR LOWER(e.visit_type) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
+      if (!err && rows) results.encounters = rows;
+      return done();
+    });
+  } else if (type === 'lab-orders') {
+    if (!hasCapability(roleId, 'lab:read')) return done();
+    db.all(`SELECT lo.id, lo.patient_id, lo.test_type, lo.test_name, lo.status, lo.result_value, p.name as patient_name FROM lab_orders lo LEFT JOIN patients p ON p.id = lo.patient_id WHERE LOWER(lo.test_name) LIKE ? OR LOWER(lo.result_value) LIKE ? OR LOWER(p.name) LIKE ? LIMIT 20`, [`%${query}%`, `%${query}%`, `%${query}%`], (err, rows) => {
+      if (!err && rows) results.labOrders = rows;
+      return done();
+    });
+  } else {
+    return done();
   }
 }
 
