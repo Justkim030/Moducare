@@ -4,6 +4,8 @@
  * Imported by: login.js, app.js, and any protected module
  */
 
+import { getUserClass, isFeatureAllowed, routeToFeatureId } from './access-classes.js';
+
 // ── Constants ────────────────────────────────────────────────
 const SESSION_KEY   = 'moducare_session';
 const REMEMBER_KEY  = 'moducare_remember';
@@ -319,7 +321,11 @@ export function getQuickActions(roleId, departmentId) {
   const caps = getSession()?.capabilities || [];
   const allowed = (cap) => !cap || caps.includes(cap) || caps.includes('*');
   const actions = QUICK_ACTIONS[key] || QUICK_ACTIONS.staff;
-  return actions.filter(a => allowed(a.cap));
+  const userClass = getUserClass({ role_id: roleId });
+  // Capability gate (L2) AND structural-class gate (UI framework) — both must pass.
+  return actions.filter(a =>
+    allowed(a.cap) && isFeatureAllowed(routeToFeatureId(a.route), userClass)
+  );
 }
 
 /**

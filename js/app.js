@@ -3,9 +3,10 @@
  * Entry point for the dashboard shell.
  * Runs auth checks, populates user info, wires up UI interactions.
  */
-import { requireAuth, logout, getUserRoleLabel, getSession, getQuickActions } from './auth.js';
+import { requireAuth, logout, getUserRoleLabel, getSession, getQuickActions, canAccessCapability, canAccessModule } from './auth.js';
 import { set } from './store.js';
 import { showToast, escapeHTML, apiFetch, renderQuickActions } from './utils.js';
+import { getUserClass, isFeatureAllowed } from './access-classes.js';
 
 // ── Auth Guard ───────────────────────────────────────────────
 const session = requireAuth();
@@ -238,15 +239,32 @@ function initSignOutButton() {
 
 // ── Hide Inaccessible Nav Items ──────────────────────────────
 function applyNavPermissions() {
-  import('./auth.js').then(({ canAccessCapability, canAccessModule }) => {
-    // Capability-gated nav (Level 1): hide items the user lacks the capability for.
-    document.querySelectorAll('.mc-nav-item[data-capability]').forEach(el => {
-      el.style.display = canAccessCapability(el.dataset.capability) ? '' : 'none';
-    });
-    // Legacy module-gated nav (fallback).
-    document.querySelectorAll('.nav-item[data-module]').forEach(el => {
-      el.style.display = canAccessModule(el.dataset.module) ? '' : 'none';
-    });
+  const userClass = getUserClass(session);
+
+  // Capability-gated nav (L2): hide items the user lacks the capability for.
+  document.querySelectorAll('.mc-nav-item[data-capability]').forEach(el => {
+    if (!canAccessCapability(el.dataset.capability)) el.style.display = 'none';
+  });
+
+  // Structural-class-gated nav (UI framework): hide features not allowed for
+  // the user's class. Rendering source of truth = FEATURE_NAV allowlist.
+  document.querySelectorAll('.mc-nav-item[data-feature]').forEach(el => {
+    if (!isFeatureAllowed(el.dataset.feature, userClass)) el.style.display = 'none';
+  });
+
+  // Collapse a dropdown parent when every child is hidden (e.g. Clinical).
+  document.querySelectorAll('.mc-nav-item').forEach(parent => {
+    const dd = parent.querySelector(':scope > .mc-nav-dropdown');
+    if (!dd) return;
+    const kids = dd.querySelectorAll('.mc-nav-item');
+    if (kids.length && [...kids].every(k => k.style.display === 'none')) {
+      parent.style.display = 'none';
+    }
+  });
+
+  // Legacy module-gated nav (fallback).
+  document.querySelectorAll('.nav-item[data-module]').forEach(el => {
+    if (!canAccessModule(el.dataset.module)) el.style.display = 'none';
   });
 }
 
