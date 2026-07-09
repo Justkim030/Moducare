@@ -35,6 +35,7 @@ const CAPABILITIES = {
   'inventory:audit':           'View inventory audit / adjustment trail',
   'inventory:adjust':          'Create stock adjustments',
   'inventory:transfer':        'Create / approve stock transfers',
+  'inventory:approve':         'Approve purchase orders & stock transfers',
   'appointment:read':         'View appointments / schedule',
   'appointment:write':        'Create / update appointments',
   'encounter:read':           'View clinical encounters',
@@ -104,7 +105,15 @@ const ROLE_CAPABILITY_SEED = {
   role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents, Communications, Notifications)
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'communication:read',
-    'inventory:audit', 'attendance:view', 'leave:approve', 'role:manage',
+    'inventory:read', 'inventory:approve',
+    'attendance:view', 'leave:approve', 'role:manage',
+  ],
+
+  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications, Staff
+    'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
+    'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
+    'inventory:read', 'inventory:approve',
+    'attendance:view', 'leave:approve',
   ],
 
   role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage, Communications, Notifications, Staff

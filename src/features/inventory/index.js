@@ -3,7 +3,7 @@
  * Features: Items, Purchase Orders, Stock Adjustments, Stock Transfers, Suppliers
  */
 import { showToast, formatDate, escapeHTML, apiFetch } from '../../../js/utils.js';
-import { hasRole } from '../../../js/auth.js';
+import { hasRole, canAccessCapability } from '../../../js/auth.js';
 
 let _cssLoaded = false;
 function injectCSS() {
@@ -132,13 +132,13 @@ function renderStockStatus(i) {
 async function loadPOs(mount) {
   const wrap = mount.querySelector('#inv-pos-wrap');
   if (!wrap) return;
-  wrap.innerHTML = '<tr><td colspan="7" class="mc-muted">Loading…</td></tr>';
+  wrap.innerHTML = '<tr><td colspan="9" class="mc-muted">Loading…</td></tr>';
 
   try {
     const data = await apiFetch('/purchase-orders');
     const pos = data.purchase_orders || data.pos || data.data || [];
     if (pos.length === 0) {
-      wrap.innerHTML = '<tr><td colspan="7" class="mc-muted">No purchase orders.</td></tr>';
+      wrap.innerHTML = '<tr><td colspan="9" class="mc-muted">No purchase orders.</td></tr>';
       return;
     }
 
@@ -150,9 +150,11 @@ async function loadPOs(mount) {
         <td>${po.total_items ?? po.items_count ?? '—'}</td>
         <td>${po.total_amount != null ? escapeHTML(String(po.total_amount)) : '—'}</td>
         <td>${escapeHTML(formatDate(po.created_at || po.date || '—'))}</td>
+        <td class="text-secondary text-sm">${escapeHTML(po.created_by || '—')}</td>
+        <td class="text-secondary text-sm">${escapeHTML(po.approved_by || '—')}</td>
         <td class="text-right">
           <button class="mc-btn mc-btn--sm" data-action="view" data-id="${escapeHTML(po.id)}">View</button>
-          ${(po.status || '').toLowerCase() === 'draft' ? `<button class="mc-btn mc-btn--sm btn-primary" data-action="approve" data-id="${escapeHTML(po.id)}">Approve</button>` : ''}
+          ${(po.status || '').toLowerCase() === 'draft' && canAccessCapability('inventory:approve') ? `<button class="mc-btn mc-btn--sm btn-primary" data-action="approve" data-id="${escapeHTML(po.id)}">Approve</button>` : ''}
           <button class="mc-btn mc-btn--sm" data-action="additem" data-id="${escapeHTML(po.id)}">Add Item</button>
         </td>
       </tr>
@@ -162,7 +164,7 @@ async function loadPOs(mount) {
     wrap.querySelectorAll('[data-action="approve"]').forEach(b => b.addEventListener('click', () => approvePO(mount, b.dataset.id)));
     wrap.querySelectorAll('[data-action="additem"]').forEach(b => b.addEventListener('click', () => openPOItemModal(mount, b.dataset.id)));
   } catch (e) {
-    wrap.innerHTML = '<tr><td colspan="7" class="mc-muted">Failed to load purchase orders.</td></tr>';
+    wrap.innerHTML = '<tr><td colspan="9" class="mc-muted">Failed to load purchase orders.</td></tr>';
   }
 }
 
@@ -209,13 +211,13 @@ async function loadAdjustments(mount) {
 async function loadTransfers(mount) {
   const wrap = mount.querySelector('#inv-transfers-wrap');
   if (!wrap) return;
-  wrap.innerHTML = '<tr><td colspan="7" class="mc-muted">Loading…</td></tr>';
+  wrap.innerHTML = '<tr><td colspan="8" class="mc-muted">Loading…</td></tr>';
 
   try {
     const data = await apiFetch('/stock-transfers');
     const trs = data.transfers || data.data || [];
     if (trs.length === 0) {
-      wrap.innerHTML = '<tr><td colspan="7" class="mc-muted">No transfers.</td></tr>';
+      wrap.innerHTML = '<tr><td colspan="8" class="mc-muted">No transfers.</td></tr>';
       return;
     }
 
@@ -227,15 +229,16 @@ async function loadTransfers(mount) {
         <td>${escapeHTML(t.to_location || t.to || '—')}</td>
         <td>${t.qty != null ? escapeHTML(String(t.qty)) : '—'}</td>
         <td>${statusBadge(t.status)}</td>
+        <td class="text-secondary text-sm">${escapeHTML(t.performed_by || t.performedBy || '—')}</td>
         <td class="text-right">
-          ${(t.status || '').toLowerCase() === 'pending' ? `<button class="mc-btn mc-btn--sm btn-primary" data-action="approve" data-id="${escapeHTML(t.id)}">Approve</button>` : ''}
+          ${(t.status || '').toLowerCase() === 'pending' && canAccessCapability('inventory:approve') ? `<button class="mc-btn mc-btn--sm btn-primary" data-action="approve" data-id="${escapeHTML(t.id)}">Approve</button>` : ''}
         </td>
       </tr>
     `).join('');
 
     wrap.querySelectorAll('[data-action="approve"]').forEach(b => b.addEventListener('click', () => approveTransfer(mount, b.dataset.id)));
   } catch (e) {
-    wrap.innerHTML = '<tr><td colspan="7" class="mc-muted">Failed to load transfers.</td></tr>';
+    wrap.innerHTML = '<tr><td colspan="8" class="mc-muted">Failed to load transfers.</td></tr>';
   }
 }
 

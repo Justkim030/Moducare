@@ -354,7 +354,7 @@ const server = http.createServer((req, res) => {
       if (req.method === 'PUT' && url.match(/\/api\/purchase-orders\/[^/]+\/items\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', purchaseOrdersController.handleUpdateItem))(req, res);
       if (req.method === 'DELETE' && url.match(/\/api\/purchase-orders\/[^/]+\/items\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', purchaseOrdersController.handleDeleteItem))(req, res);
       if (req.method === 'POST' && url.match(/\/api\/purchase-orders\/[^/]+\/items$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', purchaseOrdersController.handleAddItem))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/purchase-orders\/[^/]+\/approve$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', purchaseOrdersController.handleApprove))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/purchase-orders\/[^/]+\/approve$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:approve', purchaseOrdersController.handleApprove))(req, res);
       if (req.method === 'GET' && url.match(/\/api\/purchase-orders\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', purchaseOrdersController.handleGet))(req, res);
       if (req.method === 'GET' && url === '/api/purchase-orders') return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', purchaseOrdersController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/purchase-orders') return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', purchaseOrdersController.handleCreate))(req, res);
@@ -372,7 +372,7 @@ const server = http.createServer((req, res) => {
       if (req.method === 'GET' && url.match(/\/api\/stock-transfers\/[^/]+$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', stockTransfersController.handleGet))(req, res);
       if (req.method === 'GET' && url === '/api/stock-transfers') return enforceRole(AUTH_ROLES, enforceCapability('inventory:read', stockTransfersController.handleList))(req, res);
       if (req.method === 'POST' && url === '/api/stock-transfers') return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', stockTransfersController.handleCreate))(req, res);
-      if (req.method === 'PUT' && url.match(/\/api\/stock-transfers\/[^/]+\/approve$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:write', stockTransfersController.handleApprove))(req, res);
+      if (req.method === 'PUT' && url.match(/\/api\/stock-transfers\/[^/]+\/approve$/)) return enforceRole(AUTH_ROLES, enforceCapability('inventory:approve', stockTransfersController.handleApprove))(req, res);
     }
 
     if (url.startsWith('/api/attendance')) {

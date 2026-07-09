@@ -295,8 +295,8 @@ function handleDeleteItem(req, res) {
 }
 
 function handleApprove(req, res) {
-  if (!req.user || !hasCapability(req.user.role_id, 'inventory:write')) {
-    return sendSecureJSON(res, 403, { ok: false, error: 'Missing required permission: inventory:write' });
+  if (!req.user || !hasCapability(req.user.role_id, 'inventory:approve')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Missing required permission: inventory:approve' });
   }
   const id = getPoIdNested(req);
   db.get(`SELECT status FROM purchase_orders WHERE id = ?`, [id], (err, po) => {
