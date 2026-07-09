@@ -2,8 +2,8 @@
  * Dashboard Feature Logic
  * Fully wired sub-views: Overview, Tasks, Calendar, Financial KPIs.
  */
-import { apiFetch, escapeHTML, formatCurrency, timeAgo, exportCSV } from '../../../js/utils.js';
-import { getDashboardProfile } from '../../../js/auth.js';
+import { apiFetch, escapeHTML, formatCurrency, timeAgo, exportCSV, renderQuickActions } from '../../../js/utils.js';
+import { getDashboardProfile, getQuickActions } from '../../../js/auth.js';
 import { showToast } from '../../../js/utils.js';
 
 let allActivities = [];
@@ -25,6 +25,9 @@ export async function init(mount, State, subView) {
 
   renderRoleCards(mount, profile.cards);
   switchView(mount, viewId);
+
+  const qaHost = mount.querySelector('#dashboard-quick-actions');
+  if (qaHost) renderQuickActions(qaHost, getQuickActions(user?.role_id, user?.department_id), 'Quick Actions');
 
   wireSidebarToggle(mount);
   await loadDashboardData(mount, viewId);

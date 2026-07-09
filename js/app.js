@@ -3,9 +3,9 @@
  * Entry point for the dashboard shell.
  * Runs auth checks, populates user info, wires up UI interactions.
  */
-import { requireAuth, logout, getUserRoleLabel, getSession } from './auth.js';
+import { requireAuth, logout, getUserRoleLabel, getSession, getQuickActions } from './auth.js';
 import { set } from './store.js';
-import { showToast, escapeHTML, apiFetch } from './utils.js';
+import { showToast, escapeHTML, apiFetch, renderQuickActions } from './utils.js';
 
 // ── Auth Guard ───────────────────────────────────────────────
 const session = requireAuth();
@@ -250,6 +250,14 @@ function applyNavPermissions() {
   });
 }
 
+// ── Header Quick Actions (role-aware dropdown) ──────────────
+function initQuickActions() {
+  const host = document.getElementById('header-quick-actions');
+  if (!host) return;
+  const actions = getQuickActions(session.role_id, session.department_id);
+  renderQuickActions(host, actions, 'Quick Actions');
+}
+
 // ── Bootstrap ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   populateUser();
@@ -260,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserMenu();
   initSignOutButton();
   applyNavPermissions();
+  initQuickActions();
 
   showToast(`Signed in as ${session.name}`, 'success');
 });

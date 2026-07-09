@@ -192,6 +192,65 @@ export async function apiFetch(path, options = {}) {
   return res.json();
 }
 
+// ── Quick Actions Dropdown ──────────────────────────────────
+/**
+ * Renders a role-aware "Quick Actions" dropdown into a container.
+ * Each action is an anchor with `data-route` so the global router handles
+ * navigation. The dropdown closes on outside click and after selection.
+ * @param {HTMLElement} container - mount point
+ * @param {Array<{label:string,icon?:string,route:string}>} actions
+ * @param {string} [label] - toggle button label
+ */
+export function renderQuickActions(container, actions, label = 'Quick Actions') {
+  if (!container || !Array.isArray(actions) || !actions.length) return;
+
+  container.innerHTML = `
+    <div class="mc-quick-actions" aria-label="${escapeHTML(label)}">
+      <button type="button" class="mc-btn mc-quick-actions__toggle"
+              aria-haspopup="menu" aria-expanded="false">
+        <span aria-hidden="true">⚡</span> ${escapeHTML(label)}
+        <span class="mc-quick-actions__chev" aria-hidden="true">▾</span>
+      </button>
+      <ul class="mc-quick-actions__menu" role="menu" hidden>
+        ${actions.map(a => `
+          <li role="none">
+            <a href="${a.route}" data-route class="mc-quick-actions__item" role="menuitem">
+              <span class="mc-quick-actions__icon" aria-hidden="true">${a.icon || '•'}</span>
+              <span>${escapeHTML(a.label)}</span>
+            </a>
+          </li>`).join('')}
+      </ul>
+    </div>`;
+
+  const wrap   = container.querySelector('.mc-quick-actions');
+  const toggle = wrap.querySelector('.mc-quick-actions__toggle');
+  const menu   = wrap.querySelector('.mc-quick-actions__menu');
+
+  const close = () => {
+    menu.setAttribute('hidden', '');
+    toggle.setAttribute('aria-expanded', 'false');
+    wrap.classList.remove('open');
+  };
+  const open = () => {
+    wrap.classList.add('open');
+    menu.removeAttribute('hidden');
+    toggle.setAttribute('aria-expanded', 'true');
+  };
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menu.hasAttribute('hidden') ? open() : close();
+  });
+
+  menu.querySelectorAll('.mc-quick-actions__item').forEach(item => {
+    item.addEventListener('click', close);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) close();
+  });
+}
+
 // ── CSV Export ───────────────────────────────────────────────
 /**
  * Trigger a CSV file download from a 2D array.

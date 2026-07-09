@@ -234,6 +234,94 @@ export function canAccessCapability(capability) {
   return caps.includes('*') || caps.includes(capability);
 }
 
+// ── Role-Aware Quick Actions ────────────────────────────────
+// Dropdown "quick navigation" actions surfaced per signed-in user role.
+// Each action navigates to a route and is gated by an optional capability so
+// only activities the user is actually allowed to perform are shown.
+export const QUICK_ACTIONS = {
+  // ── Clinical workspaces (resolved via CLINICAL_ROLE_MAP) ──
+  admin: [
+    { label: 'Add User',            icon: '➕', route: '/admin',              cap: 'user:manage' },
+    { label: 'View Audit Logs',     icon: '📝', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'System Health',       icon: '🖥️', route: '/dashboard/overview', cap: 'system:health' },
+    { label: 'Manage Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+    { label: 'Finance Overview',    icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Staff Directory',     icon: '👥', route: '/staff',              cap: 'staff:read' },
+  ],
+  intake: [
+    { label: 'Register Patient',    icon: '📝', route: '/patients',           cap: 'patient:register' },
+    { label: 'Search Patients',     icon: '🔎', route: '/patients',           cap: 'patient:read' },
+    { label: 'Schedule Appointment',icon: '📅', route: '/scheduling-calendar',cap: 'appointment:read' },
+    { label: 'Active Facility Queue',icon:'📋', route: '/dashboard',          cap: 'patient:read' },
+  ],
+  triage: [
+    { label: 'Capture Vitals',      icon: '💓', route: '/encounters',         cap: 'patient:write_vitals' },
+    { label: 'Triage Waitlist',     icon: '⏳', route: '/dashboard',          cap: 'patient:read' },
+    { label: 'Report Incident',     icon: '🚨', route: '/incident-reporting', cap: 'incident:write' },
+    { label: 'Patient Handover',    icon: '🤝', route: '/communications',     cap: 'communication:write' },
+  ],
+  provider: [
+    { label: 'Clinical Workspace',  icon: '🩺', route: '/encounters',         cap: 'encounter:read' },
+    { label: 'Order Entry (Lab/Rx)',icon: '🧾', route: '/lab-orders',         cap: 'prescription:write' },
+    { label: 'Referrals & Discharge',icon:'↪️', route: '/referrals',          cap: 'referral:write' },
+    { label: 'Care Timeline',       icon: '🕒', route: '/patients',           cap: 'patient:read' },
+  ],
+  mande: [
+    { label: 'M&E Cohort Tracking', icon: '📊', route: '/dashboard',          cap: 'analytics:read' },
+    { label: 'MoH Reporting Export',icon: '📤', route: '/dashboard',          cap: 'report:export' },
+    { label: 'Quality Assurance',   icon: '✅', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'Finance Summary',     icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+  ],
+  ancillary: [
+    { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
+    { label: 'Prescription Queue',  icon: '💊', route: '/pharmacy',           cap: 'pharmacy:dispense' },
+    { label: 'Pharmacy Inventory',  icon: '📦', route: '/pharmacy',           cap: 'pharmacy:inventory_read' },
+    { label: 'Stock Alerts',        icon: '⚠️', route: '/inventory',          cap: 'inventory:read' },
+  ],
+  // ── Legacy hierarchy roles (fallback) ──
+  staff: [
+    { label: 'My Tasks',            icon: '📋', route: '/dashboard/tasks',    cap: 'operations:read' },
+    { label: 'Appointments',        icon: '📅', route: '/scheduling-calendar',cap: 'appointment:read' },
+    { label: 'My Patients',         icon: '👥', route: '/patients',           cap: 'patient:read' },
+    { label: 'Report Incident',     icon: '🚨', route: '/incident-reporting', cap: 'incident:write' },
+  ],
+  lead: [
+    { label: 'Team Tasks',          icon: '✅', route: '/dashboard/tasks',    cap: 'operations:read' },
+    { label: 'Timesheets',          icon: '⏱️', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Schedule',            icon: '📅', route: '/scheduling-calendar',cap: 'appointment:read' },
+    { label: 'Patients',            icon: '👥', route: '/patients',           cap: 'patient:read' },
+  ],
+  supervisor: [
+    { label: 'Compliance',          icon: '🛡️', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'Staffing',            icon: '👥', route: '/staff',              cap: 'staff:read' },
+    { label: 'Operations',          icon: '⚙️', route: '/operations',         cap: 'operations:read' },
+    { label: 'Finance',             icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+  ],
+  director: [
+    { label: 'Hospital KPIs',       icon: '📈', route: '/dashboard/kpi-1',    cap: 'analytics:read' },
+    { label: 'Finance',             icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Staffing',            icon: '👥', route: '/staff',              cap: 'staff:read' },
+    { label: 'Risk / Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+  ],
+};
+
+/**
+ * Resolves the quick-navigation actions for a signed-in user, filtered by the
+ * capabilities present in their session (RBAC-aware). Mirrors the clinical role
+ * resolution used by the dashboard profile.
+ * @param {string} roleId - e.g. 'role_admin' (DB) or 'admin'
+ * @param {string} [departmentId]
+ * @returns {{label:string,icon:string,route:string}[]}
+ */
+export function getQuickActions(roleId, departmentId) {
+  const clinical = CLINICAL_ROLE_MAP[(roleId || '').toLowerCase()];
+  const key = clinical ? clinical.key : (roleId || '').toLowerCase().replace(/^role_/, '') || 'staff';
+  const caps = getSession()?.capabilities || [];
+  const allowed = (cap) => !cap || caps.includes(cap) || caps.includes('*');
+  const actions = QUICK_ACTIONS[key] || QUICK_ACTIONS.staff;
+  return actions.filter(a => allowed(a.cap));
+}
+
 // ── Session Management ───────────────────────────────────────
 
 /**
