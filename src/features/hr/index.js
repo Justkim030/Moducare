@@ -340,7 +340,7 @@ async function submitEmpForm(mount) {
       if (!data.ok) throw new Error(data.error || 'Failed');
       showToast('Employee updated', 'success');
     } else {
-      const data = await apiFetch('/users', { method: 'POST', body: JSON.stringify(Object.assign({}, payload, { password: 'TempPass123!' })) });
+      const data = await apiFetch('/users', { method: 'POST', body: JSON.stringify(Object.assign({}, payload, { password: 'Password1!' })) });
       if (!data.ok) throw new Error(data.error || 'Failed');
       showToast('Employee created', 'success');
     }
