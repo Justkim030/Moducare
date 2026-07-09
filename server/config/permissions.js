@@ -79,48 +79,52 @@ const ROLE_CAPABILITY_SEED = {
     'system:health', 'backup:manage'
   ],
 
-  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents, Notifications)
+  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents, Notifications, Time, Leave)
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read',
     'patient:register', 'patient:write_demographics',
     'appointment:read', 'appointment:write',
     'incident:write', 'communication:read',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 
-  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents, Communications, Notifications, Referrals)
+  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents, Communications, Notifications, Referrals, Time, Leave)
     'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'incident:read',
     'patient:write_demographics', 'patient:write_vitals',
     'encounter:read', 'encounter:write',
     'appointment:read', 'incident:write',
     'communication:read', 'communication:write', 'referral:write',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 
-  role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents)
+  role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents, Time, Leave)
     'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'communication:read', 'incident:read',
     'patient:write_clinical', 'patient:write_vitals',
     'prescription:write', 'lab:order', 'lab:read',
     'encounter:read', 'encounter:write',
     'referral:write', 'incident:write', 'appointment:read',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 
-  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents, Communications, Notifications)
+  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents, Communications, Notifications, Time, Leave)
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'communication:read',
     'inventory:read', 'inventory:approve',
-    'attendance:view', 'leave:approve', 'role:manage',
+    'attendance:clock', 'attendance:view', 'leave:create', 'leave:approve', 'role:manage',
   ],
 
   role_director: [ // M&E Director — same visibility as supervisor, adds staff/system manage, Communications, Notifications, Inventory audit/reconcile/approve, HR
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
     'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
     'inventory:read', 'inventory:approve', 'inventory:reconcile', 'inventory:audit',
-    'attendance:view', 'leave:approve', 'role:manage',
+    'attendance:clock', 'attendance:view', 'leave:create', 'leave:approve', 'role:manage',
   ],
 
-  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents, Notifications
+  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents, Notifications, Time, Leave
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'clinical:read', 'incident:read',
     'finance:write', 'communication:read',
     'pharmacy:inventory_read', 'inventory:read', 'inventory:write',
     'lab:result_entry', 'pharmacy:dispense', 'lab:read',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 };
 
