@@ -1,0 +1,22 @@
+# Ignore the vendored packages directory inside src
+src/vendor/
+vendor/
+arising/
+# Ignore local virtual environments
+.venv/
+
+# Ignore media uploads and collected static files
+media/
+staticfiles/
+
+# Ignore local SQLite databases (CRITICAL)
+*.sqlite3
+hospital.db
+
+# Ignore environment variable secrets
+.env
+sql/
+
+# Python bytecode caches
+__pycache__/
+*.pyc

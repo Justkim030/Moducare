@@ -1,0 +1,107 @@
+entity-relationship-diagram
+NAMES [icon: user, color: red]{
+  ID string pk
+  FIRST_NAME string
+  SECOND_NAME string
+  THIRD_NAME string
+  GENDER string
+  AGE string
+  PHONE_NUMBER string
+}
+
+USERS [icon: users, color: blue] {
+  ID string pk
+  NAME_ID string
+  IS_SUPERUSER string
+  USERNAME string
+  EMPLOYEE_TYPE string
+  LAST_LOGIN string
+}
+
+VISITS [icon: calendar, color: yellow] {
+  ID string pk
+  VISIT_DATE string
+  STATUS string
+  PATIENT_ID string
+  EMPLOYEE_ID string
+  CONSULTATION_NOTES string
+  PHARMACY_NOTES string
+  TRIAGE_ID string
+}
+
+PRESCRIPTION_RECORD [icon: list, color: red] {
+  ID string pk
+  QUANTITY string
+  NOTES string
+  MEDICINE_ID string
+  PATIENT_ID string
+}
+
+MEDICINE [icon: package, color: green]  {
+  ID string pk
+  NAME string
+  QUANTITY string
+  PRICE string
+  DATE_ADDED string
+}
+
+
+EMPLOYEES [icon: users, color: green] {
+  ID string pk
+  PASSWORD string
+  EMAIL string
+  USERS_ID string
+  DATE_ADDED string
+}
+
+PATIENT [icon: user, color: blue] {
+  ID string pk
+  NAME_ID string
+  PATIENT_TYPE string
+  REGISTER_DATE string
+}
+
+PRESCRIPTION [icon: file-text, color: red] {
+  ID string pk
+  DATE_PRESCRIBE string
+  STATUS string
+  EMPLOYEE_ID string
+  PATIENT_ID string
+  DISPENSED_BY_ID string
+  VISIT_ID string
+}
+
+TRIAGE [icon: user, color: orange]   {
+  ID string pk
+  CHIEF_COMPLAINT string
+  TRIAGE_LEVEL string
+  BODY_TEMP string
+  BP_DIASTOLIC string
+  BP_SYSTOLIC string
+  HEART_RATE string
+  WEIGHT string
+}
+
+FINANCE [icon: dollar-sign, color: green] {
+  ID string pk
+  AMOUNT string
+  PAYMENT_METHOD string
+  PAYMENT_DATE string
+  VISIT_ID string
+  EMPLOYEE_ID string
+}
+
+USERS.NAME_ID < NAMES.ID
+EMPLOYEES.USERS_ID < USERS.ID
+PATIENT.NAME_ID < NAMES.ID
+PRESCRIPTION.EMPLOYEE_ID > EMPLOYEES.ID
+PRESCRIPTION.PATIENT_ID > PATIENT.ID
+PRESCRIPTION.DISPENSED_BY_ID > EMPLOYEES.ID
+PRESCRIPTION.VISIT_ID > VISITS.ID
+VISITS.PATIENT_ID > PATIENT.ID
+VISITS.EMPLOYEE_ID > EMPLOYEES.ID
+VISITS.TRIAGE_ID > TRIAGE.ID
+PRESCRIPTION_RECORD.MEDICINE_ID > MEDICINE.ID
+PRESCRIPTION_RECORD.PATIENT_ID > PATIENT.ID
+FINANCE.VISIT_ID > EMPLOYEES.ID
+  

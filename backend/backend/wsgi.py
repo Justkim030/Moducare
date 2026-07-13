@@ -1,10 +1,10 @@
 """
-WSGI config for backend project.
+WSGI config for pharmacy project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
+https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os

@@ -1,0 +1,41 @@
+cloud-architecture-diagram
+
+User Request [icon: user]
+
+REGISTERING A NEW USER [color: pink] {
+  API Server [icon: server, color: green]
+  
+  ONE TRANSACTION [color: green] {
+    DATABASE [icon: database]
+    OUTBOX TABLE [icon: columns]
+  }
+  
+  Event Server [icon: server, color: green]
+  
+  QUEUE [color: pink] {
+    JOB 1
+    JOB 2
+    JOB 3
+    JOB 4
+  }
+  
+  WORKER LAMBDA [color: yellow, icon: zap] {
+    Active JOB [label: "JOB 1"]
+  }
+  
+  Send Email [icon: mail]
+  
+  Status Check [label: "If 200 create new password else 404", icon: help-circle]
+  
+  Web Client [icon: monitor, color: orange]
+}
+
+// System Flow & Relationships
+User Request > API Server
+API Server > ONE TRANSACTION : "Saves User"
+ONE TRANSACTION > Event Server : "Outbox Pattern"
+Event Server > QUEUE : "Pushes to Queue"
+QUEUE > WORKER LAMBDA : "Pulls JOB 1"
+WORKER LAMBDA > Send Email : "Async Email"
+Send Email > Status Check
+Status Check > Web Client

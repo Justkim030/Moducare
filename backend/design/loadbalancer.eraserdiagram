@@ -1,0 +1,25 @@
+cloud-architecture-diagram
+
+Load Balancer [icon: share-2, color: purple]
+Server 3 removed from System Servers [color: red]
+ 
+System Servers [icon: monitor] {
+  Consul Node 1  [icon: hash, color: grey]
+  Consul Node 2  [icon: hash, color: grey]
+  Consul Node 3  [icon: hash, color: grey]
+}
+Chat Servers [icon: chat, display: list]{
+  Server A [icon: server, color: green]
+  Server B [icon: server, color: green]
+  Server C [icon: server, color: red]
+}
+
+  
+
+Load Balancer > Server A: Route traffic
+Load Balancer > Server B: Route traffic
+
+System Servers > Chat Servers : Health Check 
+Consul Node 1 > Load Balancer  : Server List
+Load Balancer > Consul Node 1 :Query healthy servers 
+Chat Servers > System Servers : Register
