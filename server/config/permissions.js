@@ -30,7 +30,12 @@ const CAPABILITIES = {
   'pharmacy:dispense':        'Dispense medication',
   'pharmacy:inventory_read':  'View pharmaceutical inventory',
   'inventory:read':           'View facility inventory & stock alerts',
-  'inventory:write':          'Manage inventory stock',
+  'inventory:write':           'Manage inventory stock',
+  'inventory:reconcile':       'Reconcile inventory against physical counts',
+  'inventory:audit':           'View inventory audit / adjustment trail',
+  'inventory:adjust':          'Create stock adjustments',
+  'inventory:transfer':        'Create / approve stock transfers',
+  'inventory:approve':         'Approve purchase orders & stock transfers',
   'appointment:read':         'View appointments / schedule',
   'appointment:write':        'Create / update appointments',
   'encounter:read':           'View clinical encounters',
@@ -49,6 +54,11 @@ const CAPABILITIES = {
   'role:manage':              'Manage roles & permissions',
   'system:health':            'View system health',
   'backup:manage':            'Manage database backups',
+  'attendance:clock':         'Clock in / out (time & attendance)',
+  'attendance:approve':       'Manage / approve attendance records',
+  'attendance:view':          'View attendance records',
+  'leave:create':             'Create leave requests',
+  'leave:approve':            'Approve / reject leave requests',
 };
 
 // Seed mapping: role_id -> capabilities. This is the default that gets
@@ -57,45 +67,64 @@ const CAPABILITIES = {
 // staff:read, operations:read, clinical:read, etc.) encode the Admin
 // "Role Filtering Matrix"; functional caps encode Level 2 (CRUD) enforcement.
 const ROLE_CAPABILITY_SEED = {
-  role_admin:     Object.keys(CAPABILITIES), // full control — sees everything
+  role_admin: [
+    'dashboard:view', 'staff:read', 'operations:read',
+    'inventory:read', 'inventory:write',
+    'inventory:reconcile', 'inventory:audit', 'inventory:adjust', 'inventory:transfer',
+    'appointment:read', 'appointment:write',
+    'finance:read', 'finance:write',
+    'audit:read', 'user:manage', 'role:manage',
+    'attendance:clock', 'attendance:approve', 'attendance:view',
+    'leave:create', 'leave:approve',
+    'system:health', 'backup:manage'
+  ],
 
-  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents)
+  role_dev: [ // Front-Desk / Intake (Dashboard, Patients, Staff, Finance, Operations, Incidents, Notifications, Time, Leave)
     'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read',
     'patient:register', 'patient:write_demographics',
     'appointment:read', 'appointment:write',
-    'incident:write',
+    'incident:write', 'communication:read',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 
-  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents)
+  role_nurse: [ // Clinical Staff / Triage (Dashboard, Patients, Staff, Operations, Clinical, Incidents, Communications, Notifications, Referrals, Time, Leave)
     'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'incident:read',
     'patient:write_demographics', 'patient:write_vitals',
     'encounter:read', 'encounter:write',
     'appointment:read', 'incident:write',
+    'communication:read', 'communication:write', 'referral:write',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 
-  role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents)
+  role_lead: [ // Healthcare Provider (Dashboard, Patients, Staff, Operations, Clinical, Communications, Incidents, Time, Leave)
     'dashboard:view', 'patient:read', 'staff:read', 'operations:read', 'clinical:read', 'communication:read', 'incident:read',
     'patient:write_clinical', 'patient:write_vitals',
     'prescription:write', 'lab:order', 'lab:read',
     'encounter:read', 'encounter:write',
     'referral:write', 'incident:write', 'appointment:read',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 
-  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents)
+  role_supervisor: [ // M&E Officer (Dashboard, Patients, Finance, Operations, Audit, Incidents, Communications, Notifications, Time, Leave)
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
-    'analytics:read', 'report:export',
+    'analytics:read', 'report:export', 'communication:read',
+    'inventory:read', 'inventory:approve',
+    'attendance:clock', 'attendance:view', 'leave:create', 'leave:approve', 'role:manage',
   ],
 
-  role_director: [ // M&E Officer (director) — same visibility, adds finance/system manage
-    'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
-    'analytics:read', 'report:export', 'finance:write', 'system:health',
+  role_director: [ // M&E Director — same visibility as supervisor, adds staff/system manage, Communications, Notifications, Inventory audit/reconcile/approve, HR
+    'dashboard:view', 'patient:read', 'staff:read', 'finance:read', 'operations:read', 'incident:read', 'audit:read',
+    'analytics:read', 'report:export', 'finance:write', 'system:health', 'communication:read',
+    'inventory:read', 'inventory:approve', 'inventory:reconcile', 'inventory:audit',
+    'attendance:clock', 'attendance:view', 'leave:create', 'leave:approve', 'role:manage',
   ],
 
-  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents
+  role_finance: [ // Ancillary (Lab/Pharmacy): Dashboard, Patients, Finance, Operations, Clinical, Incidents, Notifications, Time, Leave
     'dashboard:view', 'patient:read', 'finance:read', 'operations:read', 'clinical:read', 'incident:read',
-    'finance:write',
+    'finance:write', 'communication:read',
     'pharmacy:inventory_read', 'inventory:read', 'inventory:write',
     'lab:result_entry', 'pharmacy:dispense', 'lab:read',
+    'attendance:clock', 'attendance:view', 'leave:create',
   ],
 };
 
@@ -106,17 +135,18 @@ const MODULE_CAPABILITIES = {
   'patients':            'patient:read',
   'staff':               'staff:read',
   'finance-billing':     'finance:read',
-  'operations-tasks':    'operations:read',
+  'operations':          'operations:read',
   'clinical':            'clinical:read',
   'communications':      'communication:read',
   'audit-compliance':    'audit:read',
   'incident-reporting':  'incident:read',
   // supporting / nested views
   'scheduling-calendar': 'appointment:read',
-  'document-vault':      'patient:read',
+  'documents':           'patient:read',
   'encounters':          'encounter:read',
   'lab-orders':          'lab:read',
   'pharmacy':            'pharmacy:inventory_read',
+  'inventory':           'inventory:read',
   'analytics-reports':   'analytics:read',
   'admin':               'user:manage',
   'system-health':       'system:health',
@@ -137,11 +167,24 @@ function seedRolePermissions() {
         PRIMARY KEY (role_id, capability)
       )`, (err) => {
         if (err) return reject(err);
-        const stmt = db.prepare(`INSERT OR IGNORE INTO role_permissions (role_id, capability) VALUES (?, ?)`);
-        for (const [roleId, caps] of Object.entries(ROLE_CAPABILITY_SEED)) {
-          for (const cap of caps) stmt.run(roleId, cap);
-        }
-        stmt.finalize((ferr) => ferr ? reject(ferr) : resolve());
+
+        db.run(`DELETE FROM role_permissions WHERE role_id = 'role_admin'`, (err) => {
+          if (err) return reject(err);
+
+          const adminStmt = db.prepare(`INSERT INTO role_permissions (role_id, capability) VALUES (?, ?)`);
+          const adminCaps = ROLE_CAPABILITY_SEED['role_admin'] || [];
+          for (const cap of adminCaps) adminStmt.run('role_admin', cap);
+          adminStmt.finalize((ferr) => {
+            if (ferr) return reject(ferr);
+
+            const insertStmt = db.prepare(`INSERT OR IGNORE INTO role_permissions (role_id, capability) VALUES (?, ?)`);
+            for (const [roleId, caps] of Object.entries(ROLE_CAPABILITY_SEED)) {
+              if (roleId === 'role_admin') continue;
+              for (const cap of caps) insertStmt.run(roleId, cap);
+            }
+            insertStmt.finalize((ferr2) => ferr2 ? reject(ferr2) : resolve());
+          });
+        });
       });
     });
   });

@@ -27,7 +27,8 @@
     </div>
 
     <div class="mc-header-actions">
-      <button class="mc-btn icon" aria-label="Notifications" id="notif-btn">🔔</button>
+      <div class="mc-quick-actions-host" id="header-quick-actions"></div>
+      <button class="mc-btn icon" aria-label="Notifications" id="notif-btn" data-feature="notifications">🔔</button>
       
       <!-- NEW PROFILE CIRCLE DROPDOWN -->
       <div class="mc-profile" id="profile" tabindex="0" aria-haspopup="menu" aria-label="User menu">
@@ -56,84 +57,103 @@
 
       <nav>
         <ul class="mc-nav-list">
-          <!-- Dashboard Dropdown -->
-          <li class="mc-nav-item" id="nav-dashboard-item" data-capability="dashboard:view">
-            <a href="/dashboard" data-route class="mc-nav-link" id="dashboard-toggle">Dashboard <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/dashboard/overview" data-route class="mc-nav-link sub">Overview</a></li>
-              <li><a href="/dashboard/tasks" data-route class="mc-nav-link sub">Tasks</a></li>
-              <li><a href="/dashboard/calendar" data-route class="mc-nav-link sub">Calendar</a></li>
-              <li><a href="/dashboard/kpi-1" data-route class="mc-nav-link sub">KPI 1</a></li>
-            </ul>
-          </li>
-          
-          <!-- Patients Dropdown -->
-          <li class="mc-nav-item" id="nav-patients-item" data-capability="patient:read">
-            <a href="/patients" data-route class="mc-nav-link mc-nav-patients" id="patients-toggle">👤 Patients <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/patients/list" data-route class="mc-nav-link sub">Patient List</a></li>
-              <li><a href="/patients/new" data-route class="mc-nav-link sub">Add Patient</a></li>
-              <li><a href="/patients/records" data-route class="mc-nav-link sub">Medical Records</a></li>
-            </ul>
-          </li>
-          
-          <!-- Staff Dropdown -->
-          <li class="mc-nav-item" id="nav-staff-item" data-capability="staff:read">
-            <a href="/staff" data-route class="mc-nav-link" id="staff-toggle">👥 Staff <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/staff/list" data-route class="mc-nav-link sub">Staff List</a></li>
-              <li><a href="/staff/schedule" data-route class="mc-nav-link sub">Schedules</a></li>
-              <li><a href="/staff/performance" data-route class="mc-nav-link sub">Performance</a></li>
-            </ul>
-          </li>
-          
-          <!-- Finance Dropdown -->
-          <li class="mc-nav-item" id="nav-finance-item" data-capability="finance:read">
-            <a href="/finance-billing" data-route class="mc-nav-link mc-nav-finance" id="finance-toggle">💰 Finance <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/finance-billing/invoices" data-route class="mc-nav-link sub">Invoices</a></li>
-              <li><a href="/finance-billing/timesheets" data-route class="mc-nav-link sub">Timesheets</a></li>
-              <li><a href="/finance-billing/reports" data-route class="mc-nav-link sub">Reports</a></li>
-            </ul>
-          </li>
-
-          <!-- Operations Dropdown -->
-          <li class="mc-nav-item" id="nav-operations-item" data-capability="operations:read">
-            <a href="/operations" data-route class="mc-nav-link mc-nav-operations" id="operations-toggle">⚙️ Operations <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/operations/tasks" data-route class="mc-nav-link sub">Tasks</a></li>
-              <li><a href="/operations/workflow" data-route class="mc-nav-link sub">Workflow</a></li>
-            </ul>
-          </li>
-
-          <!-- Clinical Dropdown -->
-          <li class="mc-nav-item" id="nav-clinical-item" data-capability="clinical:read">
-            <a href="/clinical" data-route class="mc-nav-link" id="clinical-toggle">🩺 Clinical <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/encounters" data-route class="mc-nav-link sub">Encounters</a></li>
-              <li><a href="/lab-orders" data-route class="mc-nav-link sub">Lab Orders</a></li>
-              <li><a href="/pharmacy" data-route class="mc-nav-link sub">Pharmacy</a></li>
-            </ul>
-          </li>
-
-          <!-- Communications Dropdown -->
-          <li class="mc-nav-item" id="nav-comms-item" data-capability="communication:read">
-            <a href="/communications" data-route class="mc-nav-link" id="comms-toggle">💬 Communications <span class="mc-nav-chevron">▾</span></a>
-            <ul class="mc-nav-dropdown">
-              <li><a href="/communications/inbox" data-route class="mc-nav-link sub">Inbox</a></li>
-              <li><a href="/communications/sent" data-route class="mc-nav-link sub">Sent</a></li>
-            </ul>
-          </li>
-
- <!-- Audit & Compliance (supervisor+) -->
-           <li class="mc-nav-item" data-capability="audit:read"><a href="/audit-compliance" data-route class="mc-nav-link">🔍 Audit & Compliance</a></li>
+           <!-- Dashboard Dropdown -->
+           <li class="mc-nav-item" id="nav-dashboard-item" data-capability="dashboard:view" data-feature="dashboard">
+             <a href="/dashboard" data-route class="mc-nav-link" id="dashboard-toggle">Dashboard <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li><a href="/dashboard/overview" data-route class="mc-nav-link sub">Overview</a></li>
+             </ul>
+           </li>
            
-           <!-- Admin (restricted) -->
-           <li class="mc-nav-item" data-capability="user:manage"><a href="/admin" data-route class="mc-nav-link mc-nav-admin">🛠️ Admin</a></li>
+           <!-- Patients Dropdown -->
+           <li class="mc-nav-item" id="nav-patients-item" data-capability="patient:read" data-feature="patients">
+             <a href="/patients" data-route class="mc-nav-link mc-nav-patients" id="patients-toggle">👤 Patients <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li><a href="/patients/list" data-route class="mc-nav-link sub">Patient List</a></li>
+               <li><a href="/patients/new" data-route class="mc-nav-link sub">Add Patient</a></li>
+               <li><a href="/patients/records" data-route class="mc-nav-link sub">Medical Records</a></li>
+             </ul>
+           </li>
            
-           <!-- Incident Reporting -->
-           <li class="mc-nav-item" data-capability="incident:read"><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incidents</a></li>
-        </ul>
+           <!-- Staff Dropdown -->
+           <li class="mc-nav-item" id="nav-staff-item" data-capability="staff:read" data-feature="staff">
+             <a href="/staff" data-route class="mc-nav-link" id="staff-toggle">👥 Staff <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li><a href="/staff/list" data-route class="mc-nav-link sub">Staff List</a></li>
+               <li><a href="/staff/schedule" data-route class="mc-nav-link sub">Schedules</a></li>
+               <li><a href="/staff/performance" data-route class="mc-nav-link sub">Performance</a></li>
+             </ul>
+           </li>
+           
+           <!-- Finance Dropdown -->
+           <li class="mc-nav-item" id="nav-finance-item" data-capability="finance:read" data-feature="finance-billing">
+             <a href="/finance-billing" data-route class="mc-nav-link mc-nav-finance" id="finance-toggle">💰 Finance <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li><a href="/finance-billing/invoices" data-route class="mc-nav-link sub">Invoices</a></li>
+               <li><a href="/finance-billing/timesheets" data-route class="mc-nav-link sub">Timesheets</a></li>
+               <li><a href="/finance-billing/reports" data-route class="mc-nav-link sub">Reports</a></li>
+             </ul>
+           </li>
+
+           <!-- Operations Dropdown -->
+           <li class="mc-nav-item" id="nav-operations-item" data-capability="operations:read" data-feature="operations">
+             <a href="/operations" data-route class="mc-nav-link mc-nav-operations" id="operations-toggle">⚙️ Operations <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li><a href="/operations/tasks" data-route class="mc-nav-link sub">Tasks</a></li>
+               <li><a href="/operations/workflow" data-route class="mc-nav-link sub">Workflow</a></li>
+             </ul>
+           </li>
+
+           <!-- Clinical Dropdown -->
+           <li class="mc-nav-item" id="nav-clinical-item" data-capability="clinical:read">
+             <a href="/clinical" data-route class="mc-nav-link" id="clinical-toggle">🩺 Clinical <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li class="mc-nav-item" data-feature="encounters"><a href="/encounters" data-route class="mc-nav-link sub">Encounters</a></li>
+               <li class="mc-nav-item" data-feature="lab-orders"><a href="/lab-orders" data-route class="mc-nav-link sub">Lab Orders</a></li>
+               <li class="mc-nav-item" data-feature="pharmacy"><a href="/pharmacy" data-route class="mc-nav-link sub">Pharmacy</a></li>
+             </ul>
+           </li>
+
+           <!-- Communications Dropdown -->
+           <li class="mc-nav-item" id="nav-comms-item" data-capability="communication:read" data-feature="communications">
+             <a href="/communications" data-route class="mc-nav-link" id="comms-toggle">💬 Communications <span class="mc-nav-chevron">▾</span></a>
+             <ul class="mc-nav-dropdown">
+               <li><a href="/communications/inbox" data-route class="mc-nav-link sub">Inbox</a></li>
+               <li><a href="/communications/sent" data-route class="mc-nav-link sub">Sent</a></li>
+             </ul>
+           </li>
+
+  <!-- Audit & Compliance (supervisor+) -->
+           <li class="mc-nav-item" data-capability="audit:read" data-feature="audit-compliance"><a href="/audit-compliance" data-route class="mc-nav-link">🔍 Audit & Compliance</a></li>
+           
+            <!-- Admin (restricted) -->
+            <li class="mc-nav-item" data-capability="user:manage" data-feature="admin"><a href="/admin" data-route class="mc-nav-link mc-nav-admin">🛠️ Admin</a></li>
+            
+            <!-- Incident Reporting -->
+            <li class="mc-nav-item" data-capability="incident:read" data-feature="incident-reporting"><a href="/incident-reporting" data-route class="mc-nav-link">🚨 Incidents</a></li>
+            
+            <!-- Inventory Dropdown -->
+            <li class="mc-nav-item" id="nav-inventory-item" data-capability="inventory:read" data-feature="inventory">
+              <a href="/inventory" data-route class="mc-nav-link" id="inventory-toggle">📦 Inventory <span class="mc-nav-chevron">▾</span></a>
+              <ul class="mc-nav-dropdown">
+                <li><a href="/inventory" data-route class="mc-nav-link sub">Items</a></li>
+                <li><a href="/inventory?tab=pos" data-route class="mc-nav-link sub">Purchase Orders</a></li>
+                <li><a href="/inventory?tab=suppliers" data-route class="mc-nav-link sub">Suppliers</a></li>
+              </ul>
+            </li>
+            
+            <!-- Time & Attendance -->
+            <li class="mc-nav-item" data-capability="attendance:view" data-feature="time-attendance"><a href="/time-attendance" data-route class="mc-nav-link">⏰ Time & Attendance</a></li>
+            
+             <!-- Leave Management -->
+             <li class="mc-nav-item" data-capability="leave:create" data-feature="leave"><a href="/leave" data-route class="mc-nav-link">📅 Leave Management</a></li>
+             
+             <!-- Human Resources -->
+             <li class="mc-nav-item" data-capability="staff:read" data-feature="hr"><a href="/hr" data-route class="mc-nav-link">👥 Human Resources</a></li>
+             
+             <!-- Reports -->
+             <li class="mc-nav-item" data-capability="analytics:read" data-feature="reports"><a href="/reports" data-route class="mc-nav-link">📊 Reports</a></li>
+          </ul>
       </nav>
     </aside>
 

@@ -4,6 +4,8 @@
  * Imported by: login.js, app.js, and any protected module
  */
 
+import { getUserClass, isFeatureAllowed, routeToFeatureId } from './access-classes.js';
+
 // ── Constants ────────────────────────────────────────────────
 const SESSION_KEY   = 'moducare_session';
 const REMEMBER_KEY  = 'moducare_remember';
@@ -21,13 +23,13 @@ export const ROLES = {
 export const MODULE_PERMISSIONS = {
   'dashboard':          1,
   'hr-staff':           2,
-  'operations-tasks':   1,
+  'operations':         1,
   'finance-billing':    2,
   'analytics-reports':  3,
   'scheduling-calendar':1,
   'communications':     1,
   'notifications':      1,
-  'document-vault':     2,
+  'documents':          2,
   'audit-compliance':   3,
   'client-portal':      2,
   'integrations':       4,
@@ -37,9 +39,9 @@ export const MODULE_PERMISSIONS = {
 
 // Department-based card filtering (keyed by department ID from DB)
 export const DEPARTMENT_MODULES = {
-  'dept_tech': ['operations-tasks', 'communications', 'document-vault', 'patients'],
-  'dept_clin': ['patients', 'scheduling-calendar', 'operations-tasks', 'communications', 'notifications', 'encounters'],
-  'dept_admin': ['finance-billing', 'patients', 'notifications', 'audit-compliance', 'document-vault'],
+  'dept_tech': ['operations', 'communications', 'documents', 'patients'],
+  'dept_clin': ['patients', 'scheduling-calendar', 'operations', 'communications', 'notifications', 'encounters'],
+  'dept_admin': ['finance-billing', 'patients', 'notifications', 'audit-compliance', 'documents'],
 };
 
 // ── Clinical RBAC (Level 1 + Level 2) ──────────────────────────
@@ -62,19 +64,24 @@ export const MODULE_CAPABILITIES = {
   'patients':            'patient:read',
   'staff':               'staff:read',
   'finance-billing':     'finance:read',
-  'operations-tasks':    'operations:read',
+  'operations':          'operations:read',
   'clinical':            'clinical:read',
   'communications':      'communication:read',
   'audit-compliance':    'audit:read',
   'incident-reporting':  'incident:read',
   'scheduling-calendar': 'appointment:read',
-  'document-vault':      'patient:read',
+  'documents':           'patient:read',
   'encounters':          'encounter:read',
   'lab-orders':          'lab:read',
   'pharmacy':            'pharmacy:inventory_read',
   'analytics-reports':   'analytics:read',
   'admin':               'user:manage',
   'system-health':       'system:health',
+  'inventory':           'inventory:read',
+  'time-attendance':     'attendance:view',
+  'leave':               'leave:create',
+  'hr':                  'staff:read',
+  'reports':             'analytics:read',
 };
 
 // Clinical dashboard blueprint (6 cards per role) — rendered only if the
@@ -84,12 +91,12 @@ export const CLINICAL_PROFILES = {
     title: 'System Administration',
     description: 'User management, system health, audit logs, and access control.',
     cards: [
-      { id: 'user-provisioning', title: 'User Provisioning', route: '/admin', icon: '👤', cap: 'user:manage' },
+      { id: 'user-provisioning', title: 'User Provisioning', route: '/admin', icon: '👤', cap: 'user:manage', data: 'users' },
       { id: 'role-permissions',  title: 'Role Permissions',  route: '/admin', icon: '🔐', cap: 'role:manage' },
-      { id: 'audit-logs',        title: 'Audit Logs',        route: '/audit-compliance', icon: '📝', cap: 'audit:read' },
+      { id: 'audit-logs',        title: 'Audit Logs',        route: '/audit-compliance', icon: '📝', cap: 'audit:read', data: 'audit' },
       { id: 'system-health',     title: 'System Health',     route: '/dashboard/overview', icon: '🖥️', cap: 'system:health' },
       { id: 'db-backups',        title: 'Database Backups',  route: '/admin', icon: '💾', cap: 'backup:manage' },
-      { id: 'incident-logs',     title: 'Incident Logs',     route: '/incident-reporting', icon: '🚨', cap: 'incident:read' },
+      { id: 'incident-logs',     title: 'Incident Logs',     route: '/incident-reporting', icon: '🚨', cap: 'incident:read', data: 'incidents' },
     ],
   },
   intake: {
@@ -138,6 +145,8 @@ export const CLINICAL_PROFILES = {
       { id: 'defaulter-logs',  title: 'Retention & Defaulter Logs', route: '/dashboard', icon: '📉', cap: 'analytics:read' },
       { id: 'quality-assurance', title: 'Quality Assurance (QA)', route: '/audit-compliance', icon: '✅', cap: 'audit:read' },
       { id: 'finance-summaries', title: 'Finance & Billing Summaries', route: '/finance-billing', icon: '💰', cap: 'finance:read' },
+      { id: 'attendance-review', title: 'Attendance Review', route: '/time-attendance', icon: '⏰', cap: 'attendance:view' },
+      { id: 'leave-approvals', title: 'Leave Approvals', route: '/leave', icon: '📅', cap: 'leave:approve' },
     ],
   },
   ancillary: {
@@ -160,19 +169,19 @@ export const DASHBOARD_PROFILES = {
     title: 'My Workspace',
     description: 'Your daily tasks, appointments, and patient queue.',
     cards: [
-      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', data: 'tasks', module: 'operations-tasks' },
+      { id: 'my-tasks', title: 'My Tasks', route: '/dashboard/tasks', icon: '📋', data: 'tasks', module: 'operations' },
       { id: 'appointments', title: 'Appointments', route: '/scheduling-calendar', icon: '📅', data: 'appointments', module: 'scheduling-calendar' },
       { id: 'patients', title: 'My Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
       { id: 'incidents', title: 'Incident Reporting', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'communications', title: 'Communications', route: '/communications', icon: '💬', data: 'notifications', module: 'communications' },
-      { id: 'documents', title: 'Document Vault', route: '/document-vault', icon: '📁', data: 'documents', module: 'document-vault' },
+      { id: 'documents', title: 'Document Vault', route: '/documents', icon: '📁', data: 'documents', module: 'documents' },
     ],
   },
   lead: {
     title: 'Team Lead Workspace',
     description: 'Team performance, scheduling, approvals, and reports.',
     cards: [
-      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', data: 'teamTasks', module: 'operations-tasks' },
+      { id: 'team-tasks', title: 'Team Tasks', route: '/dashboard/tasks', icon: '✅', data: 'teamTasks', module: 'operations' },
       { id: 'schedule', title: 'Schedule', route: '/scheduling-calendar', icon: '📅', data: 'appointments', module: 'scheduling-calendar' },
       { id: 'timesheets', title: 'Timesheets', route: '/finance-billing', icon: '⏱️', data: 'finance', module: 'finance-billing' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
@@ -186,7 +195,7 @@ export const DASHBOARD_PROFILES = {
     cards: [
       { id: 'compliance', title: 'Compliance', route: '/audit-compliance', icon: '🛡️', data: 'totalIncidents', module: 'audit-compliance' },
       { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'staffCount', module: 'patients' },
-      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
@@ -196,11 +205,11 @@ export const DASHBOARD_PROFILES = {
     title: 'Director Dashboard',
     description: 'Hospital-wide KPIs, financials, staffing, and risk.',
     cards: [
-      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'kpi', title: 'KPIs', route: '/dashboard/kpi-1', icon: '📈', data: 'totalOperations', module: 'operations' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'staffing', title: 'Staffing', route: '/staff', icon: '👥', data: 'staffCount', module: 'patients' },
       { id: 'incidents', title: 'Risk / Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
-      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations-tasks' },
+      { id: 'operations', title: 'Operations', route: '/operations', icon: '⚙️', data: 'totalOperations', module: 'operations' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
     ],
   },
@@ -210,7 +219,7 @@ export const DASHBOARD_PROFILES = {
     cards: [
       { id: 'users', title: 'Users', route: '/admin', icon: '👤', data: 'users', module: 'system-admin' },
       { id: 'audit', title: 'Audit Logs', route: '/audit-compliance', icon: '📝', data: 'audit', module: 'audit-compliance' },
-      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'audit', module: 'operations-tasks' },
+      { id: 'health', title: 'System Health', route: '/dashboard/overview', icon: '🖥️', data: 'audit', module: 'operations' },
       { id: 'incidents', title: 'Incidents', route: '/incident-reporting', icon: '🚨', data: 'incidents', module: 'audit-compliance' },
       { id: 'finance', title: 'Finance', route: '/finance-billing', icon: '💰', data: 'finance', module: 'finance-billing' },
       { id: 'patients', title: 'Patients', route: '/patients', icon: '👥', data: 'patients', module: 'patients' },
@@ -232,6 +241,147 @@ export function getDashboardProfile(roleId, departmentId) {
 export function canAccessCapability(capability) {
   const caps = getSession()?.capabilities || [];
   return caps.includes('*') || caps.includes(capability);
+}
+
+// ── Role-Aware Quick Actions ────────────────────────────────
+// Dropdown "quick navigation" actions surfaced per signed-in user role.
+// Each action navigates to a route and is gated by an optional capability so
+// only activities the user is actually allowed to perform are shown.
+export const QUICK_ACTIONS = {
+  // ── Clinical workspaces (resolved via CLINICAL_ROLE_MAP) ──
+  admin: [
+    { label: 'Add User',            icon: '➕', route: '/admin',              cap: 'user:manage' },
+    { label: 'Role Permissions',    icon: '🔐', route: '/admin',              cap: 'role:manage' },
+    { label: 'View Audit Logs',     icon: '📝', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'System Health',       icon: '🖥️', route: '/dashboard/overview', cap: 'system:health' },
+    { label: 'Manage Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+    { label: 'Finance Overview',    icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Staff Directory',     icon: '👥', route: '/staff',              cap: 'staff:read' },
+  ],
+  intake: [
+    { label: 'Register Patient',    icon: '📝', route: '/patients',           cap: 'patient:register' },
+    { label: 'Search Patients',     icon: '🔎', route: '/patients',           cap: 'patient:read' },
+    { label: 'Schedule Appointment',icon: '📅', route: '/scheduling-calendar',cap: 'appointment:read' },
+    { label: 'Active Facility Queue',icon:'📋', route: '/dashboard',          cap: 'patient:read' },
+  ],
+  triage: [
+    { label: 'Capture Vitals',      icon: '💓', route: '/encounters',         cap: 'patient:write_vitals' },
+    { label: 'Triage Waitlist',     icon: '⏳', route: '/dashboard',          cap: 'patient:read' },
+    { label: 'Report Incident',     icon: '🚨', route: '/incident-reporting', cap: 'incident:write' },
+    { label: 'Patient Handover',    icon: '🤝', route: '/communications',     cap: 'communication:write' },
+  ],
+  provider: [
+    { label: 'Clinical Workspace',  icon: '🩺', route: '/encounters',         cap: 'encounter:read' },
+    { label: 'Order Entry (Lab/Rx)',icon: '🧾', route: '/lab-orders',         cap: 'prescription:write' },
+    { label: 'Referrals & Discharge',icon:'↪️', route: '/referrals',          cap: 'referral:write' },
+    { label: 'Care Timeline',       icon: '🕒', route: '/patients',           cap: 'patient:read' },
+  ],
+  mande: [
+    { label: 'M&E Cohort Tracking', icon: '📊', route: '/dashboard',          cap: 'analytics:read' },
+    { label: 'MoH Reporting Export',icon: '📤', route: '/dashboard',          cap: 'report:export' },
+    { label: 'Quality Assurance',   icon: '✅', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'Finance Summary',     icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
+    { label: 'Leave Approvals',     icon: '📅', route: '/leave',              cap: 'leave:approve' },
+  ],
+  ancillary: [
+    { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
+    { label: 'Prescription Queue',  icon: '💊', route: '/pharmacy',           cap: 'pharmacy:dispense' },
+    { label: 'Pharmacy Inventory',  icon: '📦', route: '/pharmacy',           cap: 'pharmacy:inventory_read' },
+    { label: 'Stock Alerts',        icon: '⚠️', route: '/inventory',          cap: 'inventory:read' },
+  ],
+  admin: [
+    { label: 'Add User',            icon: '➕', route: '/admin',              cap: 'user:manage' },
+    { label: 'Role Permissions',    icon: '🔐', route: '/admin',              cap: 'role:manage' },
+    { label: 'View Audit Logs',     icon: '📝', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'System Health',       icon: '🖥️', route: '/dashboard/overview', cap: 'system:health' },
+    { label: 'Manage Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+    { label: 'Finance Overview',    icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Staff Directory',     icon: '👥', route: '/staff',              cap: 'staff:read' },
+  ],
+  ancillary: [
+    { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
+    { label: 'Prescription Queue',  icon: '💊', route: '/pharmacy',           cap: 'pharmacy:dispense' },
+    { label: 'Pharmacy Inventory',  icon: '📦', route: '/pharmacy',           cap: 'pharmacy:inventory_read' },
+    { label: 'Stock Alerts',        icon: '⚠️', route: '/inventory',          cap: 'inventory:read' },
+  ],
+  // ── Legacy hierarchy roles (fallback) ──
+  staff: [
+    { label: 'My Tasks',            icon: '📋', route: '/dashboard/tasks',    cap: 'operations:read' },
+    { label: 'Appointments',        icon: '📅', route: '/scheduling-calendar',cap: 'appointment:read' },
+    { label: 'My Patients',         icon: '👥', route: '/patients',           cap: 'patient:read' },
+    { label: 'Report Incident',     icon: '🚨', route: '/incident-reporting', cap: 'incident:write' },
+  ],
+  lead: [
+    { label: 'Team Tasks',          icon: '✅', route: '/dashboard/tasks',    cap: 'operations:read' },
+    { label: 'Timesheets',          icon: '⏱️', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Schedule',            icon: '📅', route: '/scheduling-calendar',cap: 'appointment:read' },
+    { label: 'Patients',            icon: '👥', route: '/patients',           cap: 'patient:read' },
+  ],
+  supervisor: [
+    { label: 'Compliance',          icon: '🛡️', route: '/audit-compliance',   cap: 'audit:read' },
+    { label: 'Staffing',            icon: '👥', route: '/staff',              cap: 'staff:read' },
+    { label: 'Operations',          icon: '⚙️', route: '/operations',         cap: 'operations:read' },
+    { label: 'Finance',             icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
+    { label: 'Leave Approvals',     icon: '📅', route: '/leave',              cap: 'leave:approve' },
+  ],
+  director: [
+    { label: 'Hospital KPIs',       icon: '📈', route: '/dashboard/kpi-1',    cap: 'analytics:read' },
+    { label: 'Finance',             icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
+    { label: 'Staffing',            icon: '👥', route: '/staff',              cap: 'staff:read' },
+    { label: 'Risk / Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
+    { label: 'Inventory Audit',     icon: '📦', route: '/inventory',          cap: 'inventory:audit' },
+    { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
+  ],
+};
+
+/**
+ * Resolves the quick-navigation actions for a signed-in user, filtered by the
+ * capabilities present in their session (RBAC-aware). Mirrors the clinical role
+ * resolution used by the dashboard profile.
+ * @param {string} roleId - e.g. 'role_admin' (DB) or 'admin'
+ * @param {string} [departmentId]
+ * @returns {{label:string,icon:string,route:string}[]}
+ */
+export function getQuickActions(roleId, departmentId) {
+  const clinical = CLINICAL_ROLE_MAP[(roleId || '').toLowerCase()];
+  const key = clinical ? clinical.key : (roleId || '').toLowerCase().replace(/^role_/, '') || 'staff';
+  const caps = getSession()?.capabilities || [];
+  const allowed = (cap) => !cap || caps.includes(cap) || caps.includes('*');
+  const actions = QUICK_ACTIONS[key] || QUICK_ACTIONS.staff;
+  const userClass = getUserClass({ role_id: roleId });
+  // Capability gate (L2) AND structural-class gate (UI framework) — both must pass.
+  return actions.filter(a =>
+    allowed(a.cap) && isFeatureAllowed(routeToFeatureId(a.route), userClass)
+  );
+}
+
+/**
+ * Builds the unified Dashboard tab structure shared by EVERY user:
+ *   - Tab 1 is always "Overview" — the landing page holding all of the user's
+ *     quick-navigation cards (rendered identically for all roles).
+ *   - The remaining tabs are that user's own role actions, each broken out into
+ *     its own single-page panel (e.g. "Add User", "View Audit Logs").
+ * The shape is identical for all users; only the action tabs differ per role.
+ * @param {string} roleId
+ * @param {string} [departmentId]
+ * @returns {{id:string,label:string,icon:string,kind:string,route?:string,cap?:string}[]}
+ */
+export function makeDashboardTabs(roleId, departmentId) {
+  const actions = getQuickActions(roleId, departmentId);
+  const tabs = [{ id: 'overview', label: 'Overview', icon: '🏠', kind: 'overview' }];
+  actions.forEach((a, i) => {
+    tabs.push({
+      id: `qa-${i}`,
+      label: a.label,
+      icon: a.icon || '•',
+      kind: 'action',
+      route: a.route,
+      cap: a.cap,
+    });
+  });
+  return tabs;
 }
 
 // ── Session Management ───────────────────────────────────────
@@ -290,10 +440,12 @@ export function setSession(user, token, remember = false) {
   if (!session.role && session.role_id) {
     const rid = String(session.role_id).toLowerCase();
     if (rid === 'role_admin') session.role = 'admin';
-    else if (rid === 'role_director') session.role = 'director';
-    else if (rid === 'role_supervisor') session.role = 'supervisor';
-    else if (rid === 'role_lead') session.role = 'lead';
-    else if (rid === 'role_finance' || rid === 'role_dev' || rid === 'role_nurse') session.role = 'staff';
+    else if (rid === 'role_dev') session.role = 'intake';
+    else if (rid === 'role_nurse') session.role = 'triage';
+    else if (rid === 'role_lead') session.role = 'provider';
+    else if (rid === 'role_supervisor') session.role = 'mande';
+    else if (rid === 'role_director') session.role = 'mande';
+    else if (rid === 'role_finance') session.role = 'ancillary';
     else session.role = rid.replace(/^role_/, '');
   }
 
@@ -319,8 +471,10 @@ export function clearSession() {
  * Logs the current user out: clears session and redirects.
  */
 export function logout() {
-  clearSession();
-  window.location.href = 'login.html';
+  try { clearSession(); } catch (e) { /* storage may be unavailable; ignore */ }
+  // Hard navigation (replace, not href) so the back button can't return
+  // to an authenticated view and the SPA state is fully reset.
+  window.location.replace('login.html');
 }
 
 // ── Auth Guards ──────────────────────────────────────────────

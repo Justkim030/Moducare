@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { hasCapability } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -12,10 +13,17 @@ function sendSecureJSON(res, status, data) {
 }
 
 function handleList(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'communication:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const q = req.url.split('?')[1] || '';
   const params = new URLSearchParams(q);
   const patientId = params.get('patient_id') || '';
   const unread = params.get('unread') || '';
+  const page = parseInt(params.get('page')) || 1;
+  const limit = Math.min(Math.max(parseInt(params.get('limit')) || 25, 1), 100);
+  const offset = (page - 1) * limit;
 
   let sql = `SELECT n.id, n.patient_id, n.type, n.channel, n.subject, n.body, n.sent_at, n.read_at, n.sent_by, p.name as patient_name, emp.name as sender_name FROM notifications n LEFT JOIN patients p ON p.id = n.patient_id LEFT JOIN employees emp ON emp.id = n.sent_by WHERE 1=1`;
   const args = [];
@@ -23,18 +31,36 @@ function handleList(req, res) {
   if (patientId) { sql += ` AND n.patient_id = ?`; args.push(patientId); }
   if (unread === 'true') { sql += ` AND n.read_at IS NULL`; }
 
-  sql += ` ORDER BY n.sent_at DESC`;
+  let countSql = `SELECT COUNT(*) as total FROM notifications n WHERE 1=1`;
+  const countArgs = [];
+  if (patientId) { countSql += ` AND n.patient_id = ?`; countArgs.push(patientId); }
+  if (unread === 'true') { countSql += ` AND n.read_at IS NULL`; }
 
-  db.all(sql, args, (err, rows) => {
+  sql += ` ORDER BY n.sent_at DESC LIMIT ? OFFSET ?`;
+
+  db.get(countSql, countArgs, (err, countRow) => {
     if (err) {
-      console.error(`[SECURE EXCEPTION] Notifications List Error: ${err.message}`);
+      console.error(`[SECURE EXCEPTION] Notifications List Count Error: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
-    return sendSecureJSON(res, 200, { ok: true, notifications: rows || [] });
+    const total = countRow ? countRow.total : 0;
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    db.all(sql, [...args, limit, offset], (err, rows) => {
+      if (err) {
+        console.error(`[SECURE EXCEPTION] Notifications List Error: ${err.message}`);
+        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+      }
+      return sendSecureJSON(res, 200, { ok: true, data: rows || [], pagination: { page: page, limit: limit, total: total, totalPages: totalPages } });
+    });
   });
 }
 
 function handleGet(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'communication:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   db.get(`SELECT n.id, n.patient_id, n.type, n.channel, n.subject, n.body, n.sent_at, n.read_at, n.sent_by, p.name as patient_name, emp.name as sender_name FROM notifications n LEFT JOIN patients p ON p.id = n.patient_id LEFT JOIN employees emp ON emp.id = n.sent_by WHERE n.id = ?`, [id], (err, row) => {
     if (err) {
@@ -47,6 +73,10 @@ function handleGet(req, res) {
 }
 
 function handleCreate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'communication:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   let body = '';
   req.on('data', (ch) => (body += ch));
   req.on('end', () => {
@@ -63,7 +93,16 @@ function handleCreate(req, res) {
             console.error(`[SECURE EXCEPTION] Notification Create Trace: ${err.message}`);
             return sendSecureJSON(res, 400, { ok: false, error: 'Notification creation failed.' });
           }
-          return sendSecureJSON(res, 201, { ok: true, notification: { id: this.lastID, patient_id, type, subject } });
+          const notifId = this.lastID;
+          db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES (?, ?, ?, ?, ?)`,
+            [req.user.id, 'create_notification', `Created ${type} notification for patient ${patient_id}`, 'notification', 'success'],
+            function (auditErr) {
+              if (auditErr) {
+                console.error(`[AUDIT] Log failed: ${auditErr.message}`);
+              }
+              return sendSecureJSON(res, 201, { ok: true, notification: { id: notifId, patient_id, type, subject } });
+            }
+          );
         });
     } catch (e) {
       return sendSecureJSON(res, 400, { ok: false, error: 'Malformed payload.' });
@@ -72,6 +111,10 @@ function handleCreate(req, res) {
 }
 
 function handleUpdate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'communication:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   let body = '';
   req.on('data', (ch) => (body += ch));
@@ -90,7 +133,15 @@ function handleUpdate(req, res) {
           return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
         }
         if (this.changes === 0) return sendSecureJSON(res, 404, { ok: false, error: 'Notification not found.' });
-        return sendSecureJSON(res, 200, { ok: true });
+        db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES (?, ?, ?, ?, ?)`,
+          [req.user.id, 'update_notification', `Updated notification ${id}`, 'notification', 'success'],
+          function (auditErr) {
+            if (auditErr) {
+              console.error(`[AUDIT] Log failed: ${auditErr.message}`);
+            }
+            return sendSecureJSON(res, 200, { ok: true });
+          }
+        );
       });
     } catch (e) {
       return sendSecureJSON(res, 400, { ok: false, error: 'Malformed payload.' });
@@ -99,6 +150,10 @@ function handleUpdate(req, res) {
 }
 
 function handleDelete(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'communication:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   db.run(`DELETE FROM notifications WHERE id = ?`, [id], function (err) {
     if (err) {
@@ -106,7 +161,15 @@ function handleDelete(req, res) {
       return sendSecureJSON(res, 500, { ok: false, error: 'Delete failed.' });
     }
     if (this.changes === 0) return sendSecureJSON(res, 404, { ok: false, error: 'Notification not found.' });
-    return sendSecureJSON(res, 200, { ok: true });
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES (?, ?, ?, ?, ?)`,
+      [req.user.id, 'delete_notification', `Deleted notification ${id}`, 'notification', 'success'],
+      function (auditErr) {
+        if (auditErr) {
+          console.error(`[AUDIT] Log failed: ${auditErr.message}`);
+        }
+        return sendSecureJSON(res, 200, { ok: true });
+      }
+    );
   });
 }
 
@@ -131,7 +194,7 @@ function handleBroadcast(req, res) {
         let completed = 0;
         appointments.forEach(a => {
           db.run(`INSERT INTO notifications (patient_id, type, channel, subject, body, sent_by) VALUES (?, ?, ?, ?, ?, ?)`,
-            [a.patient_id, type || 'reminder', channel || 'sms', 'Appointment Reminder', `You have an appointment on ${a.reminder_due}. Please confirm.`, req.user?.id || null],
+            [a.patient_id, type || 'reminder', channel || 'sms', 'Appointment Reminder', `You have an appointment on ${a.reminder_due}. Please confirm.`, req.user && req.user.id || null],
             function (err) {
               completed++;
               if (completed === appointments.length) {

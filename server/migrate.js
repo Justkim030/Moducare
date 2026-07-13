@@ -321,6 +321,191 @@ function buildSchema(db, resolve, reject) {
       recorded_at TEXT DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // ERP Expansion: Inventory procurement, stock control, HR attendance & roles
+    db.run(`CREATE TABLE IF NOT EXISTS suppliers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      contact_person TEXT,
+      email TEXT,
+      phone TEXT,
+      address TEXT,
+      category TEXT DEFAULT 'general',
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS purchase_orders (
+      id TEXT PRIMARY KEY,
+      supplier_id TEXT,
+      po_number TEXT UNIQUE NOT NULL,
+      status TEXT DEFAULT 'draft',
+      total_amount REAL DEFAULT 0,
+      notes TEXT,
+      requested_by TEXT,
+      approved_by TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS purchase_order_items (
+      id TEXT PRIMARY KEY,
+      po_id TEXT NOT NULL,
+      inventory_id TEXT,
+      quantity REAL NOT NULL,
+      unit_cost REAL DEFAULT 0,
+      FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS stock_adjustments (
+      id TEXT PRIMARY KEY,
+      inventory_id TEXT NOT NULL,
+      adjustment_type TEXT NOT NULL,
+      quantity_change REAL NOT NULL,
+      reason TEXT,
+      reference_id TEXT,
+      performed_by TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS stock_transfers (
+      id TEXT PRIMARY KEY,
+      inventory_id TEXT NOT NULL,
+      from_location TEXT NOT NULL,
+      to_location TEXT NOT NULL,
+      quantity REAL NOT NULL,
+      status TEXT DEFAULT 'pending',
+      notes TEXT,
+      performed_by TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS time_attendance (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      clock_in TEXT,
+      clock_out TEXT,
+      date TEXT NOT NULL,
+      shift TEXT DEFAULT 'day',
+      total_hours REAL DEFAULT 0,
+      status TEXT DEFAULT 'present',
+      notes TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS leave_requests (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      leave_type TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      days_count REAL DEFAULT 0,
+      reason TEXT,
+      status TEXT DEFAULT 'pending',
+      approved_by TEXT,
+      rejection_reason TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS role_permission_audit (
+      id TEXT PRIMARY KEY,
+      role_id TEXT NOT NULL,
+      capability TEXT NOT NULL,
+      action TEXT NOT NULL,
+      performed_by TEXT,
+      performed_at TEXT DEFAULT (datetime('now'))
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS employee_profiles (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      position TEXT,
+      department_id TEXT,
+      hire_date TEXT,
+      employment_type TEXT DEFAULT 'full_time',
+      salary REAL,
+      emergency_contact TEXT,
+      emergency_phone TEXT,
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS contracts (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      contract_type TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      salary REAL,
+      terms TEXT,
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS training_records (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      training_name TEXT NOT NULL,
+      training_type TEXT,
+      provider TEXT,
+      start_date TEXT,
+      end_date TEXT,
+      status TEXT DEFAULT 'completed',
+      certificate_url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS performance_reviews (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      review_period TEXT NOT NULL,
+      rating REAL,
+      goals TEXT,
+      achievements TEXT,
+      reviewer_id TEXT,
+      status TEXT DEFAULT 'draft',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS payroll_records (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      pay_period_start TEXT NOT NULL,
+      pay_period_end TEXT NOT NULL,
+      basic_salary REAL DEFAULT 0,
+      allowances REAL DEFAULT 0,
+      deductions REAL DEFAULT 0,
+      net_pay REAL DEFAULT 0,
+      status TEXT DEFAULT 'pending',
+      paid_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (employee_id) REFERENCES employees(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS reports (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      source TEXT NOT NULL,
+      columns TEXT NOT NULL,
+      filters TEXT DEFAULT '{}',
+      sort TEXT DEFAULT '',
+      limit INTEGER DEFAULT 100,
+      schedule TEXT DEFAULT '',
+      recipients TEXT DEFAULT '',
+      created_by TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
       'CREATE INDEX IF NOT EXISTS idx_patients_name ON patients(name)',
@@ -367,26 +552,28 @@ function buildSchema(db, resolve, reject) {
 function seedData(db) {
   const pwdHash = hash(SEED_PASSWORD);
 
-  // 5 role accounts (one per role) + a field worker with no portal login
+  // 7 role accounts (one per role) + a field worker with no portal login
   db.run(`INSERT OR IGNORE INTO users (id, email, phone_number, passwordHash) VALUES
     ('usr_admin', 'alice@acme.org', '+254700000000', ?),
     ('usr_dan', 'danreech@acme.org', '+254711111111', ?),
     ('usr_lead', 'lead@acme.org', '+254722222222', ?),
     ('usr_supervisor', 'supervisor@acme.org', '+254733333333', ?),
-    ('usr_director', 'director@acme.org', '+254744444444', ?)`,
-    [pwdHash, pwdHash, pwdHash, pwdHash, pwdHash]);
+    ('usr_director', 'director@acme.org', '+254744444444', ?),
+    ('usr_nurse', 'nurse@acme.org', '+254755555555', ?),
+    ('usr_finance', 'finance@acme.org', '+254766666666', ?)`,
+    [pwdHash, pwdHash, pwdHash, pwdHash, pwdHash, pwdHash, pwdHash]);
 
   db.run(`INSERT OR IGNORE INTO departments (id, name) VALUES
     ('dept_tech', 'IT Engineering'), ('dept_clin', 'Clinical Services'), ('dept_admin', 'Administration')`);
 
   db.run(`INSERT OR IGNORE INTO roles (id, name, department_id) VALUES
-    ('role_dev', 'Staff', 'dept_tech'),
-    ('role_nurse', 'Nurse', 'dept_clin'),
-    ('role_admin', 'Administrator', 'dept_admin'),
-    ('role_lead', 'Team Lead', 'dept_clin'),
-    ('role_supervisor', 'Supervisor', 'dept_admin'),
-    ('role_director', 'Director', 'dept_admin'),
-    ('role_finance', 'Finance Officer', 'dept_admin')`);
+    ('role_dev', 'Front-Desk / Intake', 'dept_tech'),
+    ('role_nurse', 'Clinical Staff / Triage', 'dept_clin'),
+    ('role_admin', 'System Administrator', 'dept_admin'),
+    ('role_lead', 'Healthcare Provider', 'dept_clin'),
+    ('role_supervisor', 'M&E Officer', 'dept_admin'),
+    ('role_director', 'M&E Director', 'dept_admin'),
+    ('role_finance', 'Ancillary Services', 'dept_admin')`);
 
   db.run(`INSERT OR IGNORE INTO employees (id, name, user_id, role_id, department_id) VALUES
     ('emp_admin', 'Alice Admin', 'usr_admin', 'role_admin', 'dept_admin'),
@@ -394,6 +581,8 @@ function seedData(db) {
     ('emp_lead', 'Dr. James Lead', 'usr_lead', 'role_lead', 'dept_clin'),
     ('emp_supervisor', 'Jane Supervisor', 'usr_supervisor', 'role_supervisor', 'dept_admin'),
     ('emp_director', 'Dr. Robert Director', 'usr_director', 'role_director', 'dept_admin'),
+    ('emp_nurse', 'John Nurse', 'usr_nurse', 'role_nurse', 'dept_clin'),
+    ('emp_finance', 'Mary Finance', 'usr_finance', 'role_finance', 'dept_admin'),
     ('emp_field_worker', 'John Staff (No Portal Account)', null, 'role_nurse', 'dept_clin')`);
 
   db.run(`INSERT OR IGNORE INTO patients (id, name, email, phone_number, dob, gender, address, county, next_of_kin, next_of_kin_phone, ampkh_id, national_id, insurance_id, hiv_status) VALUES
@@ -455,6 +644,11 @@ function seedData(db) {
     ('Rapid HIV Test Kits', 'consumable', 50, 20, 'kits', 'Egypt'),
     ('Blood Pressure Cuffs', 'equipment', 15, 5, 'units', 'Local Supplier'),
     ('Glucose Test Strips', 'consumable', 30, 15, 'strips', 'KAZ')`);
+
+  db.run(`INSERT OR IGNORE INTO suppliers (id, name, contact_person, email, phone, category) VALUES
+    ('sup_1', 'MediSupply Kenya', 'James Kipchoge', 'james@medisupply.co.ke', '+254722000111', 'medication'),
+    ('sup_2', 'LabTech Instruments', 'Sarah Wanjiku', 'sarah@labtech.co.ke', '+254733000222', 'equipment'),
+    ('sup_3', 'General Hospital Supplies', 'Michael Ochieng', 'mike@ghsupplies.co.ke', '+254744000333', 'consumable')`);
 
   db.run(`INSERT OR IGNORE INTO audit (user_id, action, details, resource_type, status) VALUES
     ('usr_dan', 'login', 'User logged in successfully', 'auth', 'success'),

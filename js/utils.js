@@ -192,6 +192,65 @@ export async function apiFetch(path, options = {}) {
   return res.json();
 }
 
+// ── Quick Actions Dropdown ──────────────────────────────────
+/**
+ * Renders a role-aware "Quick Actions" dropdown into a container.
+ * Each action is an anchor with `data-route` so the global router handles
+ * navigation. The dropdown closes on outside click and after selection.
+ * @param {HTMLElement} container - mount point
+ * @param {Array<{label:string,icon?:string,route:string}>} actions
+ * @param {string} [label] - toggle button label
+ */
+export function renderQuickActions(container, actions, label = 'Quick Actions') {
+  if (!container || !Array.isArray(actions) || !actions.length) return;
+
+  container.innerHTML = `
+    <div class="mc-quick-actions" aria-label="${escapeHTML(label)}">
+      <button type="button" class="mc-btn mc-quick-actions__toggle"
+              aria-haspopup="menu" aria-expanded="false">
+        <span aria-hidden="true">⚡</span> ${escapeHTML(label)}
+        <span class="mc-quick-actions__chev" aria-hidden="true">▾</span>
+      </button>
+      <ul class="mc-quick-actions__menu" role="menu" hidden>
+        ${actions.map(a => `
+          <li role="none">
+            <a href="${a.route}" data-route class="mc-quick-actions__item" role="menuitem">
+              <span class="mc-quick-actions__icon" aria-hidden="true">${a.icon || '•'}</span>
+              <span>${escapeHTML(a.label)}</span>
+            </a>
+          </li>`).join('')}
+      </ul>
+    </div>`;
+
+  const wrap   = container.querySelector('.mc-quick-actions');
+  const toggle = wrap.querySelector('.mc-quick-actions__toggle');
+  const menu   = wrap.querySelector('.mc-quick-actions__menu');
+
+  const close = () => {
+    menu.setAttribute('hidden', '');
+    toggle.setAttribute('aria-expanded', 'false');
+    wrap.classList.remove('open');
+  };
+  const open = () => {
+    wrap.classList.add('open');
+    menu.removeAttribute('hidden');
+    toggle.setAttribute('aria-expanded', 'true');
+  };
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menu.hasAttribute('hidden') ? open() : close();
+  });
+
+  menu.querySelectorAll('.mc-quick-actions__item').forEach(item => {
+    item.addEventListener('click', close);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) close();
+  });
+}
+
 // ── CSV Export ───────────────────────────────────────────────
 /**
  * Trigger a CSV file download from a 2D array.
@@ -208,4 +267,61 @@ export function exportCSV(rows, filename = 'export.csv') {
   a.href = url; a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── List / Pagination Helpers ────────────────────────────
+/**
+ * Extract a list array from a paginated API response. Supports both the
+ * unified `data` key and legacy module-specific keys (e.g. `labOrders`).
+ * @param {object} res API response ({ data: [...] } or { <key>: [...] })
+ * @param {string} [fallbackKey] legacy module-specific key
+ * @returns {Array}
+ */
+export function extractList(res, fallbackKey) {
+  if (!res) return [];
+  if (Array.isArray(res.data)) return res.data;
+  if (fallbackKey && Array.isArray(res[fallbackKey])) return res[fallbackKey];
+  return [];
+}
+
+/**
+ * Build the standard pagination control markup. The prev/next buttons are
+ * disabled at the page boundaries.
+ * @param {number} currentPage
+ * @param {number} pageSize
+ * @param {number} total
+ * @returns {string}
+ */
+export function buildPaginationHTML(currentPage, pageSize, total) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, total);
+  const prevDisabled = currentPage <= 1 ? 'disabled' : '';
+  const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+  return `
+    <div class="pagination">
+      <button class="page-btn" data-page="prev" ${prevDisabled}>&larr;</button>
+      <span class="pagination-info">Showing ${start}-${end} of ${total}</span>
+      <button class="page-btn" data-page="next" ${nextDisabled}>&rarr;</button>
+    </div>`;
+}
+
+/**
+ * Wire up the prev/next buttons inside a rendered pagination control.
+ * `state` must expose `{ page, totalPages }` and is mutated in place.
+ * @param {HTMLElement} pgEl element containing `.page-btn` buttons
+ * @param {{page:number,totalPages:number}} state
+ * @param {Function} reload called after the page changes
+ */
+export function attachPagination(pgEl, state, reload) {
+  if (!pgEl) return;
+  pgEl.querySelectorAll('.page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const action = btn.dataset.page;
+      if (action === 'prev' && state.page > 1) state.page -= 1;
+      else if (action === 'next' && state.page < state.totalPages) state.page += 1;
+      reload();
+    });
+  });
 }

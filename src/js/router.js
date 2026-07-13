@@ -1,58 +1,24 @@
 import State from './state.js';
-import { getSession, DEPARTMENT_MODULES } from '../../js/auth.js';
+import { getSession, canAccessCapability, MODULE_CAPABILITIES, DEPARTMENT_MODULES } from '../../js/auth.js';
 import { showToast } from '../../js/utils.js';
 import './sidebar.js';
 
 const outlet = document.getElementById('app-content');
 const head = document.head;
-let activeFeature = null; // holds returned instance with optional destroy()
+let activeFeature = null;
 
-// List of routes that are dedicated to auth screens and should hide the app shell
 const AUTH_ROUTES = ['login', 'secret-login'];
-
-const ROLE_LEVELS = {
-  staff: 1,
-  lead: 2,
-  supervisor: 3,
-  director: 4,
-  admin: 5,
-};
-
-const MODULE_MIN_ROLE = {
-  admin: 'admin',
-  'audit-compliance': 'supervisor',
-  'finance-billing': 'lead',
-  'document-vault': 'lead',
-  'analytics-reports': 'supervisor',
-  'client-portal': 'lead',
-  'integrations': 'director',
-  'system-admin': 'admin',
-  encounters: 'staff',
-  'lab-orders': 'staff',
-  pharmacy: 'staff',
-  appointments: 'staff',
-  notifications: 'staff',
-  documents: 'staff',
-  communications: 'staff',
-  audit: 'supervisor',
-  inventory: 'staff',
-};
-
-function getRequiredRole(name) {
-  return MODULE_MIN_ROLE[name] || null;
-}
-
-function hasPermission(currentRole, requiredRole) {
-  const current = ROLE_LEVELS[currentRole] || 0;
-  const required = ROLE_LEVELS[requiredRole] || 99;
-  return current >= required;
-}
 
 function routeNameFromPath(path){
   let p = path.replace(/^\/+/,'').split('/')[0];
   p = p.replace(/\.html$/, '');
   if (p === 'index') return 'dashboard';
   return p || 'dashboard';
+}
+
+function canAccessFeature(name){
+  const cap = MODULE_CAPABILITIES[name];
+  return !cap || canAccessCapability(cap);
 }
 
 /**
@@ -92,7 +58,10 @@ function updateActiveLinks(path) {
   if (exactMatch) {
     exactMatch.classList.add('active');
     if (exactMatch.classList.contains('sub')) {
-      exactMatch.closest('.mc-nav-item')?.classList.add('expanded');
+      const parentItem = exactMatch.closest('.mc-nav-item');
+      if (parentItem && parentItem.style.display !== 'none') {
+        parentItem.classList.add('expanded');
+      }
     }
   } else {
     const feature = routeNameFromPath(path);
@@ -123,14 +92,12 @@ async function loadFeature(name, subView){
      link.onerror = ()=> link.remove();
      head.appendChild(link);
 
-     const [mod, tmpl] = await Promise.all([modPromise, tmplPromise]);
+      const [mod, tmpl] = await Promise.all([modPromise, tmplPromise]);
 
-     const user = State.getUser();
-     const requiredRole = getRequiredRole(name);
-     if (requiredRole && (!user || !hasPermission(user.role, requiredRole))) {
-       showForbidden();
-       return;
-     }
+      if (!canAccessFeature(name)) {
+        showForbidden();
+        return;
+      }
 
      const targetOutlet = AUTH_ROUTES.includes(name)
        ? document.getElementById('mc-app')
@@ -152,11 +119,13 @@ async function loadFeature(name, subView){
  }
 
 function show404(name){
+  showToast(`Module '${name}' not found.`, 'error');
   outlet.innerHTML = `<section aria-labelledby="notfound-title"><h2 id="notfound-title">404 — Not Found</h2><p>Module '${name}' not found.</p></section>`;
 }
 
 function showForbidden(){
-  outlet.innerHTML = `<section aria-labelledby="forbidden-title"><h2 id="forbidden-title">403 — Forbidden</h2><p>You do not have permission to access this area.</p></section>`;
+  showToast('You do not have permission to access this area.', 'error');
+  navigate('/access-denied');
 }
 
 function navigate(path){
@@ -167,6 +136,9 @@ function navigate(path){
 function loadRoute(path){
   const segments = path.replace(/^\/+|\/+$/g, '').split('/');
   let name = segments[0] || 'dashboard';
+  // Normalize entry paths like /index.html -> dashboard (mirrors routeNameFromPath)
+  name = name.replace(/\.html$/, '');
+  if (name === 'index') name = 'dashboard';
   let subView = null;
 
   const dropdownParents = ['dashboard', 'patients', 'staff', 'finance-billing', 'operations', 'clinical', 'communications'];
@@ -184,7 +156,9 @@ function loadRoute(path){
   toggleAppShellVisibility(isAuthPage);
 
   updateActiveLinks(path);
-  loadFeature(name, subView);
+  loadFeature(name, subView).then(() => {
+    outlet?.focus();
+  });
 }
 
 document.addEventListener('click', (e)=>{
@@ -237,9 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sess){ if (sess.role) sess.role = sess.role.toLowerCase(); State.setUser(sess); }
   }catch(e){ /* ignore */ }
 
-  // Filter nav by department for staff users
+  // Filter nav by department for non-admin users
   const sess = getSession();
-  if (sess && sess.role === 'staff' && sess.department_id) {
+  if (sess && sess.role !== 'admin' && sess.department_id) {
     const allowedModules = DEPARTMENT_MODULES[sess.department_id] || [];
     document.querySelectorAll('.mc-nav-link:not(.sub)').forEach(link => {
       const href = link.getAttribute('href');

@@ -3,9 +3,10 @@
  * Entry point for the dashboard shell.
  * Runs auth checks, populates user info, wires up UI interactions.
  */
-import { requireAuth, logout, getUserRoleLabel, getSession } from './auth.js';
+import { requireAuth, logout, getUserRoleLabel, getSession, getQuickActions, canAccessCapability, canAccessModule } from './auth.js';
 import { set } from './store.js';
-import { showToast, escapeHTML, apiFetch } from './utils.js';
+import { showToast, escapeHTML, apiFetch, renderQuickActions } from './utils.js';
+import { getUserClass, isFeatureAllowed } from './access-classes.js';
 
 // ── Auth Guard ───────────────────────────────────────────────
 const session = requireAuth();
@@ -238,16 +239,54 @@ function initSignOutButton() {
 
 // ── Hide Inaccessible Nav Items ──────────────────────────────
 function applyNavPermissions() {
-  import('./auth.js').then(({ canAccessCapability, canAccessModule }) => {
-    // Capability-gated nav (Level 1): hide items the user lacks the capability for.
-    document.querySelectorAll('.mc-nav-item[data-capability]').forEach(el => {
-      el.style.display = canAccessCapability(el.dataset.capability) ? '' : 'none';
-    });
-    // Legacy module-gated nav (fallback).
-    document.querySelectorAll('.nav-item[data-module]').forEach(el => {
-      el.style.display = canAccessModule(el.dataset.module) ? '' : 'none';
-    });
+  const userClass = getUserClass(session);
+
+  // Capability-gated nav (L2): hide items the user lacks the capability for.
+  document.querySelectorAll('.mc-nav-item[data-capability]').forEach(el => {
+    if (!canAccessCapability(el.dataset.capability)) el.style.display = 'none';
   });
+
+  // Structural-class-gated nav (UI framework): hide features not allowed for
+  // the user's class. Rendering source of truth = FEATURE_NAV allowlist.
+  document.querySelectorAll('[data-feature]').forEach(el => {
+    if (!isFeatureAllowed(el.dataset.feature, userClass)) el.style.display = 'none';
+  });
+
+  // Collapse a dropdown parent when every child is hidden (e.g. Clinical).
+  document.querySelectorAll('.mc-nav-item').forEach(parent => {
+    const dd = parent.querySelector(':scope > .mc-nav-dropdown');
+    if (!dd) return;
+    const kids = dd.querySelectorAll('.mc-nav-item');
+    if (kids.length && [...kids].every(k => k.style.display === 'none')) {
+      parent.style.display = 'none';
+    }
+  });
+
+  // Blank-state fallback when every sidebar item is hidden.
+  const visibleNavItems = document.querySelectorAll('.mc-nav-item:not([style*="display: none"])');
+  const allNavItems = document.querySelectorAll('.mc-nav-item');
+  if (allNavItems.length > 0 && visibleNavItems.length === 0) {
+    const navList = document.querySelector('.mc-nav-list');
+    if (navList && !navList.querySelector('.mc-nav-empty')) {
+      const empty = document.createElement('li');
+      empty.className = 'mc-nav-empty';
+      empty.innerHTML = '<span class="muted">No modules available for your role.</span>';
+      navList.appendChild(empty);
+    }
+  }
+
+  // Legacy module-gated nav (fallback).
+  document.querySelectorAll('.nav-item[data-module]').forEach(el => {
+    if (!canAccessModule(el.dataset.module)) el.style.display = 'none';
+  });
+}
+
+// ── Header Quick Actions (role-aware dropdown) ──────────────
+function initQuickActions() {
+  const host = document.getElementById('header-quick-actions');
+  if (!host) return;
+  const actions = getQuickActions(session.role_id, session.department_id);
+  renderQuickActions(host, actions, 'Quick Actions');
 }
 
 // ── Bootstrap ────────────────────────────────────────────────
@@ -260,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserMenu();
   initSignOutButton();
   applyNavPermissions();
+  initQuickActions();
 
   showToast(`Signed in as ${session.name}`, 'success');
 });

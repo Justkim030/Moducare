@@ -1,5 +1,4 @@
 node_modules/
-.env.example
 .claude/
 .playwright-mcp/
 *.png

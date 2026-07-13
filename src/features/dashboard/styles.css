@@ -302,6 +302,45 @@
   .role-kpi-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Tabs (unified across all roles) ─────────────────────── */
+.dashboard-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.dashboard-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
+}
+.dashboard-tab:hover { background: var(--clr-primary-50, #EAF2FB); color: var(--clr-primary-600, #1E5799); }
+.dashboard-tab.active {
+  background: var(--clr-primary-500);
+  color: #fff;
+  border-color: var(--clr-primary-500);
+}
+.dashboard-tab__icon { font-size: 1rem; line-height: 1; }
+
+.dashboard-panels { display: block; }
+.dashboard-panel { animation: fadeIn 0.25s ease-out; display: flex; flex-direction: column; gap: var(--mc-gap); }
+.dashboard-panel[hidden] { display: none; }
+
+/* ── Action panels (single-page role action) ─────────────── */
+.dashboard-action-panel__icon { margin-right: var(--sp-2); font-size: 1.1rem; }
+.dashboard-action-panel__desc { color: var(--text-secondary); margin: 0 0 var(--sp-4); line-height: 1.5; }
+
 /* Utility */
 .hidden { display: none !important; }
 

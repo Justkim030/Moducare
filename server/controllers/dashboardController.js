@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { hasCapability } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -20,6 +21,10 @@ function queryGet(sql, defaults = {}) {
 }
 
 function handleDashboard(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'dashboard:view')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   Promise.all([
     queryGet("SELECT COUNT(*) as value FROM operations WHERE status = 'active'", { value: 0 }),
     queryGet("SELECT COUNT(*) as value FROM appointments WHERE status = 'scheduled'", { value: 0 }),

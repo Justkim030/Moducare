@@ -23,4 +23,9 @@
 .message-body { color: var(--text-primary); font-size: 13px; line-height: 1.5; }
 .thread-composer { padding: 16px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 10px; }
 .thread-composer-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.comm-tabs { display: inline-flex; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 5px; border-radius: 8px; gap: 4px; }
+.comm-tab-trigger { padding: 8px 16px; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 13px; font-weight: 500; }
+.comm-tab-trigger.active { background: var(--clr-primary-500); color: #fff; font-weight: 600; }
+.w-auto { width: auto; }
+
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: var(--text-tertiary); }

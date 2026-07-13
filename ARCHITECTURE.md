@@ -296,7 +296,7 @@ ModuCare MS is a modular healthcare management system designed for AMPATH clinic
 | Communications | `/communications` | staff |
 | Audit | `/audit-compliance` | supervisor |
 | Notifications | `/notifications` | staff |
-| Documents | `/document-vault` | lead |
+| Documents | `/documents` | lead |
 | Inventory | `/inventory` | staff |
 | Analytics | `/analytics-reports` | supervisor |
 | Admin | `/admin` | admin |

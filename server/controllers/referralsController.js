@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { hasCapability } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -12,10 +13,17 @@ function sendSecureJSON(res, status, data) {
 }
 
 function handleList(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const q = req.url.split('?')[1] || '';
   const params = new URLSearchParams(q);
   const patientId = params.get('patient_id') || '';
   const direction = params.get('direction') || '';
+  const page = parseInt(params.get('page')) || 1;
+  const limit = Math.min(Math.max(parseInt(params.get('limit')) || 25, 1), 100);
+  const offset = (page - 1) * limit;
 
   let sql = `SELECT r.id, r.patient_id, r.from_facility, r.to_facility, r.reason, r.status, r.requested_at, r.completed_at, r.requested_by, p.name as patient_name, emp.name as requester_name FROM referrals r LEFT JOIN patients p ON p.id = r.patient_id LEFT JOIN employees emp ON emp.id = r.requested_by WHERE 1=1`;
   const args = [];
@@ -23,18 +31,36 @@ function handleList(req, res) {
   if (patientId) { sql += ` AND r.patient_id = ?`; args.push(patientId); }
   if (direction) { sql += ` AND r.direction = ?`; args.push(direction); }
 
-  sql += ` ORDER BY r.requested_at DESC`;
+  let countSql = `SELECT COUNT(*) as total FROM referrals r WHERE 1=1`;
+  const countArgs = [];
+  if (patientId) { countSql += ` AND r.patient_id = ?`; countArgs.push(patientId); }
+  if (direction) { countSql += ` AND r.direction = ?`; countArgs.push(direction); }
 
-  db.all(sql, args, (err, rows) => {
+  sql += ` ORDER BY r.requested_at DESC LIMIT ? OFFSET ?`;
+
+  db.get(countSql, countArgs, (err, countRow) => {
     if (err) {
-      console.error(`[SECURE EXCEPTION] Referrals List Error: ${err.message}`);
+      console.error(`[SECURE EXCEPTION] Referrals List Count Error: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
-    return sendSecureJSON(res, 200, { ok: true, referrals: rows || [] });
+    const total = countRow ? countRow.total : 0;
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    db.all(sql, [...args, limit, offset], (err, rows) => {
+      if (err) {
+        console.error(`[SECURE EXCEPTION] Referrals List Error: ${err.message}`);
+        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+      }
+      return sendSecureJSON(res, 200, { ok: true, data: rows || [], pagination: { page: page, limit: limit, total: total, totalPages: totalPages } });
+    });
   });
 }
 
 function handleGet(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   db.get(`SELECT r.id, r.patient_id, r.from_facility, r.to_facility, r.reason, r.status, r.requested_at, r.completed_at, r.requested_by, p.name as patient_name, emp.name as requester_name FROM referrals r LEFT JOIN patients p ON p.id = r.patient_id LEFT JOIN employees emp ON emp.id = r.requested_by WHERE r.id = ?`, [id], (err, row) => {
     if (err) {
@@ -47,6 +73,10 @@ function handleGet(req, res) {
 }
 
 function handleCreate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'referral:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   let body = '';
   req.on('data', (ch) => (body += ch));
   req.on('end', () => {
@@ -63,7 +93,16 @@ function handleCreate(req, res) {
             console.error(`[SECURE EXCEPTION] Referral Create Trace: ${err.message}`);
             return sendSecureJSON(res, 400, { ok: false, error: 'Referral creation failed.' });
           }
-          return sendSecureJSON(res, 201, { ok: true, referral: { id: this.lastID, patient_id, to_facility, status } });
+          const refId = this.lastID;
+          db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES (?, ?, ?, ?, ?)`,
+            [req.user.id, 'create_referral', `Created referral for patient ${patient_id} to ${to_facility}`, 'referral', 'success'],
+            function (auditErr) {
+              if (auditErr) {
+                console.error(`[AUDIT] Log failed: ${auditErr.message}`);
+              }
+              return sendSecureJSON(res, 201, { ok: true, referral: { id: refId, patient_id, to_facility, status } });
+            }
+          );
         });
     } catch (e) {
       return sendSecureJSON(res, 400, { ok: false, error: 'Malformed payload.' });
@@ -72,6 +111,10 @@ function handleCreate(req, res) {
 }
 
 function handleUpdate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'referral:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   let body = '';
   req.on('data', (ch) => (body += ch));
@@ -90,7 +133,15 @@ function handleUpdate(req, res) {
           return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
         }
         if (this.changes === 0) return sendSecureJSON(res, 404, { ok: false, error: 'Referral not found.' });
-        return sendSecureJSON(res, 200, { ok: true });
+        db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES (?, ?, ?, ?, ?)`,
+          [req.user.id, 'update_referral', `Updated referral ${id}`, 'referral', 'success'],
+          function (auditErr) {
+            if (auditErr) {
+              console.error(`[AUDIT] Log failed: ${auditErr.message}`);
+            }
+            return sendSecureJSON(res, 200, { ok: true });
+          }
+        );
       });
     } catch (e) {
       return sendSecureJSON(res, 400, { ok: false, error: 'Malformed payload.' });
@@ -99,6 +150,10 @@ function handleUpdate(req, res) {
 }
 
 function handleDelete(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'referral:write')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   db.run(`DELETE FROM referrals WHERE id = ?`, [id], function (err) {
     if (err) {
@@ -106,7 +161,15 @@ function handleDelete(req, res) {
       return sendSecureJSON(res, 500, { ok: false, error: 'Delete failed.' });
     }
     if (this.changes === 0) return sendSecureJSON(res, 404, { ok: false, error: 'Referral not found.' });
-    return sendSecureJSON(res, 200, { ok: true });
+    db.run(`INSERT INTO audit (user_id, action, details, resource_type, status) VALUES (?, ?, ?, ?, ?)`,
+      [req.user.id, 'delete_referral', `Deleted referral ${id}`, 'referral', 'success'],
+      function (auditErr) {
+        if (auditErr) {
+          console.error(`[AUDIT] Log failed: ${auditErr.message}`);
+        }
+        return sendSecureJSON(res, 200, { ok: true });
+      }
+    );
   });
 }
 

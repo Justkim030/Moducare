@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { hasCapability } = require('../config/permissions');
 
 function sendSecureJSON(res, status, data) {
   const payload = JSON.stringify(data, null, 2);
@@ -20,6 +21,10 @@ function queryGet(sql, defaults = {}) {
 }
 
 function handleOverview(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'analytics:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   Promise.all([
     queryGet("SELECT COUNT(*) as totalPatients FROM patients", { totalPatients: 0 }),
     queryGet("SELECT COUNT(*) as activePatients FROM patients WHERE hiv_status = 'positive'", { activePatients: 0 }),
@@ -64,27 +69,54 @@ function handleOverview(req, res) {
 }
 
 function handleList(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'analytics:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const q = req.url.split('?')[1] || '';
   const params = new URLSearchParams(q);
   const period = params.get('period') || 'month';
   const metric = params.get('metric') || 'encounters';
 
+  const page = parseInt(params.get('page')) || 1;
+  const limit = Math.min(Math.max(parseInt(params.get('limit')) || 25, 1), 100);
+  const offset = (page - 1) * limit;
+
   let sql = `SELECT a.id, a.metric, a.value, a.period, a.recorded_at FROM analytics a WHERE 1=1`;
   const args = [];
   if (period) { sql += ` AND a.period = ?`; args.push(period); }
   if (metric) { sql += ` AND a.metric = ?`; args.push(metric); }
-  sql += ` ORDER BY a.recorded_at DESC LIMIT 100`;
 
-  db.all(sql, args, (err, rows) => {
+  let countSql = `SELECT COUNT(*) as total FROM analytics a WHERE 1=1`;
+  const countArgs = [];
+  if (period) { countSql += ` AND a.period = ?`; countArgs.push(period); }
+  if (metric) { countSql += ` AND a.metric = ?`; countArgs.push(metric); }
+
+  sql += ` ORDER BY a.recorded_at DESC LIMIT ? OFFSET ?`;
+
+  db.get(countSql, countArgs, (err, countRow) => {
     if (err) {
-      console.error(`[SECURE EXCEPTION] Analytics List Error: ${err.message}`);
+      console.error(`[SECURE EXCEPTION] Analytics List Count Error: ${err.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
-    return sendSecureJSON(res, 200, { ok: true, analytics: rows || [] });
+    const total = countRow ? countRow.total : 0;
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    db.all(sql, [...args, limit, offset], (err2, rows) => {
+      if (err2) {
+        console.error(`[SECURE EXCEPTION] Analytics List Error: ${err2.message}`);
+        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+      }
+      return sendSecureJSON(res, 200, { ok: true, data: rows || [], pagination: { page: page, limit: limit, total: total, totalPages: totalPages } });
+    });
   });
 }
 
 function handleCreate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'report:export')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   let body = '';
   req.on('data', (ch) => (body += ch));
   req.on('end', () => {

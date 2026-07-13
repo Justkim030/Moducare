@@ -8,11 +8,16 @@
    ```bash
    npm install
    ```
-2. Start the server:
+2. (Optional) Configure environment — `.env` is gitignored for security, so it is **not** in the repo. Copy the committed template and fill in real values:
+   ```bash
+   cp .env.example .env
+   ```
+   > The database auto-creates and seeds on first `npm start`, so no extra step is needed. `JWT_SECRET` is **required in production**; if it is omitted, the server uses an insecure development default and prints a warning (local dev only).
+3. Start the server:
    ```bash
    npm start
    ```
-3. Open **http://localhost:8081**
+4. Open **http://localhost:8081**
 
 ---
 

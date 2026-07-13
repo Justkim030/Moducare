@@ -371,6 +371,14 @@ tr:hover td {
   display: none !important;
 }
 
+/* Blank-state when all nav items are hidden */
+.mc-nav-empty {
+  padding: 16px 12px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  text-align: center;
+}
+
 /* Print Views */
 @media print {
   body { color: #000; background: #fff; }

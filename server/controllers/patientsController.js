@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { hasCapability } = require('../config/permissions');
 const { validateRequired, validateEmail, validatePhone, sanitizeString, validateUUID } = require('../middleware/validation');
 
 function sendSecureJSON(res, status, data) {
@@ -12,41 +13,86 @@ function sendSecureJSON(res, status, data) {
   res.end(payload);
 }
 
+function getUserId(req) {
+  return (req && req.user && req.user.id) ? req.user.id : null;
+}
+
+function logAudit(userId, action, details, resourceType, status, resourceId) {
+  db.run(
+    `INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
+    [userId, action, details, resourceType, resourceId ? resourceId : null, status],
+    (err) => {
+      if (err) console.error(`[AUDIT] Log failed: ${err.message}`);
+    }
+  );
+}
+
+function parsePagination(params) {
+  let page = parseInt(params.get('page') || '1', 10);
+  if (isNaN(page) || page < 1) page = 1;
+  let limit = parseInt(params.get('limit') || '25', 10);
+  if (isNaN(limit) || limit < 1) limit = 25;
+  if (limit > 100) limit = 100;
+  const offset = (page - 1) * limit;
+  return { page: page, limit: limit, offset: offset };
+}
+
 function handleList(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const q = req.url.split('?')[1] || '';
   const params = new URLSearchParams(q);
   const search = (params.get('q') || '').toLowerCase();
+  const { page, limit, offset } = parsePagination(params);
 
-  let sql = `SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.address, p.county, p.hiv_status, COUNT(a.id) as appointment_count FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id`;
+  const whereClauses = [];
   const args = [];
   if (search) {
-    sql += ` WHERE LOWER(p.name) LIKE ? OR LOWER(p.email) LIKE ? OR LOWER(p.phone_number) LIKE ?`;
+    whereClauses.push(`(LOWER(p.name) LIKE ? OR LOWER(p.email) LIKE ? OR LOWER(p.phone_number) LIKE ?)`);
     args.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
-  sql += ` GROUP BY p.id ORDER BY p.name COLLATE NOCASE ASC`;
+  const whereSql = whereClauses.length ? ` WHERE ${whereClauses.join(' AND ')}` : '';
+  const countSql = `SELECT COUNT(DISTINCT p.id) as total FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id${whereSql}`;
 
-  db.all(sql, args, (err, rows) => {
-    if (err) {
-      console.error(`[SECURE EXCEPTION] Patients List Error: ${err.message}`);
+  db.get(countSql, args, (countErr, countRow) => {
+    if (countErr) {
+      console.error(`[SECURE EXCEPTION] Patients Count Error: ${countErr.message}`);
       return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
     }
-    const patients = (rows || []).map(r => ({
-      id: r.id,
-      name: r.name,
-      email: r.email,
-      phone_number: r.phone_number,
-      dob: r.dob,
-      gender: r.gender,
-      address: r.address,
-      county: r.county,
-      hiv_status: r.hiv_status,
-      appointment_count: r.appointment_count || 0,
-    }));
-    return sendSecureJSON(res, 200, { ok: true, patients });
+    const total = countRow ? countRow.total : 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const dataSql = `SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.address, p.county, p.hiv_status, COUNT(a.id) as appointment_count FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id${whereSql} GROUP BY p.id ORDER BY p.name COLLATE NOCASE ASC LIMIT ? OFFSET ?`;
+
+    db.all(dataSql, args.concat([limit, offset]), (err, rows) => {
+      if (err) {
+        console.error(`[SECURE EXCEPTION] Patients List Error: ${err.message}`);
+        return sendSecureJSON(res, 500, { ok: false, error: 'Database error' });
+      }
+      const patients = (rows || []).map(r => ({
+        id: r.id,
+        name: r.name,
+        email: r.email,
+        phone_number: r.phone_number,
+        dob: r.dob,
+        gender: r.gender,
+        address: r.address,
+        county: r.county,
+        hiv_status: r.hiv_status,
+        appointment_count: r.appointment_count || 0,
+      }));
+      return sendSecureJSON(res, 200, { ok: true, patients, pagination: { page, limit, total, totalPages } });
+    });
   });
 }
 
 function handleGet(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:read')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   db.get(`SELECT p.id, p.name, p.email, p.phone_number, p.dob, p.gender, p.address, p.county, p.next_of_kin, p.next_of_kin_phone, p.ampkh_id, p.national_id, p.insurance_id, p.hiv_status, a.time, a.type, a.status, e.name as doctor FROM patients p LEFT JOIN appointments a ON a.patient_id = p.id LEFT JOIN employees e ON e.id = a.employee_id WHERE p.id = ? ORDER BY a.time DESC LIMIT 20`, [id], (err, row) => {
     if (err) {
@@ -56,13 +102,17 @@ function handleGet(req, res) {
     if (!row) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Patient not found' });
     }
-    const userId = req.user?.id || null;
+    const userId = getUserId(req);
     db.run(`INSERT INTO audit (user_id, action, details, resource_type, resource_id, status) VALUES (?, 'view_patient', ?, 'patient', ?, 'success')`, [userId, `Viewed patient record ${id}`, id], () => {});
     return sendSecureJSON(res, 200, { ok: true, patient: row });
   });
 }
 
 function handleCreate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:write_demographics')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   let body = '';
   req.on('data', (ch) => (body += ch));
   req.on('end', () => {
@@ -110,8 +160,10 @@ function handleCreate(req, res) {
         function (err) {
           if (err) {
             console.error(`[SECURE EXCEPTION] Patient Create Trace: ${err.message}`);
+            logAudit(getUserId(req), 'create_patient', `Failed to create patient: ${sanitized.name}`, 'patient', 'failed', null);
             return sendSecureJSON(res, 400, { ok: false, error: 'Patient ID already exists or invalid.' });
           }
+          logAudit(getUserId(req), 'create_patient', `Created patient: ${sanitized.name}`, 'patient', 'success', patientId);
           return sendSecureJSON(res, 201, {
             ok: true,
             patient: { id: patientId, ...sanitized },
@@ -125,6 +177,10 @@ function handleCreate(req, res) {
 }
 
 function handleUpdate(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:write_demographics')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   let body = '';
   req.on('data', (ch) => (body += ch));
@@ -169,11 +225,13 @@ function handleUpdate(req, res) {
       db.run(`UPDATE patients SET ${fields.join(', ')} WHERE id = ?`, values, function (err) {
         if (err) {
           console.error(`[SECURE EXCEPTION] Patient Update Trace: ${err.message}`);
+          logAudit(getUserId(req), 'update_patient', `Failed to update patient: ${id}`, 'patient', 'failed', id);
           return sendSecureJSON(res, 500, { ok: false, error: 'Update failed.' });
         }
         if (this.changes === 0) {
           return sendSecureJSON(res, 404, { ok: false, error: 'Patient not found.' });
         }
+        logAudit(getUserId(req), 'update_patient', `Updated patient: ${id}`, 'patient', 'success', id);
         return sendSecureJSON(res, 200, { ok: true });
       });
     } catch (e) {
@@ -183,15 +241,21 @@ function handleUpdate(req, res) {
 }
 
 function handleDelete(req, res) {
+  if (!req.user || !req.user.role_id || !hasCapability(req.user.role_id, 'patient:write_demographics')) {
+    return sendSecureJSON(res, 403, { ok: false, error: 'Forbidden: insufficient permissions.' });
+  }
+
   const id = req.url.split('/').pop();
   db.run(`DELETE FROM patients WHERE id = ?`, [id], function (err) {
     if (err) {
       console.error(`[SECURE EXCEPTION] Patient Delete Trace: ${err.message}`);
+      logAudit(getUserId(req), 'delete_patient', `Failed to delete patient: ${id}`, 'patient', 'failed', id);
       return sendSecureJSON(res, 500, { ok: false, error: 'Delete failed.' });
     }
     if (this.changes === 0) {
       return sendSecureJSON(res, 404, { ok: false, error: 'Patient not found.' });
     }
+    logAudit(getUserId(req), 'delete_patient', `Deleted patient: ${id}`, 'patient', 'success', id);
     return sendSecureJSON(res, 200, { ok: true });
   });
 }

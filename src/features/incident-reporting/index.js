@@ -1,4 +1,4 @@
-import { showToast, escapeHTML, apiFetch } from '../../../js/utils.js';
+import { showToast, escapeHTML, apiFetch, extractList } from '../../../js/utils.js';
 
 let _cssLoaded = false;
 function injectCSS() {
@@ -118,7 +118,7 @@ function buildShell() {
 async function loadIncidents() {
   try {
     const data = await apiFetch('/incidents');
-    incidents = data.incidents || [];
+    incidents = extractList(data, 'incidents');
   } catch (e) {
     showToast('Failed to load incidents', 'error');
     incidents = [];
@@ -164,7 +164,7 @@ function filtered() {
     const matchStatus = !filterStatus || i.status === filterStatus;
     return matchQ && matchCat && matchSev && matchStatus;
   }).sort((a, b) => {
-    let va = a[sortKey] ?? '', vb = b[sortKey] ?? '';
+    let va = a[sortKey] || '', vb = b[sortKey] || '';
     if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
     if (va < vb) return sortAsc ? -1 : 1;
     if (va > vb) return sortAsc ? 1 : -1;
@@ -177,7 +177,7 @@ function updateMetrics(container) {
   const review = incidents.filter(i => i.status === 'Under Review').length;
   const critical = incidents.filter(i => ['S1','S2'].includes(i.severity) && i.status !== 'Closed').length;
   const closed = incidents.filter(i => i.status === 'Closed').length;
-  const set = (id, val) => { const el = container?.querySelector(`#${id}`); if (el) el.textContent = val; };
+  const set = (id, val) => { const el = container.querySelector(`#${id}`); if (el) el.textContent = val; };
   set('stat-total', total);
   set('stat-review', review);
   set('stat-critical', critical);
@@ -343,7 +343,7 @@ function showNewForm(container) {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const v = (id) => modalRoot.querySelector(`#${id}`)?.value.trim();
+    const v = (id) => modalRoot.querySelector(`#${id}`).value.trim();
     const valid = true;
     const setErr = (id, msg) => {
       const el = modalRoot.querySelector(`#ir-err-${id}`);
@@ -412,6 +412,7 @@ function showDetail(container, inc) {
       <p>${escapeHTML(inc.action_taken)}</p>
     </div>` : ''}
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:1rem">
+      <button class="mc-btn btn-primary" id="ir-edit">Edit</button>
       <button class="mc-btn btn-secondary" id="ir-delete">Delete</button>
       <button class="mc-btn btn-ghost" id="ir-close">Close</button>
     </div>`;
@@ -420,7 +421,8 @@ function showDetail(container, inc) {
   modalRoot.querySelector('#ir-close').addEventListener('click', () => {
     modalRoot.style.display = 'none';
   });
-  modalRoot.querySelector('#ir-delete')?.addEventListener('click', async () => {
+  modalRoot.querySelector('#ir-edit').addEventListener('click', () => showEditForm(container, inc));
+  modalRoot.querySelector('#ir-delete').addEventListener('click', async () => {
     if (!confirm('Delete this incident?')) return;
     try {
       await apiFetch(`/incidents/${inc.id}`, { method: 'DELETE' });
@@ -429,6 +431,69 @@ function showDetail(container, inc) {
       refreshAll(container);
     } catch (err) {
       showToast(err.message || 'Delete failed', 'error');
+    }
+  });
+}
+
+function showEditForm(container, inc) {
+  const modalRoot = container.querySelector('#incident-modal-root');
+  const modalBody = container.querySelector('#modal-body-content');
+  const modalTitle = container.querySelector('#modal-title');
+  if (!modalRoot || !modalBody) return;
+
+  modalTitle.textContent = `Edit Incident ${inc.id}`;
+  const sevOpts = ['S1', 'S2', 'S3', 'S4', 'S5'].map(s =>
+    `<option value="${s}" ${inc.severity === s ? 'selected' : ''}>${s}</option>`).join('');
+  const statusOpts = ['Reported', 'Under Review', 'Action Taken', 'Closed'].map(s =>
+    `<option ${inc.status === s ? 'selected' : ''}>${s}</option>`).join('');
+
+  modalBody.innerHTML = `
+    <form id="ir-edit-form" class="ir-form">
+      <div class="ir-form-section">
+        <label class="ir-label">Title <span class="ir-required">*</span></label>
+        <input type="text" class="input" id="ir-edit-title" value="${escapeHTML(inc.title || '')}" required />
+      </div>
+      <div class="ir-form-row-2">
+        <div class="ir-form-section">
+          <label class="ir-label">Severity <span class="ir-required">*</span></label>
+          <select class="input" id="ir-edit-severity" required>${sevOpts}</select>
+        </div>
+        <div class="ir-form-section">
+          <label class="ir-label">Status <span class="ir-required">*</span></label>
+          <select class="input" id="ir-edit-status" required>${statusOpts}</select>
+        </div>
+      </div>
+      <div class="ir-form-section">
+        <label class="ir-label">Description <span class="ir-required">*</span></label>
+        <textarea class="input" id="ir-edit-desc" rows="3" required>${escapeHTML(inc.description || '')}</textarea>
+      </div>
+      <div class="ir-form-actions">
+        <button type="button" class="mc-btn btn-secondary" id="ir-edit-cancel">Cancel</button>
+        <button type="submit" class="mc-btn btn-primary">Save Changes</button>
+      </div>
+    </form>`;
+
+  modalRoot.style.display = 'flex';
+
+  modalBody.querySelector('#ir-edit-cancel').addEventListener('click', () => {
+    modalRoot.style.display = 'none';
+  });
+
+  modalBody.querySelector('#ir-edit-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      title: modalBody.querySelector('#ir-edit-title').value.trim(),
+      severity: modalBody.querySelector('#ir-edit-severity').value,
+      status: modalBody.querySelector('#ir-edit-status').value,
+      description: modalBody.querySelector('#ir-edit-desc').value.trim(),
+    };
+    try {
+      await apiFetch(`/incidents/${inc.id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      showToast('Incident updated', 'success');
+      modalRoot.style.display = 'none';
+      refreshAll(container);
+    } catch (err) {
+      showToast(err.message || 'Failed to update incident', 'error');
     }
   });
 }
@@ -449,15 +514,15 @@ function exportCSV(container) {
 }
 
 function bindEvents(container) {
-  container.querySelector('#btn-new-incident')?.addEventListener('click', () => showNewForm(container));
-  container.querySelector('#modal-close')?.addEventListener('click', () => {
+  container.querySelector('#btn-new-incident').addEventListener('click', () => showNewForm(container));
+  container.querySelector('#modal-close').addEventListener('click', () => {
     container.querySelector('#incident-modal-root').style.display = 'none';
   });
-  container.querySelector('#ir-export-btn')?.addEventListener('click', () => exportCSV(container));
-  container.querySelector('#ir-search')?.addEventListener('input', (e) => { searchQuery = e.target.value; page = 1; renderTable(container); });
-  container.querySelector('#ir-filter-category')?.addEventListener('change', (e) => { filterCat = e.target.value; page = 1; renderTable(container); });
-  container.querySelector('#ir-filter-severity')?.addEventListener('change', (e) => { filterSev = e.target.value; page = 1; renderTable(container); });
-  container.querySelector('#ir-filter-status')?.addEventListener('change', (e) => { filterStatus = e.target.value; page = 1; renderTable(container); });
+  container.querySelector('#ir-export-btn').addEventListener('click', () => exportCSV(container));
+  container.querySelector('#ir-search').addEventListener('input', (e) => { searchQuery = e.target.value; page = 1; renderTable(container); });
+  container.querySelector('#ir-filter-category').addEventListener('change', (e) => { filterCat = e.target.value; page = 1; renderTable(container); });
+  container.querySelector('#ir-filter-severity').addEventListener('change', (e) => { filterSev = e.target.value; page = 1; renderTable(container); });
+  container.querySelector('#ir-filter-status').addEventListener('change', (e) => { filterStatus = e.target.value; page = 1; renderTable(container); });
 
   const table = container.querySelector('#incident-table');
   if (table) {

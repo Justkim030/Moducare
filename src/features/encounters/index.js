@@ -3,8 +3,14 @@
  * Features: Encounter list, vitals capture, diagnoses, SOAP notes,
  *           HIV-specific fields (viral load, CD4, ART regimen/adherence)
  */
-import { showToast, formatDate, escapeHTML, apiFetch } from '../../../js/utils.js';
+import { showToast, formatDate, escapeHTML, apiFetch, extractList, buildPaginationHTML, attachPagination } from '../../../js/utils.js';
 import { hasRole } from '../../../js/auth.js';
+
+let encPage = 1;
+const ENC_PAGE_SIZE = 25;
+let encTotal = 0;
+let encTotalPages = 1;
+let editingEncId = null;
 
 let _cssLoaded = false;
 function injectCSS() {
@@ -14,12 +20,6 @@ function injectCSS() {
   l.href = 'src/features/encounters/styles.css';
   document.head.appendChild(l);
   _cssLoaded = true;
-}
-
-async function loadEncounters(patientId) {
-  const q = patientId ? `?patient_id=${encodeURIComponent(patientId)}` : '';
-  const data = await apiFetch(`/encounters${q}`);
-  return data.encounters || [];
 }
 
 function render(container) {
@@ -41,6 +41,12 @@ function buildShell() {
     <div class="encounters-header">
       <h1>🩺 Clinical Encounters</h1>
       <button class="mc-btn btn-primary" id="new-encounter-btn">+ New Encounter</button>
+    </div>
+
+    <div class="encounters-filters">
+      <select id="enc-filter-patient" class="input" style="width:auto;">
+        <option value="">All Patients</option>
+      </select>
     </div>
 
     <div id="encounter-list"></div>
@@ -154,7 +160,27 @@ function buildShell() {
 async function refreshList(container) {
   const list = container.querySelector('#encounter-list');
   if (!list) return;
-  const encounters = await loadEncounters();
+  const patientId = container.querySelector('#enc-filter-patient').value || '';
+  const qs = new URLSearchParams();
+  qs.set('page', encPage);
+  qs.set('limit', ENC_PAGE_SIZE);
+  if (patientId) qs.set('patient_id', patientId);
+
+  let data;
+  try {
+    data = await apiFetch(`/encounters?${qs.toString()}`);
+  } catch (err) {
+    showToast(err.message || 'Failed to load encounters', 'error');
+    list.innerHTML = `<div class="empty-state"><h3>Failed to load encounters</h3></div>`;
+    return;
+  }
+
+  const encounters = extractList(data, 'encounters');
+  const pag = data.pagination || {};
+  encTotal = pag.total || encounters.length;
+  encTotalPages = pag.totalPages || 1;
+  if (encPage > encTotalPages) { encPage = encTotalPages; return refreshList(container); }
+
   if (encounters.length === 0) {
     list.innerHTML = `<div class="empty-state"><h3>No encounters recorded</h3><p>Start by creating a new clinical encounter.</p></div>`;
     return;
@@ -173,6 +199,7 @@ async function refreshList(container) {
             <th>Diagnoses</th>
             <th>HIV Status</th>
             <th>ART</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -187,11 +214,39 @@ async function refreshList(container) {
               <td>${renderDiagnoses(e.diagnoses)}</td>
               <td>${renderHIV(e)}</td>
               <td>${escapeHTML(e.art_regimen || '—')}</td>
+              <td class="enc-actions">
+                <button class="mc-btn btn-sm btn-ghost enc-edit" data-id="${escapeHTML(String(e.id))}">Edit</button>
+                <button class="mc-btn btn-sm btn-danger enc-delete" data-id="${escapeHTML(String(e.id))}">Delete</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
+      ${buildPaginationHTML(encPage, ENC_PAGE_SIZE, encTotal)}
     </div>`;
+
+  list.querySelectorAll('.enc-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const enc = encounters.find(x => String(x.id) === btn.dataset.id);
+      if (enc) showEditForm(container, enc);
+    });
+  });
+  list.querySelectorAll('.enc-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteEnc(container, btn.dataset.id));
+  });
+
+  attachPagination(list.querySelector('.pagination'), { get page() { return encPage; }, set page(v) { encPage = v; } }, () => refreshList(container));
+}
+
+async function deleteEnc(container, id) {
+  if (!confirm('Delete this encounter?')) return;
+  try {
+    await apiFetch(`/encounters/${id}`, { method: 'DELETE' });
+    showToast('Encounter deleted', 'success');
+    refreshList(container);
+  } catch (err) {
+    showToast(err.message || 'Failed to delete encounter', 'error');
+  }
 }
 
 function renderVitals(v) {
@@ -217,50 +272,57 @@ async function bindEvents(container) {
   const modal = container.querySelector('#encounter-modal');
   const form = container.querySelector('#encounter-form');
 
-  container.querySelector('#new-encounter-btn')?.addEventListener('click', async () => {
+  container.querySelector('#new-encounter-btn').addEventListener('click', async () => {
+    editingEncId = null;
     await populateDropdowns(container);
+    form.reset();
     modal.style.display = 'flex';
   });
 
-  container.querySelector('#close-modal')?.addEventListener('click', () => {
+  container.querySelector('#close-modal').addEventListener('click', () => {
     modal.style.display = 'none';
   });
 
-  container.querySelector('#cancel-encounter')?.addEventListener('click', () => {
+  container.querySelector('#cancel-encounter').addEventListener('click', () => {
     modal.style.display = 'none';
   });
 
-  form?.addEventListener('submit', async (e) => {
+  container.querySelector('#enc-filter-patient').addEventListener('change', () => { encPage = 1; refreshList(container); });
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const payload = {
-      patient_id: container.querySelector('#enc-patient')?.value,
+      patient_id: container.querySelector('#enc-patient').value,
       encounter_date: new Date().toISOString(),
-      visit_type: container.querySelector('#enc-visit')?.value,
-      provider_id: container.querySelector('#enc-provider')?.value,
-      chief_complaint: container.querySelector('#enc-complaint')?.value,
+      visit_type: container.querySelector('#enc-visit').value,
+      provider_id: container.querySelector('#enc-provider').value,
+      chief_complaint: container.querySelector('#enc-complaint').value,
       vitals: {
-        bp: container.querySelector('#enc-bp')?.value,
-        temp: container.querySelector('#enc-temp')?.value,
-        weight: container.querySelector('#enc-weight')?.value,
-        pulse: container.querySelector('#enc-pulse')?.value,
-        rr: container.querySelector('#enc-rr')?.value,
-        spo2: container.querySelector('#enc-spo2')?.value,
-        height: container.querySelector('#enc-height')?.value,
+        bp: container.querySelector('#enc-bp').value,
+        temp: container.querySelector('#enc-temp').value,
+        weight: container.querySelector('#enc-weight').value,
+        pulse: container.querySelector('#enc-pulse').value,
+        rr: container.querySelector('#enc-rr').value,
+        spo2: container.querySelector('#enc-spo2').value,
+        height: container.querySelector('#enc-height').value,
       },
-      diagnoses: container.querySelector('#enc-diagnoses')?.value.split('\n').map(s => s.trim()).filter(Boolean),
-      soap_notes: container.querySelector('#enc-soap')?.value,
-      hiv_viral_load: container.querySelector('#enc-vl')?.value,
-      hiv_cd4: container.querySelector('#enc-cd4')?.value,
-      art_regimen: container.querySelector('#enc-art')?.value,
-      art_adherence: container.querySelector('#enc-adherence')?.value,
-      follow_up_plan: container.querySelector('#enc-followup')?.value,
+      diagnoses: container.querySelector('#enc-diagnoses').value.split('\n').map(s => s.trim()).filter(Boolean),
+      soap_notes: container.querySelector('#enc-soap').value,
+      hiv_viral_load: container.querySelector('#enc-vl').value,
+      hiv_cd4: container.querySelector('#enc-cd4').value,
+      art_regimen: container.querySelector('#enc-art').value,
+      art_adherence: container.querySelector('#enc-adherence').value,
+      follow_up_plan: container.querySelector('#enc-followup').value,
     };
     try {
-      await apiFetch('/encounters', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      showToast('Encounter saved successfully', 'success');
+      if (editingEncId) {
+        await apiFetch(`/encounters/${editingEncId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        showToast('Encounter updated', 'success');
+      } else {
+        await apiFetch('/encounters', { method: 'POST', body: JSON.stringify(payload) });
+        showToast('Encounter saved successfully', 'success');
+      }
+      editingEncId = null;
       modal.style.display = 'none';
       form.reset();
       refreshList(container);
@@ -269,18 +331,50 @@ async function bindEvents(container) {
     }
   });
 
-  container.querySelector('#enc-weight')?.addEventListener('input', () => {
-    const h = parseFloat(container.querySelector('#enc-height')?.value) || 0;
-    const w = parseFloat(container.querySelector('#enc-weight')?.value) || 0;
+  container.querySelector('#enc-weight').addEventListener('input', () => {
+    const h = parseFloat(container.querySelector('#enc-height').value) || 0;
+    const w = parseFloat(container.querySelector('#enc-weight').value) || 0;
     const bmi = h > 0 ? (w / ((h / 100) ** 2)).toFixed(1) : '';
     container.querySelector('#enc-bmi').value = bmi;
   });
+}
+
+async function showEditForm(container, enc) {
+  editingEncId = enc.id;
+  const modal = container.querySelector('#encounter-modal');
+  const form = container.querySelector('#encounter-form');
+  if (!modal || !form) return;
+  await populateDropdowns(container);
+  const set = (id, val) => { const el = form.querySelector(`#${id}`); if (el && val !== undefined && val !== null) el.value = val; };
+  set('enc-patient', enc.patient_id);
+  set('enc-visit', enc.visit_type);
+  set('enc-provider', enc.provider_id);
+  set('enc-complaint', enc.chief_complaint);
+  const v = enc.vitals || {};
+  set('enc-bp', v.bp);
+  set('enc-temp', v.temp);
+  set('enc-weight', v.weight);
+  set('enc-pulse', v.pulse);
+  set('enc-rr', v.rr);
+  set('enc-spo2', v.spo2);
+  set('enc-height', v.height);
+  set('enc-bmi', (v.height && v.weight) ? (v.weight / ((v.height / 100) ** 2)).toFixed(1) : '');
+  set('enc-diagnoses', Array.isArray(enc.diagnoses) ? enc.diagnoses.join('\n') : '');
+  set('enc-soap', enc.soap_notes);
+  set('enc-followup', enc.follow_up_plan);
+  set('enc-vl', enc.hiv_viral_load);
+  set('enc-cd4', enc.hiv_cd4);
+  set('enc-art', enc.art_regimen);
+  set('enc-adherence', enc.art_adherence);
+  modal.style.display = 'flex';
 }
 
 async function populateDropdowns(container) {
   const patientSelect = container.querySelector('#enc-patient');
   const providerSelect = container.querySelector('#enc-provider');
   if (!patientSelect || !providerSelect) return;
+
+  const patientFilter = container.querySelector('#enc-filter-patient');
 
   try {
     const [patientsRes, staffRes] = await Promise.all([
@@ -290,8 +384,9 @@ async function populateDropdowns(container) {
     const patients = patientsRes.patients || [];
     const staff = staffRes.users || [];
 
-    patientSelect.innerHTML = '<option value="">-- Select Patient --</option>' +
-      patients.map(p => `<option value="${escapeHTML(p.id)}">${escapeHTML(p.name)} (${escapeHTML(p.email || 'no email')})</option>`).join('');
+    const patientOpts = patients.map(p => `<option value="${escapeHTML(p.id)}">${escapeHTML(p.name)} (${escapeHTML(p.email || 'no email')})</option>`).join('');
+    patientSelect.innerHTML = '<option value="">-- Select Patient --</option>' + patientOpts;
+    if (patientFilter) patientFilter.innerHTML = '<option value="">All Patients</option>' + patientOpts;
 
     providerSelect.innerHTML = '<option value="">-- Select Provider --</option>' +
       staff.map(s => `<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)} — ${escapeHTML(s.role_label || s.role)}</option>`).join('');
