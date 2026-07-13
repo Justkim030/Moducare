@@ -1,0 +1,265 @@
+/* src/pages/PatientRegistration.css */
+
+/* Horizontal row to eliminate stacking anomalies */
+.registration-top-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem 0;
+}
+
+.registration-top-header-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Control wrap aligning modern input components */
+.registration-control-action-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+  max-width: 650px;
+  justify-content: flex-end;
+}
+
+.search-wrapper {
+  position: relative; 
+  width: 100%;
+  max-width: 380px; 
+}
+
+.search-wrapper input {
+  width: 100%;
+  box-sizing: border-box; 
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+/* Base Layout and Queues Container */
+.patient-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.patient-list-container h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 8px;
+}
+
+/* Structured Registration Tables */
+.registration-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.registration-table th,
+.registration-table td {
+  border-bottom: 1px solid var(--border-muted);
+  padding: 14px 12px; 
+  text-align: left;
+  color: var(--text);
+}
+
+.registration-table tr:last-child td {
+  border-bottom: none;
+}
+
+.registration-table th { 
+  background: var(--bg);
+  color: var(--text-muted); 
+  font-weight: bold;
+}
+
+/* Balanced Form Input Grid within Modal views */
+.add-patient-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.add-patient-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-patient-form-modal .span-two {
+  grid-column: span 2;
+}
+
+.add-patient-form-modal .form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.add-patient-form-modal .form-group input,
+.add-patient-form-modal .form-group select {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Button & Action Elements */
+.submit-btn {
+  padding: 11px 15px;
+  background: var(--success-gradient);
+  color: var(--btn-text-dark);
+  border: 1px solid var(--success-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+.submit-btn:hover { filter: brightness(1.1); }
+
+.submit-btn-small { 
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  background: var(--success-gradient);
+  color: var(--btn-text-dark);
+  border: 1px solid var(--success-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: filter 0.2s;
+}
+.submit-btn-small:hover { filter: brightness(1.1); }
+
+/* Triage Status Badges using OKLCH overlay transparent colors */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.status-WAITING,
+.status-triage,
+.status-PENDING { background-color: oklch(from var(--warning) l c h / 0.15); color: var(--warning); } 
+.status-WITH_DOCTOR,
+.status-consultation { background-color: oklch(from var(--info) l c h / 0.15); color: var(--info); }
+.status-COMPLETE { background-color: oklch(from var(--success) l c h / 0.15); color: var(--success); }
+
+/* Absolute Dropdown Results Wrapper */
+.search-results {
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  right: 0; 
+  background-color: var(--bg-light);
+  border: 1px solid var(--border);
+  border-top: none; 
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 6px 16px oklch(from var(--text) l c h / 0.08);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  z-index: 10;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.search-results li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-muted);
+}
+.search-results li:last-child { border-bottom: none; }
+.search-results li:not(.no-results):hover { background-color: var(--bg); cursor: pointer; }
+.search-results li.no-results { color: var(--text-muted); font-style: italic; justify-content: center; }
+
+/* Control Flow Pagination Layout */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-end; 
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-muted); 
+}
+
+.pagination-buttons { 
+  display: flex; 
+  align-items: center;
+  gap: 12px; 
+}
+
+.page-info {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.pagination-btn {
+  padding: 6px 12px;
+  background-color: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--secondary);
+  color: var(--btn-text-dark);
+}
+.pagination-btn:disabled {
+  color: var(--text-muted);
+  border-color: var(--border-muted);
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   SHIMMERING SKELETON PLACEHOLDERS 
+   ========================================================================== */
+.skeleton-row td {
+  padding: 16px 12px;
+}
+
+.skeleton-block {
+  height: 14px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: regSkeletonPulse 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text { height: 12px; }
+.skeleton-badge { height: 20px; border-radius: 4px; }
+.skeleton-btn { height: 26px; border-radius: 4px; }
+
+@keyframes regSkeletonPulse {
+  0% { background-position: 200% 0; opacity: 0.6; }
+  50% { opacity: 0.95; }
+  100% { background-position: -200% 0; opacity: 0.6; }
+}
+
+.page-error, .form-error {
+  color: var(--danger);
+  margin: 10px 0;
+  font-weight: 500;
+}

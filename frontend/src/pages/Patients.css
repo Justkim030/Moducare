@@ -1,0 +1,202 @@
+/* src/pages/Patients.css */
+
+.patients-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+/* Horizontal Layout Panel - Eliminates Vertical Gaps & Stacking Rules */
+.patient-header-row {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;            
+  margin-bottom: 1.5rem;
+  padding: 0.25rem 0;
+}
+
+.patient-header-row h2 {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Database Base Records Box Layout container */
+.patient-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px oklch(from var(--text) l c h / 0.02);
+}
+
+.patient-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.patient-table th {
+  text-align: left;
+  padding: 14px 12px;
+  border-bottom: 2px solid var(--border-muted);
+  color: var(--text-muted);
+  font-weight: 600;
+  background-color: var(--bg);
+}
+
+.patient-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border-muted);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.patient-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Micro Elements and Action Layout controls */
+.action-button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.gender-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+.gender-male { background-color: oklch(from var(--info) l c h / 0.12); color: var(--info); }
+.gender-female { background-color: oklch(from var(--secondary) l c h / 0.12); color: var(--secondary); }
+.gender-other { background-color: oklch(from var(--text) l c h / 0.08); color: var(--text-muted); }
+
+/* Compact Alignment Pagination Container */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-muted); 
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.page-info {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Organized Double Column Matrix Modal Form Box */
+.add-patient-form-modal h3 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: var(--text);
+  font-size: 1.3rem;
+}
+
+.add-patient-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.add-patient-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-patient-form-modal .span-two {
+  grid-column: span 2;
+}
+
+.add-patient-form-modal .form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.add-patient-form-modal .form-group input,
+.add-patient-form-modal .form-group select {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.add-patient-form-modal .form-group input:focus,
+.add-patient-form-modal .form-group select:focus {
+  border-color: var(--secondary);
+  outline: none;
+}
+
+.delete-modal-inner p {
+  margin: 1rem 0 1.5rem 0;
+  color: var(--text);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Global Alert System Banners */
+.form-error, .page-error {
+  color: var(--danger);
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin: 8px 0;
+}
+
+.page-success {
+  background-color: oklch(from var(--success) l c h / 0.1);
+  color: var(--success);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border: 1px solid oklch(from var(--success) l c h / 0.2);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.text-center {
+  text-align: center;
+  padding: 24px !important;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.skeleton-row td {
+  padding: 18px 12px;
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: patientSkeletonPulse 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text { height: 12px; }
+.skeleton-badge { height: 22px; border-radius: 4px; }
+.skeleton-btn { height: 28px; border-radius: 4px; }
+
+@keyframes patientSkeletonPulse {
+  0% { background-position: 200% 0; opacity: 0.6; }
+  50% { opacity: 0.95; }
+  100% { background-position: -200% 0; opacity: 0.6; }
+}

@@ -1,0 +1,234 @@
+/* src/pages/Prescriptions.css */
+
+.prescriptions-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+.prescriptions-page h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Symmetrical Grid Split Layout - Clears Workspace Vertical Dead Space */
+.prescriptions-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.workspace-panel {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow: 0 4px 12px oklch(from var(--text) l c h / 0.02);
+}
+
+.workspace-panel h3 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 10px;
+}
+
+/* Internal Workspace State Alignment Elements */
+.panel-header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 10px;
+}
+
+.panel-header-controls h3 {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.active-case-banner {
+  background-color: var(--bg);
+  border-left: 4px solid var(--secondary);
+  padding: 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-muted);
+  border-left: 4px solid var(--secondary);
+}
+
+.active-case-banner h4 {
+  margin: 0 0 4px 0;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.active-case-banner p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.empty-panel-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.empty-panel-state p {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* Pagination Control Blocks */
+.pagination-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compact-page-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.compact-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+/* History Audit Data Table Grid */
+.table-responsive-container {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th {
+  background-color: var(--bg);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px;
+  font-size: 0.9rem;
+  border-bottom: 2px solid var(--border-muted);
+}
+
+.history-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-muted);
+  color: var(--text);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.history-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Code Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.status-PENDING { background-color: oklch(from var(--warning) l c h / 0.12); color: var(--warning); }
+.status-FILLED { background-color: oklch(from var(--success) l c h / 0.12); color: var(--success); }
+.status-ACTIVE { background-color: oklch(from var(--info) l c h / 0.12); color: var(--info); }
+
+/* Modal Content Inner wrappers */
+.review-overlay-content h3 {
+  margin-top: 0;
+  color: var(--text);
+}
+.review-overlay-content p {
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+.modal-actions-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* General Layout Message Triggers */
+.page-error {
+  color: var(--danger);
+  font-weight: 500;
+  padding: 10px;
+  background-color: oklch(from var(--danger) l c h / 0.08);
+  border: 1px solid oklch(from var(--danger) l c h / 0.15);
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.text-center-muted {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 30px 10px !important;
+}
+
+/* ==========================================================================
+   SHIMMERING SKELETON REVIEW LOADER MODULES
+   ========================================================================== */
+.skeleton-row td {
+  padding: 15px 12px;
+}
+
+.skeleton-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-element {
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: prescriptionPulse 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+/* Component Sizing Specs */
+.skeleton-element.form-title { height: 20px; width: 50%; }
+.skeleton-element.form-box.large { height: 95px; border-radius: 6px; }
+.skeleton-element.form-btn { height: 38px; border-radius: 4px; margin-top: 6px; }
+
+.skeleton-element.row-text { height: 11px; }
+.skeleton-element.row-badge { height: 20px; border-radius: 4px; }
+
+@keyframes prescriptionPulse {
+  0% { background-position: 200% 0; opacity: 0.65; }
+  50% { opacity: 0.95; }
+  100% { background-position: -200% 0; opacity: 0.65; }
+}
+
+/* Adaptive Responsive Layout Rule */
+@media (max-width: 850px) {
+  .prescriptions-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}

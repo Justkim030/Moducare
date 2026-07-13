@@ -1,0 +1,145 @@
+/* src/pages/Inventory.css */
+
+.inventory-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* Transformed Modal Form layout into 2-Column Balanced Responsive Matrix */
+.add-medicine-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.add-medicine-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-medicine-form-modal .span-two {
+  grid-column: span 2;
+}
+
+.add-medicine-form-modal .form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.add-medicine-form-modal .form-group input {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Optimized Horizontal Header: Clears Dead Space entirely */
+.inventory-header-row {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;            
+  margin-bottom: 1.5rem;          
+  padding: 0.5rem 0;              
+}
+
+.inventory-header-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Table Style Alignment Layouts */
+.inventory-table th {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-muted);
+}
+
+.inventory-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+/* Stock Threshold Status Badges */
+.stock-status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.healthy-stock-alert {
+  background-color: oklch(from #10b981 l c h / 0.12);
+  color: #10b981;
+}
+
+.low-stock-alert {
+  background-color: oklch(from var(--danger) l c h / 0.12);
+  color: var(--danger);
+}
+
+/* ==========================================================================
+   PULSING SKELETON PREVIEW SHIMMER EFFECT
+   ========================================================================== */
+.skeleton-row td {
+  padding: 16px 10px;
+}
+
+.skeleton-block {
+  height: 14px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: inventorySkeletonPulse 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 12px;
+}
+
+.skeleton-badge {
+  height: 22px;
+  border-radius: 4px;
+}
+
+.skeleton-btn {
+  height: 26px;
+  border-radius: 4px;
+}
+
+@keyframes inventorySkeletonPulse {
+  0% {
+    background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
+}
+
+/* Notification logs style sheets variables */
+.form-error,
+.page-error {
+  color: var(--danger);
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.page-success {
+  color: #10b981;
+  margin: 10px 0;
+  font-weight: 500;
+}

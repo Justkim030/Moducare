@@ -1,0 +1,227 @@
+/* src/pages/ConsultationReport.css */
+.consultation-report-page {
+  max-width: 1000px; 
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.consultation-report-page h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+/* Patient Header Strip Layout */
+.report-patient-header {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  padding: 18px 22px;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.report-patient-header h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.3rem;
+  color: var(--text);
+}
+
+.report-patient-header p {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.vitals-sub-bar {
+  display: flex;
+  gap: 24px;
+  font-size: 0.95rem;
+  color: var(--text);
+  border-top: 1px solid var(--border-muted);
+  padding-top: 10px;
+}
+
+/* Functional Input and Grid Layout - Solves the Vertical Dead Space */
+.consultation-split-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.report-section h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.report-input-field {
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+/* Dynamic heights optimized to avoid dead space */
+.report-textarea {
+  width: 100%;
+  min-height: 180px; 
+  max-height: 450px;
+  padding: 14px;
+  box-sizing: border-box; 
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg-light);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.report-textarea.pharmacy-notes {
+  min-height: 100px;
+}
+
+.report-textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Lab Test Checkbox Card System */
+.lab-test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 0.25rem;
+}
+
+.lab-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg-light);
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  user-select: none;
+}
+
+.lab-checkbox-label:hover {
+  border-color: var(--secondary);
+  background-color: var(--bg);
+}
+
+.lab-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--secondary);
+}
+
+.test-name-tag {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.test-price-tag {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background-color: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.consultation-footer-actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-muted);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.page-error {
+  color: var(--danger);
+  font-weight: 500;
+  padding: 12px;
+  background-color: oklch(from var(--danger) l c h / 0.1);
+  border-radius: 6px;
+  border: 1px solid var(--danger);
+}
+
+/* ==========================================================================
+   SHIMMERING SKELETON ANIMATIONS
+   ========================================================================== */
+.skeleton-loading .skeleton-banner,
+.skeleton-loading .skeleton-section,
+.skeleton-loading .skeleton-card {
+  background-color: var(--bg-light);
+  border-radius: 6px;
+}
+
+.skeleton-loading .skeleton-banner {
+  padding: 24px;
+  border: 1px solid var(--border-muted);
+  margin-bottom: 2rem;
+}
+
+.skeleton-loading .skeleton-section {
+  margin-bottom: 1.5rem;
+}
+
+.skeleton-line {
+  height: 14px;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: consultShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-line.head { height: 22px; }
+.skeleton-line.sub { height: 14px; margin-bottom: 0; }
+.skeleton-line.title { height: 16px; margin-bottom: 10px; }
+
+.skeleton-box {
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: consultShimmer 1.5s infinite linear;
+  border-radius: 6px;
+  width: 100%;
+}
+.skeleton-box.field-small { height: 42px; }
+.skeleton-box.field-large { height: 180px; }
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.skeleton-card {
+  height: 45px;
+  border: 1px solid var(--border-muted);
+  background: linear-gradient(90deg, var(--bg-light) 25%, var(--border-muted) 50%, var(--bg-light) 75%);
+  background-size: 200% 100%;
+  animation: consultShimmer 1.5s infinite linear;
+}
+
+@keyframes consultShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

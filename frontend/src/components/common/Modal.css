@@ -1,0 +1,101 @@
+/* src/components/Modal.css */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalScaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: oklch(from var(--bg-dark) l c h / 0.4); 
+  /* Frosted glass effect for a premium look */
+  backdrop-filter: blur(8px); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background-color: var(--bg-light);
+  padding: 2.5rem;
+  border-radius: 12px; 
+  /* Reduced shadow footprint for a sleeker profile */
+  box-shadow: 0 4px 12px oklch(from var(--text) l c h / 0.04);
+  width: 100%;
+  max-width: 750px;
+  position: relative;
+  color: var(--text);
+  box-sizing: border-box;
+  animation: modalScaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); /* Snappy bounce animation */
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.75rem;
+  font-weight: 400;
+  cursor: pointer;
+  color: var(--text-muted);
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  background-color: oklch(from var(--text) l c h / 0.08);
+  color: var(--text);
+}
+
+/* Target the form or container inside the modal */
+.modal-content form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two equal-width columns */
+  gap: 1.25rem; /* Clean spacing between form groups */
+  margin-top: 1rem;
+}
+
+/* Ensure individual form groups stack their label/input vertically */
+.modal-content .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0; /* Let the grid gap handle spacing instead */
+}
+
+/* Make the submission button stretch across both columns at the bottom */
+.modal-content button[type="submit"],
+.modal-content .login-submit-btn,
+.modal-content button:last-of-type {
+  grid-column: span 2; /* Span across both columns */
+  margin-top: 1rem;
+}

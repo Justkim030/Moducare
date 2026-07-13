@@ -1,0 +1,63 @@
+/* src/theme.css */
+
+/* --- (NEW) Button Text Color --- */
+/* This dark text will be used on all light-colored buttons */
+:root {
+  --btn-text-dark: oklch(0.1 0 150);
+}
+
+/* --- THEME 1: LIGHT MODE --- */
+[data-theme='light'] {
+  --bg-dark: oklch(0.92 0 150);
+  --bg: oklch(0.98 0 150); 
+  --bg-light: oklch(1 0 150); 
+  --text: oklch(0.1 0 150); 
+  --text-muted: oklch(0.4 0 150);
+  --highlight: oklch(1 0 150);
+  --border: oklch(0.8 0 150);
+  --border-muted: oklch(0.9 0 150);
+
+  /* PDF Colors (Generated Oklch) */
+  --primary: oklch(0.7 0.15 40);   /* Ember Orange */
+  --secondary: oklch(0.6 0.1 260);  /* Electric Blue */
+  --danger: oklch(0.65 0.15 30);   /* Error Red */
+  --warning: oklch(0.8 0.15 100);  /* Warning Yellow */
+  --success: oklch(0.6 0.15 160);  /* Success Green */
+  --info: oklch(0.7 0.05 260);     /* Info Blue */
+
+  /* Button text color for light theme */
+  --btn-text: oklch(1 0 0); /* White text (unused for now) */
+
+  /* --- (NEW) Gradient Variables --- */
+  --success-light: oklch(0.65 0.15 160);
+  --success-dark: oklch(0.55 0.15 160);
+  --success-gradient: linear-gradient(180deg, var(--success-light), var(--success-dark));
+}
+
+/* --- THEME 2: DARK MODE --- */
+[data-theme='dark'] {
+  --bg-dark: oklch(0.1 0 264);
+  --bg: oklch(0.15 0 264);
+  --bg-light: oklch(0.2 0 264);
+  --text: oklch(0.96 0 264);
+  --text-muted: oklch(0.76 0 264);
+  --highlight: oklch(0.5 0 264);
+  --border: oklch(0.4 0 264);
+  --border-muted: oklch(0.3 0 264);
+
+  /* PDF Colors (Generated Oklch) */
+  --primary: oklch(0.7 0.15 40);   /* Ember Orange */
+  --secondary: oklch(0.6 0.1 260);  /* Electric Blue */
+  --danger: oklch(0.65 0.15 30);   /* Error Red */
+  --warning: oklch(0.8 0.15 100);  /* Warning Yellow */
+  --success: oklch(0.6 0.15 160);  /* Success Green */
+  --info: oklch(0.7 0.05 260);     /* Info Blue */
+
+  /* Button text color for dark theme */
+  --btn-text: oklch(0.1 0 264); /* Dark text (unused for now) */
+
+  /* --- (NEW) Gradient Variables --- */
+  --success-light: oklch(0.65 0.15 160);
+  --success-dark: oklch(0.55 0.15 160);
+  --success-gradient: linear-gradient(180deg, var(--success-light), var(--success-dark));
+}

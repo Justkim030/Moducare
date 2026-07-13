@@ -1,0 +1,235 @@
+/* src/pages/Dashboard.css */
+
+.dashboard-lists {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.dashboard-list-card {
+  flex: 1 1 350px;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow: 0 2px 5px oklch(from var(--text) l c h / 0.04);
+  box-sizing: border-box;
+}
+
+.dashboard-lists .wide-card {
+  flex: 2 1 500px;
+}
+
+.dashboard-lists .sidebar-card {
+  flex: 1 1 300px;
+}
+
+.dashboard-clean-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 12px;
+  margin-bottom: 25px;
+}
+
+.dashboard-clean-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.header-date-badge {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background-color: var(--bg-light);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-muted);
+}
+
+/* Stat Widgets Card Structures Containers */
+.stat-card-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Color strips removed (border-left line removed completely) */
+.stat-card {
+  flex: 1 1 200px;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 1px 3px oklch(from var(--text) l c h / 0.02);
+  box-sizing: border-box;
+}
+
+.stat-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.stat-number {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-grid-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.dashboard-list-card h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 10px;
+  color: var(--text);
+  font-size: 1.15rem;
+}
+
+.dashboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-muted);
+  color: var(--text);
+}
+
+.dashboard-list li:last-child {
+  border-bottom: none;
+}
+
+.dashboard-list li a {
+  color: var(--secondary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dashboard-list li a:hover {
+  text-decoration: underline;
+}
+
+.list-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.low-stock {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+.urgent-card-alert {
+  border-top: 4px solid var(--danger);
+}
+
+.low-stock-card {
+  border: 1px solid oklch(from var(--danger) l c h / 0.3);
+}
+
+.submit-btn {
+  padding: 10px 18px;
+  background: var(--success-gradient);
+  color: var(--btn-text-dark);
+  border: 1px solid var(--success-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: filter 0.2s;
+}
+
+.submit-btn:hover { 
+  filter: brightness(1.1); 
+}
+
+.page-error {
+  color: var(--danger);
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+/* Pulsing Skeleton Loader Custom Animations */
+.skeleton-card {
+  flex: 1 1 200px;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  padding: 18px;
+  height: 90px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.skeleton-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.skeleton-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.skeleton-line {
+  height: 12px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: dashboardShimmer 1.5s infinite linear;
+  border-radius: 3px;
+}
+
+.skeleton-line.short { width: 40%; }
+.skeleton-line.long  { width: 55%; }
+
+.skeleton-circle-or-num {
+  height: 24px;
+  width: 45px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: dashboardShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+@keyframes dashboardShimmer {
+  0% {
+    background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,101 @@
+/* src/pages/Dispense.css */
+/* --- (MODIFIED) --- */
+.dispense-page {
+  max-width: 100%; /* Was 900px */
+  margin: 0;
+}
+/* --- (END MODIFICATION) --- */
+
+.list-section { margin-bottom: 40px; }
+.list-section h3 {
+  border-bottom: 2px solid var(--border-muted);
+  padding-bottom: 10px;
+  color: var(--text);
+}
+
+/* ... (Rest of the file remains the same) ... */
+.prescription-card {
+  background: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px oklch(from var(--text) l c h / 0.05);
+}
+.prescription-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg);
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-muted);
+  color: var(--text);
+}
+.prescription-card .card-body { padding: 20px; }
+.prescription-card p {
+  margin: 0 0 10px 0;
+  color: var(--text-muted);
+}
+.prescription-card p strong { color: var(--text); }
+.prescription-card.dispensed {
+  background-color: oklch(from var(--success) l c h / 0.05);
+  border-color: oklch(from var(--success) l c h / 0.3);
+}
+.prescription-card.dispensed .card-header {
+  background-color: oklch(from var(--success) l c h / 0.1);
+  color: var(--success);
+}
+.dispense-btn {
+  padding: 8px 12px;
+  background: var(--success-gradient);
+  color: var(--btn-text-dark);
+  border: 1px solid var(--success-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.dispense-btn:hover { filter: brightness(1.1); }
+
+.prescription-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+.prescription-items-table th,
+.prescription-items-table td {
+  border: 1px solid var(--border-muted);
+  padding: 8px;
+  text-align: left;
+}
+.prescription-items-table th { background-color: var(--bg); }
+
+.mark-paid-btn {
+  padding: 8px 12px;
+  background-color: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+.mark-paid-btn:hover {
+  background-color: var(--secondary);
+  color: var(--btn-text-dark);
+}
+
+.prescription-card.paid {
+  background-color: oklch(from var(--info) l c h / 0.05);
+  border-color: oklch(from var(--info) l c h / 0.3);
+}
+.prescription-card.paid .card-header {
+  background-color: oklch(from var(--info) l c h / 0.1);
+  color: var(--info);
+}
+.pharmacy-note-box {
+  background-color: var(--warning); /* Yellow/Orange background to stand out */
+  color: var(--btn-text-dark);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  border: 1px solid var(--border-muted);
+}

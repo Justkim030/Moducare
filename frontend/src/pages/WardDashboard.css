@@ -1,0 +1,113 @@
+/* src/pages/WardDashboard.css */
+
+.ward-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.ward-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ward-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ward-table th, .ward-table td {
+  border-bottom: 1px solid var(--border-muted);
+  padding: 12px;
+  text-align: left;
+  color: var(--text);
+}
+
+.ward-table th {
+  background-color: var(--bg);
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.ward-table tr:last-child td {
+  border-bottom: none;
+}
+
+.bed-badge {
+    background-color: var(--info);
+    color: var(--btn-text-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 0.9rem;
+}
+
+.note-cell {
+    color: var(--text-muted);
+    font-style: italic;
+    max-width: 200px;
+}
+
+/* Actions */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.log-btn, .history-btn, .discharge-btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border: none;
+}
+
+.log-btn { background-color: var(--primary); color: white; }
+.history-btn { background-color: var(--secondary); color: var(--btn-text-dark); }
+.discharge-btn { background-color: var(--success); color: var(--btn-text-dark); }
+
+/* Modal Forms */
+.vitals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.ward-form textarea {
+    min-height: 100px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+/* History Log Cards */
+.log-card {
+    background-color: var(--bg);
+    border: 1px solid var(--border-muted);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+.log-vitals {
+    font-weight: bold;
+    color: var(--secondary);
+    margin-bottom: 5px;
+}
+.log-note {
+    margin: 0;
+    color: var(--text);
+}

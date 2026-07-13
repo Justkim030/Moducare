@@ -1,0 +1,299 @@
+/* src/pages/Triage.css */
+
+.triage-page-container {
+  max-width: 100%;
+  margin: 0;
+}
+
+.triage-queue-subtitle {
+  color: var(--text-muted);
+  text-align: left;
+  margin-top: -15px;
+  margin-bottom: 20px;
+}
+
+/* --- List Container --- */
+.triage-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* --- Pagination Controls --- */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-start; 
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px; 
+  padding: 10px 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-muted);
+  border-top: 1px solid var(--border-muted); 
+}
+.pagination-controls .form-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0; 
+}
+.pagination-controls .form-group label {
+  margin-bottom: 0;
+  color: var(--text-muted);
+}
+.pagination-controls .form-group select {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+}
+.pagination-controls .page-info {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-weight: bold;
+  flex-grow: 1;
+  text-align: center;
+}
+.pagination-controls .pagination-buttons { display: flex; gap: 10px; }
+.pagination-btn {
+  padding: 8px 12px;
+  background-color: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s, color 0.2s;
+}
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--secondary);
+  color: var(--btn-text-dark);
+}
+.pagination-btn:disabled {
+  color: var(--text-muted);
+  border-color: var(--border-muted);
+  cursor: not-allowed;
+}
+
+
+/* --- Table Styles --- */
+.triage-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.triage-table th,
+.triage-table td {
+  border-bottom: 1px solid var(--border-muted);
+  padding: 16px;
+  color: var(--text);
+  vertical-align: middle;
+}
+.triage-table tr:last-child td {
+  border-bottom: none;
+}
+.triage-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  font-weight: bold;
+  text-align: center;
+}
+
+/* --- Column Widths (Fixed for 4-Column Layout) --- */
+/* 1. Priority */
+.triage-table th:nth-child(1), 
+.triage-table td:nth-child(1) {
+  text-align: center;
+  width: 10%;
+}
+
+/* 2. Patient Name (Name gets the most space) */
+.triage-table th:nth-child(2), 
+.triage-table td:nth-child(2) {
+  text-align: left;
+  width: 40%; 
+}
+
+/* 3. Waiting Since */
+.triage-table th:nth-child(3), 
+.triage-table td:nth-child(3) {
+  text-align: center;
+  width: 20%;
+}
+
+/* 4. Action (Wide enough for two buttons) */
+.triage-table th:nth-child(4), 
+.triage-table td:nth-child(4) {
+  text-align: center;
+  width: 30%; /* Plenty of space for buttons */
+  min-width: 200px; /* Prevent crushing on small screens */
+}
+
+
+/* --- Action Buttons --- */
+.action-buttons-cell { 
+  display: flex; 
+  gap: 10px; /* Space between buttons */
+  justify-content: center;
+  align-items: center;
+}
+
+.triage-btn-small {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: filter 0.2s;
+  font-size: 0.85rem;
+  white-space: nowrap; /* Don't wrap text */
+}
+
+/* Prescribe Button (Primary) */
+.triage-btn-small.consult {
+  background: var(--success-gradient);
+  color: var(--btn-text-dark);
+  border: 1px solid var(--success-dark);
+}
+.triage-btn-small.consult:hover {
+  filter: brightness(1.1);
+}
+
+/* Report Button (Secondary) */
+.triage-btn-small.report {
+  background-color: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  transition: background-color 0.2s, color 0.2s;
+}
+.triage-btn-small.report:hover {
+  background-color: var(--secondary);
+  color: var(--btn-text-dark);
+}
+
+/* --- Clickable Name --- */
+.patient-name-cell {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 500;
+}
+.patient-name-cell:hover {
+  text-decoration: underline;
+}
+
+/* --- Priority Colors --- */
+.triage-level-LEVEL_1 { background: var(--danger); color: var(--btn-text-dark); }
+.triage-level-LEVEL_2 { background: oklch(from var(--danger) l c h / 0.7); color: var(--btn-text-dark); }
+.triage-level-LEVEL_3 { background: var(--warning); color: var(--btn-text-dark); }
+.triage-level-LEVEL_4 { background: var(--info); color: var(--btn-text-dark); }
+.triage-level-LEVEL_5 { background: var(--bg-light); color: var(--text); }
+
+/* --- Modal Detail Styles --- */
+.visit-details-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.detail-group label {
+  font-weight: bold;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 5px;
+}
+.detail-group p {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.vitals-grid-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 10px;
+}
+.vital-item label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: block;
+}
+.vital-item span {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.modal-actions {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.submit-btn {
+  padding: 10px 15px;
+  background: var(--success-gradient);
+  color: var(--btn-text-dark);
+  border: 1px solid var(--success-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.submit-btn:hover { filter: brightness(1.1); }
+
+/* TriageForm Styles (Kept for TriageForm.jsx) */
+.triage-form-container .form-section {
+  background: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.triage-form-container .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+.triage-form-container .form-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: var(--text-muted);
+}
+.triage-form-container .form-group input,
+.triage-form-container .form-group select,
+.triage-form-container .form-group textarea {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+}
+.triage-form-container .form-group textarea { min-height: 80px; }
+.triage-form-container .vitals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.triage-form-container .vitals-grid .form-group:has(.bp-group) {
+  grid-column: 1 / -1;
+}
+.triage-form-container .bp-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.triage-form-container .bp-group input { width: 100%; }
+.triage-form-container .bp-group span {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+}
+
+.page-error {
+  color: var(--danger);
+  margin: 10px 0;
+  background-color: oklch(from var(--danger) l c h / 0.1);
+  border: 1px solid oklch(from var(--danger) l c h / 0.3);
+  padding: 10px;
+  border-radius: 4px;
+}

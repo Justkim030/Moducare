@@ -1,0 +1,27 @@
+/* src/pages/Settings.css */
+
+.settings-page h2 {
+  text-align: left;
+  color: var(--text);
+}
+
+.settings-card {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.settings-card h3 {
+  margin-top: 0;
+  color: var(--text);
+}
+
+.settings-card p {
+  color: var(--text-muted);
+}
+
+/* --- (REMOVED) --- */
+/* .theme-toggle-btn-large styles removed */
+/* --- (END REMOVED) --- */

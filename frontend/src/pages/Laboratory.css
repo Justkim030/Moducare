@@ -1,0 +1,125 @@
+/* src/pages/Laboratory.css */
+
+.lab-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.lab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lab-table th, .lab-table td {
+  border-bottom: 1px solid var(--border-muted);
+  padding: 12px;
+  text-align: left;
+  color: var(--text);
+}
+
+.lab-table th {
+  background-color: var(--bg);
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.status-REQUESTED { background-color: oklch(from var(--warning) l c h / 0.2); color: var(--warning); }
+.status-IN_PROGRESS { background-color: oklch(from var(--info) l c h / 0.2); color: var(--info); }
+.status-COMPLETED { background-color: oklch(from var(--success) l c h / 0.2); color: var(--success); }
+
+/* Buttons */
+.action-btn {
+  padding: 6px 12px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.view-btn {
+  padding: 6px 12px;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.refresh-btn {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+/* Modal specific */
+.lab-textarea {
+    width: 100%;
+    min-height: 150px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+}
+.patient-info {
+    background-color: var(--bg);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-muted);
+}
+
+/* src/pages/Laboratory.css */
+
+/* ... (Previous styles) ... */
+
+.lab-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background-color: var(--secondary);
+    color: var(--btn-text-dark);
+    border-color: var(--secondary);
+}
+
+.tab-btn:hover {
+    background-color: var(--bg-light);
+    color: var(--text);
+}

@@ -1,0 +1,148 @@
+/* src/pages/Staff.css */
+
+.staff-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px oklch(from var(--text) l c h / 0.02);
+}
+
+/* Form inside the modal overlay */
+.add-employee-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 1.25rem; 
+}
+
+.add-employee-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-employee-form-modal .span-two {
+  grid-column: span 2;
+}
+
+.add-employee-form-modal .form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.add-employee-form-modal .form-group input,
+.add-employee-form-modal .form-group select {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header row configuration */
+.staff-header-row {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;            
+  margin-bottom: 1.5rem;          
+  padding: 0.5rem 0;              
+}
+
+.staff-header-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+/* Table layout styling configurations */
+.staff-table th {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-muted);
+}
+
+.staff-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.staff-table tr:last-child td {
+  border-bottom: none;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: oklch(from var(--text) l c h / 0.06);
+  color: var(--text);
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   SKELETON PREVIEW ANIMATIONS
+   ========================================================================== */
+.skeleton-row td {
+  padding: 16px 10px;
+}
+
+.skeleton-block {
+  height: 14px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 12px;
+}
+
+.skeleton-badge {
+  height: 22px;
+  border-radius: 4px;
+}
+
+.skeleton-btn {
+  height: 26px;
+  border-radius: 4px;
+}
+
+@keyframes skeletonPulse {
+  0% {
+    background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
+}
+
+/* Global Notifications block */
+.form-error,
+.page-error {
+  color: var(--danger);
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.page-success {
+  color: #10b981;
+  margin: 10px 0;
+  font-weight: 500;
+}

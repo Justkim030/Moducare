@@ -1,0 +1,23 @@
+
+.main-content {
+  margin-left: 240px; 
+  margin-top: 60px; 
+  box-sizing: border-box;
+  min-height: calc(100vh - 60px); 
+  padding: 40px; 
+  width: calc(100% - 240px); 
+  background-color: var(--bg-dark); 
+  color: var(--text);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.sidebar-collapsed .main-content {
+  margin-left: 80px; 
+  width: calc(100% - 80px); 
+}
+
+.page-content {
+  max-width: 100%; 
+  margin: 0;    
+  width: 100%;       
+}

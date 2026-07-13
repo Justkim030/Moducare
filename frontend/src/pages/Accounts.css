@@ -1,0 +1,169 @@
+/* src/pages/Accounts.css */
+
+.accounts-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.accounts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.accounts-table th,
+.accounts-table td {
+  border-bottom: 1px solid var(--border-muted);
+  padding: 14px 10px;
+  text-align: left;
+  color: var(--text);
+}
+
+.accounts-table th {
+  font-weight: bold;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.text-success { color: #10b981; }
+.text-danger { color: var(--danger); }
+
+/* Status Badges styling configurations */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+}
+.status-PENDING { background-color: oklch(from var(--danger) l c h / 0.12); color: var(--danger); }
+.status-PARTIAL { background-color: oklch(from var(--warning) l c h / 0.12); color: var(--warning); }
+.status-PAID { background-color: oklch(from #10b981 l c h / 0.12); color: #10b981; }
+
+/* Reorganized Modal Form Layout inside Accounts module */
+.payment-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.payment-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-form-modal .span-two {
+  grid-column: span 2;
+}
+
+.payment-form-modal .form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.payment-form-modal .form-group input,
+.payment-form-modal .form-group select {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Optimized Horizontal Header: Completely Eliminates Vertical Dead Space */
+.accounts-header-row {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;            
+  margin-bottom: 1.5rem;          
+  padding: 0.5rem 0;              
+}
+
+.accounts-header-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.accounts-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accounts-filter-group label {
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.accounts-filter-group select {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   ACCOUNTS MATRIX PULSING SKELETON PREVIEW CONFIGURATIONS
+   ========================================================================== */
+.skeleton-row td {
+  padding: 16px 10px;
+}
+
+.skeleton-block {
+  height: 14px;
+  background: linear-gradient(90deg, var(--border-muted) 25%, var(--border) 50%, var(--border-muted) 75%);
+  background-size: 200% 100%;
+  animation: accountSkeletonPulse 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 12px;
+}
+
+.skeleton-badge {
+  height: 22px;
+  border-radius: 4px;
+}
+
+.skeleton-btn {
+  height: 26px;
+  border-radius: 4px;
+}
+
+@keyframes accountSkeletonPulse {
+  0% {
+    background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
+}
+
+/* Response Notifications elements */
+.form-error,
+.page-error {
+  color: var(--danger);
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.page-success {
+  color: #10b981;
+  margin: 10px 0;
+  font-weight: 500;
+}
