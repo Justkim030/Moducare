@@ -21,6 +21,7 @@ import ReportList from './pages/ReportList';
 import Accounts from './pages/Accounts';
 import Laboratory from './pages/Laboratory';
 import WardDashboard from './pages/WardDashboard';
+import Incidents from './pages/Incidents';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
           <Route path="/accounts" element={<Accounts />} />
           <Route path="/lab" element={<Laboratory />} />
           <Route path="/ward" element={<WardDashboard />} />
+          <Route path="/incidents" element={<Incidents />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

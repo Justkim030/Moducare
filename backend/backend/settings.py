@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.visits',
     'apps.lab',
     'apps.accounts',
+    'apps.quality',
 ]
 
 REST_FRAMEWORK = {

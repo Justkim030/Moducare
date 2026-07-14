@@ -32,7 +32,7 @@ urlpatterns = [
     path('api/v1/visits/', include('apps.visits.urls')), 
     path('api/v1/lab/', include('apps.lab.urls')),
     path('api/v1/accounts/', include('apps.accounts.urls')),
-
+    path('api/v1/incident/', include('apps.quality.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path('api/v1/get-token/', obtain_auth_token),
 ]

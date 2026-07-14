@@ -2,12 +2,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../context/ThemeContext';
 import './Navbar.css';
 
 function Navbar() {
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,7 +141,6 @@ function Navbar() {
             ))}
           </ul>
         )}
-        
         <button 
           type="submit" 
           className="search-icon-btn"
@@ -156,9 +153,7 @@ function Navbar() {
 
       <ul className="navbar-links">
         <li>
-          <button onClick={toggleTheme} className="theme-toggle-btn" title="Toggle Theme">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
+          
         </li>
 
         <li ref={dropdownRef} className="navbar-profile">
@@ -181,7 +176,6 @@ function Navbar() {
                 <strong>{username || "Guest"}</strong>
                 <small>{role.replace('_', ' ')}</small>
               </li>
-              <li><Link to="/profile" onClick={closeDropdown}>Edit Profile</Link></li>
               <li><Link to="/settings" onClick={closeDropdown}>Settings</Link></li>
               <li className="dropdown-divider"></li>
               <li>

@@ -1,0 +1,11 @@
+# In PHARMACY/apps/patients/urls.py
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import views
+
+router = DefaultRouter()
+router.register(r'incident-reports', views.IncidentReportViewSet) 
+
+urlpatterns = [
+    path('', include(router.urls)),
+]

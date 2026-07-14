@@ -30,7 +30,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </NavLink>
         </li>
 
-        {/* --- DOCTOR --- */}
+        {/* DOCTOR */}
         {role === 'DOCTOR' && (
           <>
             <li>
@@ -60,7 +60,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </>
         )}
 
-        {/* --- PHARMACIST --- */}
+        {/* PHARMACIST */}
         {role === 'CHEMIST' && (
           <li>
             <NavLink to="/dispense" title="Dispense">
@@ -70,7 +70,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </li>
         )}
 
-        {/* --- RECEPTIONIST --- */}
+        {/* RECEPTIONIST */}
         {role === 'RECEPTIONIST' && (
           <li>
             <NavLink to="/register" title="Registration">
@@ -80,7 +80,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </li>
         )}
 
-        {/* --- NURSING TEAM (Triage & General Nurse) --- */}
+        {/* NURSING TEAM (Triage & General Nurse) */}
         {(role === 'TRIAGE' || role === 'NURSE') && (
           <>
             <li>
@@ -107,7 +107,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </>
         )}
 
-        {/* --- ACCOUNTANT --- */}
+        {/* ACCOUNTANT */}
         {role === 'ACCOUNTANT' && (
           <li>
             <NavLink to="/accounts" title="Accounts & Billing">
@@ -117,7 +117,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </li>
         )}
 
-        {/* --- LAB TECH --- */}
+        {/* LAB TECH */}
         {role === 'LAB_TECH' && (
           <li>
             <NavLink to="/lab" title="Laboratory">
@@ -127,7 +127,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </li>
         )}
         
-        {/* --- ADMIN --- */}
+        {/* ADMIN  */}
         {role === 'ADMIN' && (
           <>
             <li>
@@ -163,7 +163,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           </>
         )}
         
-        {/* --- STORE MANAGER --- */}
+        {/* STORE MANAGER */}
         {role === 'STORE_MANAGER' && (
           <>
             <li>
@@ -173,6 +173,16 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
               </NavLink>
             </li>
           </>
+        )}
+
+        {/* QUALITY ASSURANCE */}
+        {role === 'QUALITY_ASSURANCE' && (
+          <li>
+            <NavLink to="/incidents" title="Quality Assurance">
+               <span className="material-icons icon">verified</span>
+               {!isCollapsed && <span className="label">Quality Assurance</span>}
+            </NavLink>
+          </li>
         )}
       </ul>
     </nav>

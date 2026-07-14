@@ -30,9 +30,9 @@ function Staff() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize] = useState(20);
   const [totalEmployees, setTotalEmployees] = useState(0);
-  const [sortOrder, setSortOrder] = useState('user__name__first_name'); 
+  const [sortOrder] = useState('user__name__first_name'); 
 
   useEffect(() => {
     fetchStaff();
@@ -275,6 +275,7 @@ const handleAddEmployeeSubmit = async (e) => {
                   <option value="ACCOUNTANT">Accountant</option>
                   <option value="RECEPTIONIST">Reception / Triage</option>
                   <option value="STORE_MANAGER">Store Manager</option>
+                  <option value="QUALITY_ASSURANCE">Quality Assurance Officer</option>
                 </select>
               </div>
               <div className="form-group">

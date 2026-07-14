@@ -8,6 +8,7 @@ import { visitService } from '../api/visitService';
 import { wardService } from '../api/wardService';
 import { labService } from '../api/labService';
 import { accountService } from '../api/accountService';
+import { incidentService } from '../api/incidentService'; // 1. Imported our new service
 import { useAuth } from '../hooks/useAuth'; 
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
@@ -193,7 +194,67 @@ const AccountantDashboard = ({ invoiceStats, loading }) => (
   </div>
 );
 
-// 6. ADMIN DASHBOARD
+// 6. INCIDENT REPORT DASHBOARD (Updated to display recent reports list)
+const IncidentReportDashboard = ({ loading, incidentStats, recentIncidents }) => (
+  <div className="dashboard-lists">
+    <div className="dashboard-list-card wide-card">
+      <h3>Incident Reports Summary</h3>
+      <p className="text-gray-600 mb-4">Review registered system anomalies, procedural errors, or medical equipment failures.</p>
+      <div className="stat-card-container">
+        {loading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <div className="stat-card">
+              <h3>Pending Investigations</h3>
+              <p className="stat-number">{incidentStats.pendingCount}</p>
+            </div>
+            <div className="stat-card">
+              <h3>Total Incident Reports</h3>
+              <p className="stat-number">{incidentStats.totalCount}</p>
+            </div>
+          </>
+        )}
+      </div>
+      <div style={{ marginTop: '25px' }}>
+        <Link to="/incidents" className="submit-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>
+          Open Incident Registry &rarr;
+        </Link>
+      </div>
+    </div>
+
+    <div className="dashboard-list-card sidebar-card">
+      <h3>Recent Incident Logs</h3>
+      {loading ? (
+        <SkeletonList rows={3} />
+      ) : (
+        <ul className="dashboard-list">
+          {recentIncidents.slice(0, 4).map(incident => (
+            <li key={incident.id}>
+              <div>
+                <span style={{ display: 'block', fontWeight: 'bold' }}>
+                  {incident.title || `Incident #${incident.id}`}
+                </span>
+                <span className="list-meta">
+                  Severity: <span className={`severity-badge ${incident.severity?.toLowerCase()}`}>{incident.severity || 'Medium'}</span>
+                </span>
+              </div>
+              <span className={`status-dot ${incident.status?.toLowerCase() === 'pending' ? 'status-pending' : 'status-resolved'}`}>
+                {incident.status || 'Pending'}
+              </span>
+            </li>
+          ))}
+          {recentIncidents.length === 0 && <li className="text-gray-500">No recent incidents filed.</li>}
+        </ul>
+      )}
+    </div>
+  </div>
+);
+
+// 7. ADMIN DASHBOARD
 const AdminDashboard = ({ stats, recentPatients, lowStockMeds, loading }) => (
   <div className="admin-grid-dashboard">
     <div className="stat-card-container">
@@ -269,6 +330,10 @@ function Dashboard() {
   const [accountantStats, setAccountantStats] = useState({ pendingCount: 0, totalPendingAmount: 0 });
   const [recentPatients, setRecentPatients] = useState([]);
   const [lowStockMeds, setLowStockMeds] = useState([]);
+  
+  // 2. Declared missing Incident stats and list states
+  const [incidentStats, setIncidentStats] = useState({ pendingCount: 0, totalCount: 0 });
+  const [recentIncidents, setRecentIncidents] = useState([]);
 
   const role = user?.user?.employee_type || '';
 
@@ -319,6 +384,17 @@ function Dashboard() {
             pendingCount: invRes.data.count || pInvoices.length,
             totalPendingAmount: sumPending
           });
+
+        } else if (role === 'QUALITY_ASSURANCE') {
+          // 3. Updated loading sequence using our clean incidentService
+          const incidentRes = await incidentService.getIncidentReports();
+          const incidentData = incidentRes.data;
+          
+          setIncidentStats({
+            pendingCount: incidentData.pending?.length || 0,
+            totalCount: incidentData.total || 0
+          });
+          setRecentIncidents(incidentData.results || incidentData.pending || []);
         }
       } catch {
         setError('Error synchronizing active telemetry widgets.');
@@ -337,6 +413,16 @@ function Dashboard() {
       case 'PHARMACIST': return <PharmacistDashboard lowStockMeds={lowStockMeds} loading={loading} />;
       case 'LAB_TECH':   return <LabTechDashboard />;
       case 'ACCOUNTANT': return <AccountantDashboard invoiceStats={accountantStats} loading={loading} />;
+      
+      // 4. Added recentIncidents prop to the rendering logic
+      case 'QUALITY_ASSURANCE': 
+        return (
+          <IncidentReportDashboard 
+            loading={loading} 
+            incidentStats={incidentStats} 
+            recentIncidents={recentIncidents} 
+          />
+        );
       case 'ADMIN':      return <AdminDashboard stats={adminStats} recentPatients={recentPatients} lowStockMeds={lowStockMeds} loading={loading} />;
       default:           return <h2>Welcome, {user?.user?.username || 'User'}! Please utilize the side navigation ledger.</h2>;
     }
@@ -346,7 +432,9 @@ function Dashboard() {
     <div className="dashboard-page">
       <div className="dashboard-clean-header">
         <h2>{role ? `${role.replace('_', ' ')} Dashboard` : 'Control Panel'}</h2>
-        <div className="header-date-badge">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</div>
+        <div className="header-date-badge">
+          {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
+        </div>
       </div>
       {error && <p className="page-error">{error}</p>}
       <div className="dashboard-viewport-main">

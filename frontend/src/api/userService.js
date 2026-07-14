@@ -23,7 +23,11 @@ const getMe = () => {
 };
 
 const updateUser = (id, userData) => {
-  return api.patch(`users/employees/${id}/`, userData);
+  return api.patch(`users/employees/${id}/`, userData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
 };
 
 export const userService = {

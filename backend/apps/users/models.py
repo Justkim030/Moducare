@@ -34,6 +34,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         DOCTOR = "DOCTOR", "Doctor"
         CHEMIST = "CHEMIST", "Pharmacist"
         STORE_MANAGER = "STORE_MANAGER", "Store Manager"
+        QUALITY_ASSURANCE = "QUALITY_ASSURANCE", "Quality Assurance Officer"
         
         # New Roles for General Hospital
         TRIAGE = "TRIAGE", "Triage Nurse"
@@ -41,6 +42,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         RECEPTIONIST = "RECEPTIONIST", "Receptionist"
         ACCOUNTANT = "ACCOUNTANT", "Accountant"
         LAB_TECH = "LAB_TECH", "Lab Technician"
+        
 
     name = models.ForeignKey(Names, on_delete=models.CASCADE, null=True, blank=True)
     username = models.CharField(max_length=100, unique=True)
