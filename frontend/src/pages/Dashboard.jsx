@@ -8,13 +8,13 @@ import { visitService } from '../api/visitService';
 import { wardService } from '../api/wardService';
 import { labService } from '../api/labService';
 import { accountService } from '../api/accountService';
-import { incidentService } from '../api/incidentService'; // 1. Imported our new service
+import { incidentService } from '../api/incidentService'; // Imported our new service[cite: 4]
 import { useAuth } from '../hooks/useAuth'; 
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
 import '../App.css';
 
-// Reusable Skeleton Component for Dashboard Statistic Cards
+// Reusable Skeleton Component for Dashboard Statistic Cards[cite: 4]
 const SkeletonCard = () => (
   <div className="skeleton-card">
     <div className="skeleton-line short"></div>
@@ -22,7 +22,7 @@ const SkeletonCard = () => (
   </div>
 );
 
-// Reusable Skeleton Component for Dashboard Sidebar Lists
+// Reusable Skeleton Component for Dashboard Sidebar Lists[cite: 4]
 const SkeletonList = ({ rows = 3 }) => (
   <div className="skeleton-list-wrapper">
     {Array.from({ length: rows }).map((_, index) => (
@@ -34,7 +34,7 @@ const SkeletonList = ({ rows = 3 }) => (
   </div>
 );
 
-// 1. NURSE DASHBOARD
+// 1. NURSE DASHBOARD[cite: 4]
 const NurseDashboard = ({ stats, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -67,7 +67,7 @@ const NurseDashboard = ({ stats, loading }) => (
   </div>
 );
 
-// 2. DOCTOR DASHBOARD
+// 2. DOCTOR DASHBOARD[cite: 4]
 const DoctorDashboard = ({ recentPatients, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -99,7 +99,7 @@ const DoctorDashboard = ({ recentPatients, loading }) => (
   </div>
 );
 
-// 3. PHARMACIST DASHBOARD
+// 3. PHARMACIST DASHBOARD[cite: 4]
 const PharmacistDashboard = ({ lowStockMeds, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -131,7 +131,7 @@ const PharmacistDashboard = ({ lowStockMeds, loading }) => (
   </div>
 );
 
-// 4. LAB TECH DASHBOARD
+// 4. LAB TECH DASHBOARD[cite: 4]
 const LabTechDashboard = () => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -153,7 +153,7 @@ const LabTechDashboard = () => (
   </div>
 );
 
-// 5. ACCOUNTANT DASHBOARD
+// 5. ACCOUNTANT DASHBOARD[cite: 4]
 const AccountantDashboard = ({ invoiceStats, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -194,8 +194,8 @@ const AccountantDashboard = ({ invoiceStats, loading }) => (
   </div>
 );
 
-// 6. INCIDENT REPORT DASHBOARD (Updated to display recent reports list)
-const IncidentReportDashboard = ({ loading, incidentStats, recentIncidents }) => (
+// 6. INCIDENT REPORT DASHBOARD (Cleaned up to only contain the Summary card)[cite: 4]
+const IncidentReportDashboard = ({ loading, incidentStats }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
       <h3>Incident Reports Summary</h3>
@@ -227,34 +227,15 @@ const IncidentReportDashboard = ({ loading, incidentStats, recentIncidents }) =>
     </div>
 
     <div className="dashboard-list-card sidebar-card">
-      <h3>Recent Incident Logs</h3>
-      {loading ? (
-        <SkeletonList rows={3} />
-      ) : (
-        <ul className="dashboard-list">
-          {recentIncidents.slice(0, 4).map(incident => (
-            <li key={incident.id}>
-              <div>
-                <span style={{ display: 'block', fontWeight: 'bold' }}>
-                  {incident.title || `Incident #${incident.id}`}
-                </span>
-                <span className="list-meta">
-                  Severity: <span className={`severity-badge ${incident.severity?.toLowerCase()}`}>{incident.severity || 'Medium'}</span>
-                </span>
-              </div>
-              <span className={`status-dot ${incident.status?.toLowerCase() === 'pending' ? 'status-pending' : 'status-resolved'}`}>
-                {incident.status || 'Pending'}
-              </span>
-            </li>
-          ))}
-          {recentIncidents.length === 0 && <li className="text-gray-500">No recent incidents filed.</li>}
-        </ul>
-      )}
+      <h3>QA Quick Operations</h3>
+      <ul className="dashboard-list">
+        <li><Link to="/incidents">Open Incident Registry</Link></li>
+      </ul>
     </div>
   </div>
 );
 
-// 7. ADMIN DASHBOARD
+// 7. ADMIN DASHBOARD[cite: 4]
 const AdminDashboard = ({ stats, recentPatients, lowStockMeds, loading }) => (
   <div className="admin-grid-dashboard">
     <div className="stat-card-container">
@@ -331,9 +312,8 @@ function Dashboard() {
   const [recentPatients, setRecentPatients] = useState([]);
   const [lowStockMeds, setLowStockMeds] = useState([]);
   
-  // 2. Declared missing Incident stats and list states
+  // Declared missing Incident stats and list states[cite: 4]
   const [incidentStats, setIncidentStats] = useState({ pendingCount: 0, totalCount: 0 });
-  const [recentIncidents, setRecentIncidents] = useState([]);
 
   const role = user?.user?.employee_type || '';
 
@@ -386,7 +366,7 @@ function Dashboard() {
           });
 
         } else if (role === 'QUALITY_ASSURANCE') {
-          // 3. Updated loading sequence using our clean incidentService
+          // Updated loading sequence using our clean incidentService[cite: 4]
           const incidentRes = await incidentService.getIncidentReports();
           const incidentData = incidentRes.data;
           
@@ -394,7 +374,6 @@ function Dashboard() {
             pendingCount: incidentData.pending?.length || 0,
             totalCount: incidentData.total || 0
           });
-          setRecentIncidents(incidentData.results || incidentData.pending || []);
         }
       } catch {
         setError('Error synchronizing active telemetry widgets.');
@@ -413,16 +392,7 @@ function Dashboard() {
       case 'PHARMACIST': return <PharmacistDashboard lowStockMeds={lowStockMeds} loading={loading} />;
       case 'LAB_TECH':   return <LabTechDashboard />;
       case 'ACCOUNTANT': return <AccountantDashboard invoiceStats={accountantStats} loading={loading} />;
-      
-      // 4. Added recentIncidents prop to the rendering logic
-      case 'QUALITY_ASSURANCE': 
-        return (
-          <IncidentReportDashboard 
-            loading={loading} 
-            incidentStats={incidentStats} 
-            recentIncidents={recentIncidents} 
-          />
-        );
+      case 'QUALITY_ASSURANCE': return (<IncidentReportDashboard loading={loading} incidentStats={incidentStats} />);
       case 'ADMIN':      return <AdminDashboard stats={adminStats} recentPatients={recentPatients} lowStockMeds={lowStockMeds} loading={loading} />;
       default:           return <h2>Welcome, {user?.user?.username || 'User'}! Please utilize the side navigation ledger.</h2>;
     }

@@ -1,4 +1,44 @@
-/* src/pages/Dashboard.css */
+
+/* Base Dashboard container smooth slide-down entrance */
+.dashboard-page {
+  opacity: 0;
+  transform: translateY(-20px);
+  /* Offloads rendering to the GPU for lag-free rendering */
+  will-change: transform, opacity; 
+  /* Exponential ease-out curve for premium, organic movement */
+  animation: dashboardSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Individual card fade-in when switching from Skeleton -> Loaded state */
+.stat-card, 
+.dashboard-list-card {
+  will-change: transform, opacity;
+  animation: cardFadeIn 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+@keyframes dashboardSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 
 .dashboard-lists {
   display: flex;
@@ -25,6 +65,15 @@
 .dashboard-lists .sidebar-card {
   flex: 1 1 300px;
 }
+
+.admin-grid-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+
 
 .dashboard-clean-header {
   display: flex;
@@ -53,7 +102,8 @@
   border: 1px solid var(--border-muted);
 }
 
-/* Stat Widgets Card Structures Containers */
+
+
 .stat-card-container {
   display: flex;
   flex-direction: row;
@@ -63,7 +113,6 @@
   margin-bottom: 20px;
 }
 
-/* Color strips removed (border-left line removed completely) */
 .stat-card {
   flex: 1 1 200px;
   background-color: var(--bg-light);
@@ -86,13 +135,6 @@
   font-size: 1.85rem;
   font-weight: 700;
   color: var(--text);
-}
-
-.admin-grid-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
 }
 
 .dashboard-list-card h3 {
@@ -138,6 +180,8 @@
   color: var(--text-muted);
 }
 
+
+
 .low-stock {
   color: var(--danger);
   font-weight: bold;
@@ -172,7 +216,6 @@
   margin-bottom: 15px;
 }
 
-/* Pulsing Skeleton Loader Custom Animations */
 .skeleton-card {
   flex: 1 1 200px;
   background-color: var(--bg-light);
