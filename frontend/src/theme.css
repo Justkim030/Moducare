@@ -19,7 +19,7 @@
 
   /* PDF Colors (Generated Oklch) */
   --primary: oklch(0.7 0.15 40);   /* Ember Orange */
-  --secondary: oklch(0.6 0.1 260);  /* Electric Blue */
+  --secondary: oklch(73.184% 0.13062 260.658);  /* Electric Blue */
   --danger: oklch(0.65 0.15 30);   /* Error Red */
   --warning: oklch(0.8 0.15 100);  /* Warning Yellow */
   --success: oklch(0.6 0.15 160);  /* Success Green */
@@ -29,7 +29,7 @@
   --btn-text: oklch(1 0 0); /* White text (unused for now) */
 
   /* --- (NEW) Gradient Variables --- */
-  --success-light: oklch(0.65 0.15 160);
+  --success-light: oklch(39.015% 0.06371 153.841 / 0.69);
   --success-dark: oklch(0.55 0.15 160);
   --success-gradient: linear-gradient(180deg, var(--success-light), var(--success-dark));
 }
