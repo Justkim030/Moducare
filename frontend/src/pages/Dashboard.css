@@ -16,7 +16,7 @@
   animation: cardFadeIn 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
-@keyframes dashboardSlideDown {
+@keyframes dashboardSlideDown< {
   from {
     opacity: 0;
     transform: translateY(-20px);
@@ -39,7 +39,7 @@
 }
 
 
-
+ 
 .dashboard-lists {
   display: flex;
   flex-direction: row;
