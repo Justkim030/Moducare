@@ -11,7 +11,17 @@ from apps.appointments.models import Appointment
 from apps.communications.models import Notification
 from apps.quality.models import IncidentReport
 from apps.inventory.models import Medicine
-from apps.operations.models import Activity
+from apps.operations.models import Operation, Activity
+from apps.finance.models import Finance
+from apps.hr.models import Staff
+
+from apps.patients.serializers import PatientSerializer
+from apps.visits.serializers import VisitSerializer
+from apps.lab.serializers import TestRequestSerializer
+from apps.quality.serializers import IncidentReportSerializer
+from apps.inventory.serializers import MedicineSerializer
+from apps.operations.serializers import ActivitySerializer
+from apps.hr.serializers import StaffSerializer
 
 
 class CompatPatientSerializer(serializers.ModelSerializer):
@@ -88,3 +98,73 @@ class CompatIncidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = IncidentReport
         fields = ['id', 'incident_type', 'description', 'incident_date', 'status']
+
+
+class CompatUserSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    email = serializers.CharField(default='', read_only=True)
+    role_id = serializers.CharField(source='employee_type', read_only=True)
+    department = serializers.CharField(default='Operations', read_only=True)
+    status = serializers.SerializerMethodField()
+    initials = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Users
+        fields = ['id', 'name', 'email', 'role_id', 'department', 'status', 'initials']
+
+    def get_name(self, obj):
+        if hasattr(obj, 'name') and obj.name:
+            return f"{obj.name.first_name} {obj.name.second_name}"
+        return obj.username
+
+    def get_status(self, obj):
+        return 'active' if obj.is_active else 'inactive'
+
+    def get_initials(self, obj):
+        name = self.get_name(obj)
+        return ''.join(p[0] for p in name.split(' ')).upper()[:2] or '??'
+
+
+class CompatFinanceSerializer(serializers.ModelSerializer):
+    staff = serializers.SerializerMethodField()
+    reference = serializers.CharField(source='description', read_only=True)
+    notes = serializers.CharField(source='description', read_only=True)
+    approved = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    type = serializers.CharField(source='transaction_type', read_only=True)
+    status = serializers.CharField(source='category', read_only=True)
+
+    class Meta:
+        model = Finance
+        fields = ['id', 'staff', 'date', 'type', 'reference', 'notes', 'amount', 'approved', 'status']
+
+    def get_staff(self, obj):
+        return 'Unassigned'
+
+    def get_approved(self, obj):
+        return obj.category == 'paid' if obj.category else False
+
+    def get_date(self, obj):
+        return obj.date.isoformat() if obj.date else None
+
+
+class CompatOperationSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source='name', read_only=True)
+    department = serializers.CharField(default='Operations', read_only=True)
+    priority = serializers.CharField(default='medium', read_only=True)
+    assignee = serializers.CharField(default='', read_only=True)
+    due = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
+    notes = serializers.CharField(source='description', read_only=True)
+
+    class Meta:
+        model = Operation
+        fields = ['id', 'title', 'description', 'department', 'priority', 'status', 'assignee', 'due', 'tags', 'notes']
+
+    def get_due(self, obj):
+        if obj.end_date:
+            return obj.end_date.isoformat()
+        return None
+
+    def get_tags(self, obj):
+        return []

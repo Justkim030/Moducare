@@ -72,6 +72,10 @@ from compat_views import (
     CompatAppointmentList, CompatAppointmentDetail,
     CompatNotificationList, CompatNotificationBroadcast,
     EmployeeMeView,
+    CompatUserList, CompatUserDetail,
+    CompatFinanceList, CompatFinanceDetail,
+    CompatOperationList, CompatOperationDetail,
+    CompatStaffList, CompatStaffDetail,
 )
 
 user_list = UserViewSet.as_view({'get': 'list', 'post': 'create'})
@@ -119,6 +123,16 @@ compat_patterns = [
     path('api/appointments/<pk>/', CompatAppointmentDetail.as_view(), name='compat-appointment-detail'),
     path('api/notifications/', CompatNotificationList.as_view(), name='compat-notifications'),
     path('api/notifications/broadcast/', CompatNotificationBroadcast.as_view(), name='compat-notifications-broadcast'),
+    path('api/users/', CompatUserList.as_view(), name='compat-users'),
+    path('api/users/<pk>/', CompatUserDetail.as_view(), name='compat-user-detail'),
+    path('api/employees/', employee_list),
+    path('api/employees/<pk>/', employee_detail),
+    path('api/finance/', CompatFinanceList.as_view(), name='compat-finance'),
+    path('api/finance/<pk>/', CompatFinanceDetail.as_view(), name='compat-finance-detail'),
+    path('api/operations/', CompatOperationList.as_view(), name='compat-operations'),
+    path('api/operations/<pk>/', CompatOperationDetail.as_view(), name='compat-operation-detail'),
+    path('api/staff/', CompatStaffList.as_view(), name='compat-staff'),
+    path('api/staff/<pk>/', CompatStaffDetail.as_view(), name='compat-staff-detail'),
 
     path('api/operations/', include('apps.operations.urls')),
     path('api/finance/', include('apps.finance.urls')),

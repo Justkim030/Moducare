@@ -26,6 +26,7 @@ from apps.inventory.models import Medicine
 from apps.reports.models import Report
 from apps.audit.models import Audit
 from apps.operations.models import Operation, Activity
+from apps.finance.models import Finance
 from apps.hr.models import Staff, TimeAttendance, LeaveRequest
 from apps.users.models import Users, Employee
 
@@ -34,6 +35,9 @@ from compat_serializers import (
     CompatAppointmentSerializer,
     CompatNotificationSerializer,
     CompatIncidentSerializer,
+    CompatUserSerializer,
+    CompatFinanceSerializer,
+    CompatOperationSerializer,
 )
 from apps.patients.serializers import PatientSerializer
 from apps.visits.serializers import VisitSerializer
@@ -41,6 +45,7 @@ from apps.lab.serializers import TestRequestSerializer
 from apps.quality.serializers import IncidentReportSerializer
 from apps.inventory.serializers import MedicineSerializer
 from apps.operations.serializers import ActivitySerializer
+from apps.hr.serializers import StaffSerializer
 
 
 class DashboardView(APIView):
@@ -68,7 +73,7 @@ class ActivitiesView(APIView):
     def get(self, request):
         activities = Activity.objects.all().select_related('operation').order_by('-created_at')[:50]
         data = ActivitySerializer(activities, many=True).data
-        return Response(data)
+        return Response({'ok': True, 'activities': data})
 
 
 class SearchView(APIView):
@@ -388,3 +393,261 @@ class EmployeeMeView(APIView):
             return Response({'ok': True, 'employee': serializer.data})
         except Employee.DoesNotExist:
             return Response({'ok': False, 'error': 'Employee profile not found.'}, status=404)
+
+
+class CompatUserList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Users.objects.all().select_related('name')
+        q = request.query_params.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(name__first_name__icontains=q) |
+                Q(name__second_name__icontains=q) |
+                Q(username__icontains=q)
+            )
+        qs = qs.order_by('-id')
+        serializer = CompatUserSerializer(qs, many=True)
+        return Response({'ok': True, 'users': serializer.data})
+
+    def post(self, request):
+        serializer = CompatUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        name_data = serializer.validated_data.pop('name', {})
+        from apps.users.models import Names
+        name_instance = Names.objects.create(**name_data)
+        user = Users.objects.create_user(
+            username=serializer.validated_data.get('username', ''),
+            password=serializer.validated_data.get('password', ''),
+        )
+        user.name = name_instance
+        for attr, value in serializer.validated_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return Response({'ok': True, 'user': CompatUserSerializer(user).data}, status=status.HTTP_201_CREATED)
+
+
+class CompatUserDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            user = Users.objects.select_related('name').get(pk=pk)
+        except Users.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        return Response({'ok': True, 'user': CompatUserSerializer(user).data})
+
+    def put(self, request, pk):
+        try:
+            user = Users.objects.select_related('name').get(pk=pk)
+        except Users.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CompatUserSerializer(user, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        name_data = serializer.validated_data.pop('name', None)
+        if name_data and user.name:
+            for attr, value in name_data.items():
+                setattr(user.name, attr, value)
+            user.name.save()
+        for attr, value in serializer.validated_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return Response({'ok': True, 'user': CompatUserSerializer(user).data})
+
+    def patch(self, request, pk):
+        try:
+            user = Users.objects.select_related('name').get(pk=pk)
+        except Users.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CompatUserSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        name_data = serializer.validated_data.pop('name', None)
+        if name_data and user.name:
+            for attr, value in name_data.items():
+                setattr(user.name, attr, value)
+            user.name.save()
+        for attr, value in serializer.validated_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return Response({'ok': True, 'user': CompatUserSerializer(user).data})
+
+    def delete(self, request, pk):
+        try:
+            user = Users.objects.get(pk=pk)
+        except Users.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        user.delete()
+        return Response({'ok': True})
+
+
+class CompatFinanceList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Finance.objects.all().order_by('-date')
+        status = request.query_params.get('status', '')
+        if status:
+            qs = qs.filter(category=status)
+        serializer = CompatFinanceSerializer(qs, many=True)
+        return Response({'ok': True, 'finance': serializer.data})
+
+    def post(self, request):
+        serializer = CompatFinanceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'entry': serializer.data}, status=status.HTTP_201_CREATED)
+
+
+class CompatFinanceDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            entry = Finance.objects.get(pk=pk)
+        except Finance.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        return Response({'ok': True, 'entry': CompatFinanceSerializer(entry).data})
+
+    def put(self, request, pk):
+        try:
+            entry = Finance.objects.get(pk=pk)
+        except Finance.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CompatFinanceSerializer(entry, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'entry': serializer.data})
+
+    def patch(self, request, pk):
+        try:
+            entry = Finance.objects.get(pk=pk)
+        except Finance.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CompatFinanceSerializer(entry, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'entry': serializer.data})
+
+    def delete(self, request, pk):
+        try:
+            entry = Finance.objects.get(pk=pk)
+        except Finance.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        entry.delete()
+        return Response({'ok': True})
+
+
+class CompatOperationList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Operation.objects.all().order_by('-start_date')
+        status = request.query_params.get('status', '')
+        if status:
+            qs = qs.filter(status=status)
+        serializer = CompatOperationSerializer(qs, many=True)
+        return Response({'ok': True, 'operations': serializer.data})
+
+    def post(self, request):
+        serializer = CompatOperationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'operation': serializer.data}, status=status.HTTP_201_CREATED)
+
+
+class CompatOperationDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            op = Operation.objects.get(pk=pk)
+        except Operation.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        return Response({'ok': True, 'operation': CompatOperationSerializer(op).data})
+
+    def put(self, request, pk):
+        try:
+            op = Operation.objects.get(pk=pk)
+        except Operation.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CompatOperationSerializer(op, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'operation': serializer.data})
+
+    def patch(self, request, pk):
+        try:
+            op = Operation.objects.get(pk=pk)
+        except Operation.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CompatOperationSerializer(op, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'operation': serializer.data})
+
+    def delete(self, request, pk):
+        try:
+            op = Operation.objects.get(pk=pk)
+        except Operation.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        op.delete()
+        return Response({'ok': True})
+
+
+class CompatStaffList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Staff.objects.all().select_related('user__name')
+        status = request.query_params.get('status', '')
+        if status:
+            qs = qs.filter(status=status)
+        serializer = StaffSerializer(qs, many=True)
+        return Response({'ok': True, 'staff': serializer.data})
+
+    def post(self, request):
+        serializer = StaffSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'staff': serializer.data}, status=status.HTTP_201_CREATED)
+
+
+class CompatStaffDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            staff = Staff.objects.select_related('user__name').get(pk=pk)
+        except Staff.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        return Response({'ok': True, 'staff': StaffSerializer(staff).data})
+
+    def put(self, request, pk):
+        try:
+            staff = Staff.objects.select_related('user__name').get(pk=pk)
+        except Staff.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = StaffSerializer(staff, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'staff': serializer.data})
+
+    def patch(self, request, pk):
+        try:
+            staff = Staff.objects.select_related('user__name').get(pk=pk)
+        except Staff.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = StaffSerializer(staff, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'staff': serializer.data})
+
+    def delete(self, request, pk):
+        try:
+            staff = Staff.objects.get(pk=pk)
+        except Staff.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        staff.delete()
+        return Response({'ok': True})
+
