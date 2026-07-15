@@ -13,7 +13,6 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.views.static import serve
 from django.conf import settings as django_settings
-from django.conf import settings as django_settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # Collaborator's React frontend API (v1)
@@ -65,6 +64,15 @@ from apps.core.views import capabilities_view, role_permissions_view, health_vie
 from apps.analytics.views import AnalyticsOverviewView
 from apps.reports.views import ReportScheduledListView, ReportRunView
 from apps.inventory.views import InventoryAlertsView
+from compat_views import (
+    DashboardView, ActivitiesView, SearchView,
+    CompatPatientList, CompatPatientDetail,
+    CompatIncidentList, CompatIncidentDetail,
+    CompatInventoryList, CompatInventoryDetail,
+    CompatAppointmentList, CompatAppointmentDetail,
+    CompatNotificationList, CompatNotificationBroadcast,
+    EmployeeMeView,
+)
 
 user_list = UserViewSet.as_view({'get': 'list', 'post': 'create'})
 user_detail = UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
@@ -72,14 +80,14 @@ user_detail = UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 
 employee_list = EmployeeViewSet.as_view({'get': 'list', 'post': 'create'})
 employee_detail = EmployeeViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
 
-patient_list = PatientViewSet.as_view({'get': 'list', 'post': 'create'})
-patient_detail = PatientViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
+patient_list = CompatPatientList.as_view()
+patient_detail = CompatPatientDetail.as_view()
 
-incident_list = IncidentReportViewSet.as_view({'get': 'list', 'post': 'create'})
-incident_detail = IncidentReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
+incident_list = CompatIncidentList.as_view()
+incident_detail = CompatIncidentDetail.as_view()
 
-inventory_list = MedicineViewSet.as_view({'get': 'list', 'post': 'create'})
-inventory_detail = MedicineViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
+inventory_list = CompatInventoryList.as_view()
+inventory_detail = CompatInventoryDetail.as_view()
 
 compat_patterns = [
     path('api/login/', LoginView.as_view(), name='login'),
@@ -87,11 +95,15 @@ compat_patterns = [
     path('api/capabilities/', capabilities_view, name='capabilities'),
     path('api/role-permissions/', role_permissions_view, name='role-permissions'),
     path('api/health/', health_view, name='health'),
-    path('api/employees/me/', CurrentEmployeeProfileView.as_view(), name='employee-me'),
+    path('api/employees/me/', EmployeeMeView.as_view(), name='employee-me'),
     path('api/inventory/alerts/', InventoryAlertsView.as_view(), name='inventory-alerts'),
     path('api/analytics/overview/', AnalyticsOverviewView.as_view(), name='analytics-overview'),
     path('api/reports/scheduled/', ReportScheduledListView.as_view(), name='reports-scheduled'),
     path('api/reports/<pk>/run/', ReportRunView.as_view(), name='report-run'),
+
+    path('api/dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('api/activities/', ActivitiesView.as_view(), name='activities'),
+    path('api/search/', SearchView.as_view(), name='search'),
 
     path('api/users/', user_list),
     path('api/users/<pk>/', user_detail),
@@ -103,6 +115,10 @@ compat_patterns = [
     path('api/incidents/<pk>/', incident_detail),
     path('api/inventory/', inventory_list),
     path('api/inventory/<pk>/', inventory_detail),
+    path('api/appointments/', CompatAppointmentList.as_view(), name='compat-appointments'),
+    path('api/appointments/<pk>/', CompatAppointmentDetail.as_view(), name='compat-appointment-detail'),
+    path('api/notifications/', CompatNotificationList.as_view(), name='compat-notifications'),
+    path('api/notifications/broadcast/', CompatNotificationBroadcast.as_view(), name='compat-notifications-broadcast'),
 
     path('api/operations/', include('apps.operations.urls')),
     path('api/finance/', include('apps.finance.urls')),
@@ -129,6 +145,12 @@ urlpatterns += compat_patterns
 urlpatterns += [
     re_path(r'^(?P<path>.*)/?$', TemplateView.as_view(template_name='../index.html')),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

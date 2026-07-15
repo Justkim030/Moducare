@@ -49,12 +49,20 @@ class LoginView(APIView):
         from apps.core.views import getCapabilities, getModulesForRole
         role_id = user.employee_type if hasattr(user, 'employee_type') else None
         
+        display_name = ''
+        if hasattr(user, 'name') and user.name:
+            display_name = f"{user.name.first_name} {user.name.second_name}".strip()
+        else:
+            display_name = user.username
+        
         return Response({
             'ok': True,
             'token': str(refresh.access_token),
             'user': {
                 'id': user.id,
                 'username': user.username,
+                'name': display_name,
+                'role_id': role_id,
                 'employee_type': user.employee_type,
                 'is_staff': user.is_staff,
                 'is_superuser': user.is_superuser,
