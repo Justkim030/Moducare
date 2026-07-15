@@ -27,31 +27,31 @@ class Visits(models.Model):
         OUTPATIENT = 'OPD', 'Out-Patient'
         INPATIENT = 'IPD', 'In-Patient'
 
-    visit_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, choices=VisitStatus.choices, default=VisitStatus.PENDING)
-    patient_type = models.CharField(max_length=10, choices=PatientType.choices, default=PatientType.OUTPATIENT)
+    visit_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    status = models.CharField(max_length=50, choices=VisitStatus.choices, default=VisitStatus.PENDING, db_index=True)
+    patient_type = models.CharField(max_length=10, choices=PatientType.choices, default=PatientType.OUTPATIENT, db_index=True)
     
-    ward = models.CharField(max_length=100, blank=True, null=True)
-    bed_number = models.CharField(max_length=20, blank=True, null=True)
+    ward = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+    bed_number = models.CharField(max_length=20, blank=True, null=True, db_index=True)
 
     consultation_notes = models.TextField(blank=True, null=True)
     pharmacy_notes = models.TextField(blank=True, null=True)
     
-    patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE)
-    registered_by = models.ForeignKey('users.Employee', on_delete=models.SET_NULL, null=True)
+    patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE, db_index=True)
+    registered_by = models.ForeignKey('users.Employee', on_delete=models.SET_NULL, null=True, db_index=True)
     # This is the Initial Triage
-    triage = models.ForeignKey(Triage, on_delete=models.CASCADE, related_name='visit_initial_triage')
+    triage = models.ForeignKey(Triage, on_delete=models.CASCADE, related_name='visit_initial_triage', db_index=True)
 
     def __str__(self):
         return f"Visit {self.id}"
 
 class WardLog(models.Model):
-    visit = models.ForeignKey(Visits, on_delete=models.CASCADE, related_name='ward_logs')
-    nurse = models.ForeignKey('users.Employee', on_delete=models.SET_NULL, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    visit = models.ForeignKey(Visits, on_delete=models.CASCADE, related_name='ward_logs', db_index=True)
+    nurse = models.ForeignKey('users.Employee', on_delete=models.SET_NULL, null=True, db_index=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     
     # --- FIX: Added null=True here ---
-    triage = models.ForeignKey(Triage, on_delete=models.CASCADE, null=True)
+    triage = models.ForeignKey(Triage, on_delete=models.CASCADE, null=True, db_index=True)
     
     notes = models.TextField(help_text="Nursing notes / Observation")
 

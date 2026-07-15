@@ -23,7 +23,8 @@ DEBUG = os.getenv("ENVIRONMENT") != "production"
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '127.0.0.1:'
+    '127.0.0.1:',
+    'testserver',
 ]
 
 
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'corsheaders',
 
     'apps.users',
@@ -49,11 +51,24 @@ INSTALLED_APPS = [
     'apps.lab',
     'apps.accounts',
     'apps.quality',
+    'apps.core',
+    'apps.operations',
+    'apps.finance',
+    'apps.appointments',
+    'apps.hr',
+    'apps.analytics',
+    'apps.reports',
+    'apps.audit',
+    'apps.communications',
+    'apps.documents',
+    'apps.referrals',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -66,6 +81,12 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.FormParser',
     ],
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'ALGORITHM': 'HS256',
 }
 
 MIDDLEWARE = [

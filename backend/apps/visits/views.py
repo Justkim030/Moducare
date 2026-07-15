@@ -39,20 +39,19 @@ class VisitViewSet(viewsets.ModelViewSet):
         visit = self.get_object()
         
         notes = request.data.get('consultation_notes')
-        complaint = request.data.get('chief_complaint')
         pharmacy_notes = request.data.get('pharmacy_notes')
-
 
         if notes is not None:
             visit.consultation_notes = notes
-        if complaint is not None:
-            visit.chief_complaint = complaint
-
         if pharmacy_notes is not None:
             visit.pharmacy_notes = pharmacy_notes
 
+        # Update triage with chief_complaint if provided
+        complaint = request.data.get('chief_complaint')
+        if complaint is not None and visit.triage:
+            visit.triage.chief_complaint = complaint
+            visit.triage.save()
         
-        # FIXED
         if visit.status == 'CONSULTATION':
             visit.status = Visits.VisitStatus.COMPLETED
         elif visit.status == Visits.VisitStatus.PENDING:

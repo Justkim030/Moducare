@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(r'patients', views.PatientViewSet) 
+router.register(r'', views.PatientViewSet) 
 
 urlpatterns = [
     path('', include(router.urls)),

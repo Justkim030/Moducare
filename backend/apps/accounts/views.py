@@ -79,3 +79,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             'invoice_status': invoice.status,
             'balance': invoice.total_amount - invoice.paid_amount
         })
+
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all().order_by('-payment_date')
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
