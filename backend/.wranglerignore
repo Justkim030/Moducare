@@ -1,8 +1,0 @@
-.venv/
-staticfiles/
-media/
-vendor/
-db.sqlite3
-hospital_db.sqlite3
-hospital.db
-*.png
