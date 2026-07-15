@@ -25,7 +25,7 @@ from apps.quality.models import IncidentReport
 from apps.inventory.models import Medicine
 from apps.reports.models import Report
 from apps.audit.models import Audit
-from apps.operations.models import Operation, Activity
+from apps.operations.models import Operation, Activity, CalendarEvent
 from apps.finance.models import Finance
 from apps.hr.models import Staff, TimeAttendance, LeaveRequest
 from apps.users.models import Users, Employee
@@ -44,7 +44,7 @@ from apps.visits.serializers import VisitSerializer
 from apps.lab.serializers import TestRequestSerializer
 from apps.quality.serializers import IncidentReportSerializer
 from apps.inventory.serializers import MedicineSerializer
-from apps.operations.serializers import ActivitySerializer
+from apps.operations.serializers import ActivitySerializer, CalendarEventSerializer
 from apps.hr.serializers import StaffSerializer
 
 
@@ -650,4 +650,64 @@ class CompatStaffDetail(APIView):
             return Response({'ok': False, 'error': 'Not found'}, status=404)
         staff.delete()
         return Response({'ok': True})
+
+
+class CompatEventList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = CalendarEvent.objects.all().select_related('employee')
+        start = request.query_params.get('start')
+        end = request.query_params.get('end')
+        if start and end:
+            qs = qs.filter(start_time__gte=start, start_time__lte=end)
+        qs = qs.order_by('start_time')
+        serializer = CalendarEventSerializer(qs, many=True)
+        return Response({'ok': True, 'events': serializer.data})
+
+    def post(self, request):
+        serializer = CalendarEventSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'event': serializer.data}, status=status.HTTP_201_CREATED)
+
+
+class CompatEventDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            event = CalendarEvent.objects.select_related('employee').get(pk=pk)
+        except CalendarEvent.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        return Response({'ok': True, 'event': CalendarEventSerializer(event).data})
+
+    def put(self, request, pk):
+        try:
+            event = CalendarEvent.objects.select_related('employee').get(pk=pk)
+        except CalendarEvent.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CalendarEventSerializer(event, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'event': serializer.data})
+
+    def patch(self, request, pk):
+        try:
+            event = CalendarEvent.objects.select_related('employee').get(pk=pk)
+        except CalendarEvent.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        serializer = CalendarEventSerializer(event, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'event': serializer.data})
+
+    def delete(self, request, pk):
+        try:
+            event = CalendarEvent.objects.get(pk=pk)
+        except CalendarEvent.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        event.delete()
+        return Response({'ok': True})
+
 

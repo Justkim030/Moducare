@@ -76,6 +76,7 @@ from compat_views import (
     CompatFinanceList, CompatFinanceDetail,
     CompatOperationList, CompatOperationDetail,
     CompatStaffList, CompatStaffDetail,
+    CompatEventList, CompatEventDetail,
 )
 
 user_list = UserViewSet.as_view({'get': 'list', 'post': 'create'})
@@ -133,6 +134,8 @@ compat_patterns = [
     path('api/operations/<pk>/', CompatOperationDetail.as_view(), name='compat-operation-detail'),
     path('api/staff/', CompatStaffList.as_view(), name='compat-staff'),
     path('api/staff/<pk>/', CompatStaffDetail.as_view(), name='compat-staff-detail'),
+    path('api/events/', CompatEventList.as_view(), name='compat-events'),
+    path('api/events/<pk>/', CompatEventDetail.as_view(), name='compat-event-detail'),
 
     path('api/operations/', include('apps.operations.urls')),
     path('api/finance/', include('apps.finance.urls')),
