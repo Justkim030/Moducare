@@ -18,5 +18,13 @@ class Appointment(models.Model):
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['doctor', 'appointment_date'], name='idx_appt_doctor_date'),
+            models.Index(fields=['patient', 'appointment_date'], name='idx_appt_patient_date'),
+            models.Index(fields=['status', 'appointment_date'], name='idx_appt_status_date'),
+        ]
+        ordering = ['appointment_date']
+
     def __str__(self):
         return f"Appointment - {self.appointment_date}"

@@ -8,6 +8,12 @@ class Operation(models.Model):
     status = models.CharField(max_length=50, default='pending', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['status', 'start_date'], name='idx_operation_status_start'),
+        ]
+        ordering = ['-start_date']
+
     def __str__(self):
         return self.name
 
@@ -18,6 +24,13 @@ class Activity(models.Model):
     operation = models.ForeignKey('operations.Operation', on_delete=models.CASCADE, related_name='activities', db_index=True)
     status = models.CharField(max_length=50, default='pending', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['operation', 'status'], name='idx_activity_operation_status'),
+            models.Index(fields=['status', 'created_at'], name='idx_activity_status_created'),
+        ]
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.name

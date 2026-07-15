@@ -9,7 +9,7 @@ from .models import Employee, Users
 from .serializers import EmployeeSerializer, UserSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = Users.objects.all()
+    queryset = Users.objects.all().select_related('name')
     serializer_class = UserSerializer
 
 
@@ -18,7 +18,7 @@ class CurrentEmployeeProfileView(APIView):
 
     def get(self, request):
         try:
-            employee = Employee.objects.get(user=request.user)
+            employee = Employee.objects.select_related('user__name').get(user=request.user)
             serializer = EmployeeSerializer(employee)
             return Response(serializer.data)
         except Employee.DoesNotExist:
@@ -26,7 +26,7 @@ class CurrentEmployeeProfileView(APIView):
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
+    queryset = Employee.objects.all().select_related('user__name')
     serializer_class = EmployeeSerializer
 
 

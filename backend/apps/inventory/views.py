@@ -13,6 +13,9 @@ class MedicineViewSet(viewsets.ModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ['name', 'date_added', 'price']
 
+    def get_queryset(self):
+        return super().get_queryset().select_related(None)
+
     @action(detail=False, methods=['get'])
     def alerts(self, request):
         low_stock = self.get_queryset().filter(quantity__lte=10)

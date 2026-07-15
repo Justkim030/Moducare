@@ -1,7 +1,6 @@
 from django.db import models
 
 class IncidentReport(models.Model):
-    """Model representing an incident report linked to an employee and a patient."""
     employee = models.ForeignKey(
         "users.Employee",
         on_delete=models.SET_NULL,
@@ -25,6 +24,12 @@ class IncidentReport(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
+        indexes = [
+            models.Index(fields=['employee', 'incident_date'], name='idx_incident_emp_date'),
+            models.Index(fields=['patient', 'incident_date'], name='idx_incident_patient_date'),
+            models.Index(fields=['incident_type', 'incident_date'], name='idx_incident_type_date'),
+        ]
+        ordering = ['-incident_date']
         verbose_name = "Incident Report"
         verbose_name_plural = "Incident Reports"
 

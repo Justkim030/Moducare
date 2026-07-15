@@ -2,6 +2,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework import viewsets
+from .models import Department, Role
+from .serializers import DepartmentSerializer, RoleSerializer
 
 ROLE_CAPABILITIES = {
     'ADMIN': ['*'],
@@ -78,3 +81,21 @@ def role_permissions_view(request):
 @permission_classes([AllowAny])
 def health_view(request):
     return Response({'ok': True})
+
+
+class DepartmentViewSet(viewsets.ModelViewSet):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related(None)
+
+
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all().select_related('department')
+    serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('department')

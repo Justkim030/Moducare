@@ -11,6 +11,9 @@ class AnalyticsViewSet(viewsets.ModelViewSet):
     serializer_class = AnalyticsSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return super().get_queryset().select_related(None)
+
     @action(detail=False, methods=['get'])
     def overview(self, request):
         return Response({

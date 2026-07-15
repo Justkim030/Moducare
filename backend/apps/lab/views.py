@@ -14,27 +14,30 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 class LabTestViewSet(viewsets.ModelViewSet):
     queryset = LabTest.objects.all()
     serializer_class = LabTestSerializer
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related(None)
 
 class TestRequestViewSet(viewsets.ModelViewSet):
     queryset = TestRequest.objects.all().order_by('-requested_at')
     serializer_class = TestRequestSerializer
     
     def get_permissions(self):
-        if self.action == 'create': # Doctors order tests
+        if self.action == 'create':
             return [IsDoctor]
-        if self.action in ['update', 'partial_update', 'complete_test']: # Lab Techs enter results
+        if self.action in ['update', 'partial_update', 'complete_test']:
             return [IsLabTech | IsAdminUser]
         return [IsAuthenticated]
 
     def get_queryset(self):
+        queryset = super().get_queryset().select_related('visit__patient__name', 'test', 'patient__name', 'doctor__user', 'lab_tech__user')
         user = self.request.user
         if user.employee_type == 'LAB_TECH':
-            return TestRequest.objects.filter(status__in=['REQUESTED', 'IN_PROGRESS'])
-        # Doctors see tests they ordered
+            return queryset.filter(status__in=['REQUESTED', 'IN_PROGRESS'])
         if user.employee_type == 'DOCTOR':
-            return TestRequest.objects.filter(doctor__user=user)
-        return super().get_queryset()
+            return queryset.filter(doctor__user=user)
+        return queryset
 
     @action(detail=True, methods=['post'])
     def complete_test(self, request, pk=None):

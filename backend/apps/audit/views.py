@@ -4,6 +4,9 @@ from .models import Audit
 from .serializers import AuditSerializer
 
 class AuditViewSet(viewsets.ModelViewSet):
-    queryset = Audit.objects.all()
+    queryset = Audit.objects.all().select_related('performed_by')
     serializer_class = AuditSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('performed_by')

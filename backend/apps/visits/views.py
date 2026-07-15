@@ -9,12 +9,14 @@ from rest_framework.filters import OrderingFilter
 
 
 class VisitViewSet(viewsets.ModelViewSet):
-   # Use 'triage__triage_level' to reach into the related Triage model
     queryset = Visits.objects.all().order_by('triage__triage_level', 'visit_date')
     serializer_class = VisitSerializer
     
     filter_backends = [OrderingFilter]
     ordering_fields = ['visit_date', 'patient__first_name', 'status']
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('patient__name', 'registered_by__user', 'triage')
 
     def get_permissions(self):
         if self.action == 'create':
@@ -46,7 +48,6 @@ class VisitViewSet(viewsets.ModelViewSet):
         if pharmacy_notes is not None:
             visit.pharmacy_notes = pharmacy_notes
 
-        # Update triage with chief_complaint if provided
         complaint = request.data.get('chief_complaint')
         if complaint is not None and visit.triage:
             visit.triage.chief_complaint = complaint
@@ -65,10 +66,9 @@ class WardLogViewSet(viewsets.ModelViewSet):
     queryset = WardLog.objects.all().order_by('-timestamp')
     serializer_class = WardLogSerializer
     permission_classes = [IsAuthenticated]
-            
+    
     def get_queryset(self):
-        # Optional: Filter logs by visit_id if provided in URL params
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related('visit__patient__name', 'nurse__user', 'triage')
         visit_id = self.request.query_params.get('visit_id')
         if visit_id:
             queryset = queryset.filter(visit_id=visit_id)

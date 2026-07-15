@@ -7,5 +7,11 @@ class Document(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True, db_index=True)
     description = models.TextField(blank=True, null=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['uploaded_by', 'uploaded_at'], name='idx_document_uploaded'),
+        ]
+        ordering = ['-uploaded_at']
+
     def __str__(self):
         return self.title

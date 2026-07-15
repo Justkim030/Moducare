@@ -7,9 +7,12 @@ from .models import Report
 from .serializers import ReportSerializer
 
 class ReportViewSet(viewsets.ModelViewSet):
-    queryset = Report.objects.all()
+    queryset = Report.objects.all().select_related('generated_by')
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('generated_by')
 
     @action(detail=False, methods=['get'])
     def scheduled(self, request):
@@ -30,7 +33,7 @@ class ReportScheduledListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        reports = Report.objects.all()
+        reports = Report.objects.all().select_related('generated_by')
         serializer = ReportSerializer(reports, many=True)
         return Response({'ok': True, 'data': serializer.data})
 

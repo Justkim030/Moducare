@@ -20,5 +20,13 @@ class Referral(models.Model):
     referral_date = models.DateTimeField(auto_now_add=True, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['patient', 'status'], name='idx_referral_patient_status'),
+            models.Index(fields=['referred_by', 'referral_date'], name='idx_referral_by_date'),
+            models.Index(fields=['status', 'referral_date'], name='idx_referral_status_date'),
+        ]
+        ordering = ['-referral_date']
+
     def __str__(self):
         return f"Referral - {self.patient}"

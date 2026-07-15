@@ -7,5 +7,11 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', 'created_at'], name='idx_notif_recipient_read'),
+        ]
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"{self.title} - {self.recipient.username}"

@@ -12,23 +12,15 @@ from .permissions import IsDoctor, IsChemist
 from rest_framework.filters import OrderingFilter
 
 class PrescriptionItemViewSet(viewsets.ModelViewSet):
-    """ API endpoint for individual prescription items. """
-    queryset = PrescriptionItem.objects.all()
+    queryset = PrescriptionItem.objects.all().select_related('prescription', 'medicine', 'patient')
     serializer_class = PrescriptionItemSerializer
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
 
-    # --- ADD THIS METHOD ---
     def perform_create(self, serializer):
-        # 1. Get the prescription this item belongs to
         prescription = serializer.validated_data['prescription']
-        
-        # 2. Check if the prescription is locked
         if prescription.status != 'PENDING':
              raise ValidationError("Cannot add items to a prescription that is already paid or dispensed.")
-
-        # 3. Automatically assign the patient from the prescription
         serializer.save(patient=prescription.patient)
-    # -----------------------
 
     def perform_update(self, serializer):
         item = self.get_object()
@@ -37,7 +29,6 @@ class PrescriptionItemViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     def perform_destroy(self, instance):
-        # Prevent deleting if already paid/dispensed
         if instance.prescription.status != 'PENDING':
             raise ValidationError("Cannot delete items after payment.")
         instance.delete()
@@ -50,31 +41,24 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     ordering_fields = ['date_prescribed', 'patient__first_name', 'status']
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related('employee__user', 'patient__name', 'visit', 'dispensed_by__user')
         user = self.request.user
         
-        # Admin sees all
         if user.is_superuser or getattr(user, 'employee_type', '') == 'ADMIN':
             return queryset
 
-        # DOCTOR: Filter by the 'employee' field on Prescription
-        # This works because 'employee' is a ForeignKey to Employee model, 
-        # and Employee has a 'user' field.
         if user.employee_type == 'DOCTOR':
             return queryset.filter(employee__user=user)
             
-        # CHEMIST: Needs careful handling for 'dispensed_by'
         if user.employee_type == 'CHEMIST':
-            # FIX 1: Get the Employee object safely
             try:
-                employee_profile = user.employee # or user.profile
+                employee_profile = user.employee
             except AttributeError:
-                # If a chemist logs in but has no employee profile, they see nothing
                 return queryset.none()
 
             return queryset.filter(
                 Q(status__in=['PENDING', 'PAID']) | 
-                Q(dispensed_by=employee_profile) # FIX 2: Pass Employee object, not User
+                Q(dispensed_by=employee_profile)
             )
             
         return queryset

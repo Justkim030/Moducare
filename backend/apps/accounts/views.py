@@ -26,15 +26,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     serializer_class = InvoiceSerializer
     
     def get_permissions(self):
-        # Anyone logged in can CREATE a bill (e.g. Doctor)
         if self.action in ['create']:
             return [IsAuthenticated()]
-            
-        # For viewing/editing, use our custom combined permission
         return [IsAccountantOrAdmin()]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related('patient__name', 'visit__patient__name', 'prescription__patient__name', 'issued_by__user')
         status_param = self.request.query_params.get('status')
         if status_param:
             queryset = queryset.filter(status=status_param)
@@ -58,11 +55,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         
         amount = serializer.validated_data['amount']
         
-        # Save payment
         received_by = getattr(request.user, 'employee', None)
         serializer.save(invoice=invoice, received_by=received_by)
         
-        # Update Invoice Status
         invoice.paid_amount += amount
         if invoice.paid_amount >= invoice.total_amount:
             invoice.status = Invoice.PaymentStatus.PAID
@@ -85,3 +80,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all().order_by('-payment_date')
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('invoice__patient__name', 'received_by__user')

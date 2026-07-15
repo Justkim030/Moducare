@@ -7,3 +7,6 @@ class FinanceViewSet(viewsets.ModelViewSet):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related(None)

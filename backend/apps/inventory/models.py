@@ -6,5 +6,11 @@ class Medicine(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     date_added = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['name', 'quantity'], name='idx_medicine_name_qty'),
+        ]
+        ordering = ['name']
+
     def __str__(self):
         return self.name

@@ -16,5 +16,12 @@ class Finance(models.Model):
     category = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['transaction_type', 'date'], name='idx_finance_type_date'),
+            models.Index(fields=['category', 'date'], name='idx_finance_category_date'),
+        ]
+        ordering = ['-date']
+
     def __str__(self):
         return f"{self.transaction_type} - {self.amount}"

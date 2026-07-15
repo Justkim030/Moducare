@@ -20,5 +20,12 @@ class Audit(models.Model):
     performed_by = models.ForeignKey('users.Users', on_delete=models.SET_NULL, blank=True, null=True, related_name='audits', db_index=True)
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['model_name', 'object_id', 'timestamp'], name='idx_audit_model_object_ts'),
+            models.Index(fields=['action', 'timestamp'], name='idx_audit_action_ts'),
+        ]
+        ordering = ['-timestamp']
+
     def __str__(self):
         return f"{self.action} {self.model_name} - {self.timestamp}"
