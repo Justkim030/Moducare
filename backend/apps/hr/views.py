@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Employee, EmployeeProfile, Contract, TrainingRecord, PerformanceReview, PayrollRecord, TimeAttendance, LeaveRequest
+from .models import Staff, EmployeeProfile, Contract, TrainingRecord, PerformanceReview, PayrollRecord, TimeAttendance, LeaveRequest
 from .serializers import (
-    EmployeeSerializer,
+    StaffSerializer,
     EmployeeProfileSerializer,
     ContractSerializer,
     TrainingRecordSerializer,
@@ -12,9 +12,9 @@ from .serializers import (
     LeaveRequestSerializer,
 )
 
-class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
+class StaffViewSet(viewsets.ModelViewSet):
+    queryset = Staff.objects.all()
+    serializer_class = StaffSerializer
     permission_classes = [IsAuthenticated]
 
 

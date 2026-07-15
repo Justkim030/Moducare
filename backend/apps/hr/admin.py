@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Employee,
+    Staff,
     EmployeeProfile,
     Contract,
     TrainingRecord,
@@ -10,7 +10,7 @@ from .models import (
     LeaveRequest,
 )
 
-admin.site.register(Employee)
+admin.site.register(Staff)
 admin.site.register(EmployeeProfile)
 admin.site.register(Contract)
 admin.site.register(TrainingRecord)

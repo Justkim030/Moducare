@@ -45,11 +45,24 @@ class UserSerializer(serializers.ModelSerializer):
                 name_data[field] = ''
         name_data.setdefault('third_name', '')
         name_instance = Names.objects.create(**name_data)
-        password = validated_data.pop('password')
+        
+        password = validated_data.pop('password', None)
         user = Users.objects.create(name=name_instance, **validated_data)
-        user.set_password(password)
-        user.save()
+        if password:
+            user.set_password(password)
+            user.save()
         return user
+
+    def update(self, instance, validated_data):
+        name_data = validated_data.pop('name', None)
+        if name_data and instance.name:
+            for attr, value in name_data.items():
+                setattr(instance.name, attr, value)
+            instance.name.save()
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 class EmployeeSerializer(serializers.ModelSerializer):
     user = UserSerializer()

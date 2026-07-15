@@ -44,14 +44,14 @@ class Users(AbstractBaseUser, PermissionsMixin):
         LAB_TECH = "LAB_TECH", "Lab Technician"
         
 
-    name = models.ForeignKey(Names, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.ForeignKey(Names, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     username = models.CharField(max_length=100, unique=True)
     
     # Updated to use choices
-    employee_type = models.CharField(max_length=50, choices=Role.choices, default=Role.DOCTOR)
+    employee_type = models.CharField(max_length=50, choices=Role.choices, default=Role.DOCTOR, db_index=True)
     
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True, db_index=True)
+    is_staff = models.BooleanField(default=False, db_index=True)
 
     objects = MyUserManager()
 

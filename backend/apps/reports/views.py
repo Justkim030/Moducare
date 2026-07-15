@@ -41,6 +41,6 @@ class ReportRunView(APIView):
     def post(self, request, pk):
         try:
             report = Report.objects.get(pk=pk)
-            return Response({'ok': True, 'message': f'Report {report.name} queued for execution'})
+            return Response({'ok': True, 'message': f'Report {report.title} queued for execution'})
         except Report.DoesNotExist:
             return Response({'ok': False, 'error': 'Report not found'}, status=404)

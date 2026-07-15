@@ -13,12 +13,12 @@ class Referral(models.Model):
         (COMPLETED, 'Completed'),
     ]
 
-    patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE, related_name='referrals')
-    referred_by = models.ForeignKey('users.Users', on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals_sent')
-    referred_to = models.ForeignKey('users.Users', on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals_received')
+    patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE, related_name='referrals', db_index=True)
+    referred_by = models.ForeignKey('users.Users', on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals_sent', db_index=True)
+    referred_to = models.ForeignKey('users.Users', on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals_received', db_index=True)
     reason = models.TextField()
-    referral_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
+    referral_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING, db_index=True)
 
     def __str__(self):
         return f"Referral - {self.patient}"

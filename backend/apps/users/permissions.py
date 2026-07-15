@@ -29,3 +29,7 @@ class IsLabTech(BasePermission):
 class IsAccountant(BasePermission):  # <--- CRITICAL: Must inherit from BasePermission
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.employee_type == 'ACCOUNTANT')
+
+class IsStoreManager(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and request.user.employee_type == 'STORE_MANAGER')

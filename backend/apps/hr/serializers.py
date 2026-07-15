@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Employee, EmployeeProfile, Contract, TrainingRecord, PerformanceReview, PayrollRecord, TimeAttendance, LeaveRequest
+from .models import Staff, EmployeeProfile, Contract, TrainingRecord, PerformanceReview, PayrollRecord, TimeAttendance, LeaveRequest
 
-class EmployeeSerializer(serializers.ModelSerializer):
+class StaffSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Employee
+        model = Staff
         fields = '__all__'
 
 
