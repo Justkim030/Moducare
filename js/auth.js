@@ -449,6 +449,24 @@ export function setSession(user, token, remember = false) {
     else session.role = rid.replace(/^role_/, '');
   }
 
+  if (!session.role && session.employee_type) {
+    const rid = String(session.employee_type).toLowerCase();
+    const roleMap = {
+      admin: 'admin',
+      doctor: 'provider',
+      chemist: 'ancillary',
+      store_manager: 'ancillary',
+      quality_assurance: 'mande',
+      triage: 'triage',
+      nurse: 'triage',
+      receptionist: 'intake',
+      accountant: 'mande',
+      lab_tech: 'ancillary',
+    };
+    session.role = roleMap[rid] || rid;
+    session.role_id = session.employee_type.toLowerCase();
+  }
+
   const clinical = CLINICAL_ROLE_MAP[(session.role_id || '').toLowerCase()];
   if (clinical) session.clinical_role = clinical.key;
 
@@ -533,10 +551,10 @@ export function canAccessModule(moduleId) {
  */
 export async function loginRequest(email, password) {
   try{
-    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
+    const res = await fetch('/api/login/', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
     const data = await res.json();
     if (res.ok && data.ok && data.user){
-      return { success: true, user: data.user, token: data.token };
+      return { success: true, user: data.user, token: data.token, capabilities: data.user.capabilities || [], modules: data.user.modules || [] };
     }
     return { success: false, error: data && data.error ? data.error : 'Login failed' };
   }catch(e){
