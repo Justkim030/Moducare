@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+    'drf_spectacular',
 
     'apps.users',
     'apps.inventory',
@@ -81,6 +82,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.FormParser',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 from datetime import timedelta
@@ -106,7 +108,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / '..'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -124,8 +126,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     'http://127.0.0.1:5173',
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    'http://127.0.0.1:3000',
+    "http://localhost:8080",
+    'http://127.0.0.1:8080',
+    "http://localhost:8081",
+    'http://127.0.0.1:8081',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Database Setup for Local Development & PythonAnywhere Production
@@ -180,6 +188,12 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / '..' / 'js',
+    BASE_DIR / '..' / 'css',
+    BASE_DIR / '..' / 'src',
+]
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -188,3 +202,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 APPEND_SLASH = False
 
 AUTH_USER_MODEL = 'users.Users'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ModuCare API',
+    'DESCRIPTION': 'Django REST Framework backend for ModuCare Management System',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}

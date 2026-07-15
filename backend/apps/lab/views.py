@@ -22,10 +22,10 @@ class TestRequestViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action == 'create': # Doctors order tests
-            return [IsDoctor()]
+            return [IsDoctor]
         if self.action in ['update', 'partial_update', 'complete_test']: # Lab Techs enter results
-            return [IsLabTech() | IsAdminUser()]
-        return [IsAuthenticated()]
+            return [IsLabTech | IsAdminUser]
+        return [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user

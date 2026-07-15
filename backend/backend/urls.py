@@ -6,10 +6,15 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from backend import settings
 from rest_framework.authtoken.views import obtain_auth_token
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
+from django.views.static import serve
+from django.conf import settings as django_settings
+from django.conf import settings as django_settings
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # Collaborator's React frontend API (v1)
 urlpatterns = [
@@ -36,6 +41,19 @@ urlpatterns = [
     path('api/v1/operations/', include('apps.operations.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path('api/v1/get-token/', obtain_auth_token),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    
+    # Old vanilla JS frontend pages
+    path('login.html', TemplateView.as_view(template_name='login.html'), name='login-page'),
+    path('register.html', TemplateView.as_view(template_name='register.html'), name='register-page'),
+    path('forgot-password.html', TemplateView.as_view(template_name='forgot-password.html'), name='forgot-password-page'),
+    re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    
+    # Old vanilla JS frontend static files
+    path('js/<path:path>', serve, {'document_root': django_settings.BASE_DIR / '..' / 'js'}),
+    path('css/<path:path>', serve, {'document_root': django_settings.BASE_DIR / '..' / 'css'}),
+    path('src/<path:path>', serve, {'document_root': django_settings.BASE_DIR / '..' / 'src'}),
 ]
 
 # Old vanilla JS frontend compatibility layer (api/ prefix)
@@ -106,6 +124,11 @@ compat_patterns = [
 ]
 
 urlpatterns += compat_patterns
+
+# SPA catch-all for old frontend (must be last)
+urlpatterns += [
+    re_path(r'^(?P<path>.*)/?$', TemplateView.as_view(template_name='../index.html')),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
