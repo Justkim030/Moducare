@@ -4,7 +4,7 @@ from . import views
 
 router = DefaultRouter()
 
-router.register(r'prescriptions', views.PrescriptionViewSet, basename='prescription')
+router.register(r'', views.PrescriptionViewSet, basename='prescription')
 router.register(r'items', views.PrescriptionItemViewSet, basename='prescriptionitem')
 
 urlpatterns = [

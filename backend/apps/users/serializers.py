@@ -39,7 +39,11 @@ class UserSerializer(serializers.ModelSerializer):
         return 'active' if obj.is_active else 'inactive'
 
     def create(self, validated_data):
-        name_data = validated_data.pop('name')
+        name_data = validated_data.pop('name', {})
+        for field in ['first_name', 'second_name', 'gender', 'age', 'phone_number']:
+            if field not in name_data:
+                name_data[field] = ''
+        name_data.setdefault('third_name', '')
         name_instance = Names.objects.create(**name_data)
         password = validated_data.pop('password')
         user = Users.objects.create(name=name_instance, **validated_data)
@@ -64,7 +68,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        name_data = user_data.pop('name')
+        name_data = user_data.pop('name', {})
+        for field in ['first_name', 'second_name', 'gender', 'age', 'phone_number']:
+            if field not in name_data:
+                name_data[field] = ''
+        name_data.setdefault('third_name', '')
         name_instance = Names.objects.create(**name_data)
         password = user_data.pop('password')
         user_instance = Users.objects.create(name=name_instance, **user_data)

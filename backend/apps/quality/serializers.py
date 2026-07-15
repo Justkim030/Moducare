@@ -23,7 +23,6 @@ class IncidentReportSerializer(serializers.ModelSerializer):
             "employee",
             "category",
             "patient",
-            "time",
             "reporter_role",
             "action_taken",
             "witness_name",

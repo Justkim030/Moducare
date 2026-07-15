@@ -13,21 +13,24 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def scheduled(self, request):
-        reports = self.get_queryset().filter(schedule__isnull=False)
+        reports = self.get_queryset()
         serializer = self.get_serializer(reports, many=True)
         return Response({'ok': True, 'data': serializer.data})
 
     @action(detail=True, methods=['post'])
     def run(self, request, pk=None):
-        report = self.get_object()
-        return Response({'ok': True, 'message': f'Report {report.name} queued for execution'})
+        try:
+            report = Report.objects.get(pk=pk)
+            return Response({'ok': True, 'message': f'Report {report.title} queued for execution'})
+        except Report.DoesNotExist:
+            return Response({'ok': False, 'error': 'Report not found'}, status=404)
 
 
 class ReportScheduledListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        reports = Report.objects.filter(schedule__isnull=False)
+        reports = Report.objects.all()
         serializer = ReportSerializer(reports, many=True)
         return Response({'ok': True, 'data': serializer.data})
 

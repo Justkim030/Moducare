@@ -3,8 +3,9 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(r'referrals', views.ReferralViewSet)
+router.register(r'', views.ReferralViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
 ]
+

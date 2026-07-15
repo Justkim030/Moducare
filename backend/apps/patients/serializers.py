@@ -46,7 +46,22 @@ class PatientSerializer(serializers.ModelSerializer):
         return ''
 
     def create(self, validated_data):
-        name_data = validated_data.pop('name')
+        name_data = validated_data.pop('name', {})
+        for field in ['first_name', 'second_name', 'gender', 'age', 'phone_number']:
+            if field not in name_data:
+                name_data[field] = ''
+        name_data.setdefault('third_name', '')
         name_instance = Names.objects.create(**name_data)
         patient_instance = Patient.objects.create(name=name_instance, **validated_data)
         return patient_instance
+
+    def update(self, instance, validated_data):
+        name_data = validated_data.pop('name', None)
+        if name_data and instance.name:
+            for attr, value in name_data.items():
+                setattr(instance.name, attr, value)
+            instance.name.save()
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
