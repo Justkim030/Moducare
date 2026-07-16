@@ -23,6 +23,12 @@ import Laboratory from './pages/Laboratory';
 import WardDashboard from './pages/WardDashboard';
 import Incidents from './pages/Incidents';
 import HR from './pages/HR';
+import Appointments from './pages/Appointments';
+import Finance from './pages/Finance';
+import Audit from './pages/Audit';
+import Notifications from './pages/Notifications';
+import Referrals from './pages/Referrals';
+import Operations from './pages/Operations';
 
 function App() {
   return (
@@ -48,6 +54,12 @@ function App() {
           <Route path="/ward" element={<WardDashboard />} />
           <Route path="/incidents" element={<Incidents />} />
           <Route path="/hr" element={<HR />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/finance" element={<Finance />} />
+          <Route path="/audit" element={<Audit />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/referrals" element={<Referrals />} />
+          <Route path="/operations" element={<Operations />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

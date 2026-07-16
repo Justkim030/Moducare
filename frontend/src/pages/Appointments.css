@@ -1,0 +1,42 @@
+/* src/pages/Appointments.css */
+.appointments-page { color: var(--text); }
+.finance-page { color: var(--text); }
+.audit-page { color: var(--text); }
+.notifications-page { color: var(--text); }
+.referrals-page { color: var(--text); }
+.operations-page { color: var(--text); }
+
+.audit-changes {
+  max-width: 320px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.badge-count {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  background-color: var(--primary, #2b6cb0);
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.notif-list { list-style: none; padding: 0; margin: 0; }
+.notif-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  background-color: var(--bg-light);
+}
+.notif-item.unread { border-left: 4px solid var(--primary, #2b6cb0); }
+.notif-item.read { opacity: 0.7; }
+.notif-body p { margin: 0.35rem 0; }
+.notif-body small { color: var(--text-muted); }

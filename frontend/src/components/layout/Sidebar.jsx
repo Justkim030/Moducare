@@ -166,6 +166,36 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                  {!isCollapsed && <span className="label">Human Resources</span>}
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/appointments" title="Appointments">
+                 <span className="material-icons icon">event</span>
+                 {!isCollapsed && <span className="label">Appointments</span>}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/finance" title="Finance & Billing">
+                 <span className="material-icons icon">payments</span>
+                 {!isCollapsed && <span className="label">Finance</span>}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/audit" title="Audit & Compliance">
+                 <span className="material-icons icon">verified_user</span>
+                 {!isCollapsed && <span className="label">Audit</span>}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/referrals" title="Referrals">
+                 <span className="material-icons icon">forward</span>
+                 {!isCollapsed && <span className="label">Referrals</span>}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/operations" title="Operations">
+                 <span className="material-icons icon">hub</span>
+                 {!isCollapsed && <span className="label">Operations</span>}
+              </NavLink>
+            </li>
           </>
         )}
         
