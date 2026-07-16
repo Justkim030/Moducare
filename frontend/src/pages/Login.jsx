@@ -5,7 +5,7 @@ import './Login.css';
 import '../App.css';
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const { login, isLoggedIn } = useAuth();
@@ -19,10 +19,10 @@ function Login() {
     e.preventDefault();
     setError(null);
     try {
-      await login(username, password);
+      await login(email, password);
       navigate('/');
     } catch {
-      setError('Login failed. Please check your username and password.');
+      setError('Login failed. Please check your email and password.');
     }
   };
 
@@ -32,12 +32,12 @@ function Login() {
         <h2> Moducare Login</h2>
         
         <div className="form-group">
-          <label htmlFor="username">Username:</label>
+          <label htmlFor="email">Email:</label>
           <input 
-            type="text" 
-            id="username"
-            value={username} 
-            onChange={(e) => setUsername(e.target.value)} 
+            type="email" 
+            id="email"
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
             required
           />
         </div>

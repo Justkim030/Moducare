@@ -37,19 +37,18 @@
 ---
 ## 🔐 Default Credentials
 
-| Username | Password | Role |
+| Email | Password | Role |
 |----------|----------|------|
-| `admin` | `admin` | ADMIN (superuser) |
-| `admin2` | `password123` | ADMIN |
-| `doctor1` | `password123` | DOCTOR |
-| `chemist1` | `password123` | CHEMIST |
-| `store_manager1` | `password123` | STORE_MANAGER |
-| `qa1` | `password123` | QUALITY_ASSURANCE |
-| `triage1` | `password123` | TRIAGE |
-| `nurse1` | `password123` | NURSE |
-| `receptionist1` | `password123` | RECEPTIONIST |
-| `accountant1` | `password123` | ACCOUNTANT |
-| `labtech1` | `password123` | LAB_TECH |
+| `admin2@test.com` | `password123` | ADMIN |
+| `doctor1@test.com` | `password123` | DOCTOR |
+| `chemist1@test.com` | `password123` | CHEMIST |
+| `store_manager1@test.com` | `password123` | STORE_MANAGER |
+| `qa1@test.com` | `password123` | QUALITY_ASSURANCE |
+| `triage1@test.com` | `password123` | TRIAGE |
+| `nurse1@test.com` | `password123` | NURSE |
+| `receptionist1@test.com` | `password123` | RECEPTIONIST |
+| `accountant1@test.com` | `password123` | ACCOUNTANT |
+| `labtech1@test.com` | `password123` | LAB_TECH |
 
 ---
 ## 🔐 Authentication & RBAC
