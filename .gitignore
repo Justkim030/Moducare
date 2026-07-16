@@ -2,7 +2,8 @@ node_modules/
 .claude/
 .playwright-mcp/
 *.png
-CONTINUATION_PROMPT.md
 *.db
+*.sqlite3
+*.sqlite
 src/data/
 .env

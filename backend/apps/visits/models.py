@@ -35,7 +35,7 @@ class Visits(models.Model):
     consultation_notes = models.TextField(blank=True, null=True)
     pharmacy_notes = models.TextField(blank=True, null=True)
     patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE, db_index=True)
-    registered_by = models.ForeignKey('users.Employee', on_delete=models.SET_NULL, null=True, db_index=True)
+    registered_by = models.ForeignKey('hr.Staff', on_delete=models.SET_NULL, null=True, db_index=True)
     triage = models.ForeignKey(Triage, on_delete=models.CASCADE, related_name='visit_initial_triage', db_index=True)
 
     class Meta:

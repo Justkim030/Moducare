@@ -17,8 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Users
-        fields = ['id', 'username', 'password', 'employee_type', 'name', 'email', 'phone_number', 'role_id', 'department', 'status', 'is_active', 'is_staff']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'username', 'employee_type', 'name', 'email', 'phone_number', 'role_id', 'department', 'status', 'is_active', 'is_staff']
 
     def get_email(self, obj):
         try:
@@ -45,12 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
                 name_data[field] = ''
         name_data.setdefault('third_name', '')
         name_instance = Names.objects.create(**name_data)
-        
-        password = validated_data.pop('password', None)
         user = Users.objects.create(name=name_instance, **validated_data)
-        if password:
-            user.set_password(password)
-            user.save()
         return user
 
     def update(self, instance, validated_data):

@@ -15,6 +15,9 @@ class PatientViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return super().get_queryset().select_related('name')
 
+    def _invalidate_cache(self):
+        cache.delete("global_patients_list")
+
     def list(self, request, *args, **kwargs):
         if request.query_params:
             return super().list(request, *args, **kwargs)
@@ -27,3 +30,19 @@ class PatientViewSet(viewsets.ModelViewSet):
         response = super().list(request, *args, **kwargs)
         cache.set(cache_key, response.data, timeout=900)
         return response
+
+    def create(self, request, *args, **kwargs):
+        self._invalidate_cache()
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        self._invalidate_cache()
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self._invalidate_cache()
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        self._invalidate_cache()
+        return super().destroy(request, *args, **kwargs)

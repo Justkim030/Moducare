@@ -4,13 +4,31 @@ from rest_framework.decorators import action
 from rest_framework.response import Response 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from django.db.models import Q
 
-from .models import Employee, Users
+from .models import Employee, Users, Names
 from .serializers import EmployeeSerializer, UserSerializer
+from apps.core.views import getCapabilities, getModulesForRole
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = Users.objects.all().select_related('name')
     serializer_class = UserSerializer
+
+    def perform_create(self, serializer):
+        password = self.request.data.get('password')
+        user = serializer.save()
+        if password:
+            user.set_password(password)
+            user.save()
+
+    def perform_update(self, serializer):
+        password = self.request.data.get('password')
+        user = serializer.save()
+        if password:
+            user.set_password(password)
+            user.save()
 
 
 class CurrentEmployeeProfileView(APIView):
@@ -39,22 +57,28 @@ class LoginView(APIView):
         if not email or not password:
             return Response({'ok': False, 'error': 'Email/username and password required'}, status=400)
 
-        from django.contrib.auth import authenticate
-        user = authenticate(request, username=email, password=password)
+        user = None
+        if '@' in str(email):
+            try:
+                user = Employee.objects.select_related('user').get(email=email).user
+            except Employee.DoesNotExist:
+                pass
+
+        if not user:
+            user = authenticate(request, username=email, password=password)
+
         if not user:
             return Response({'ok': False, 'error': 'Invalid credentials'}, status=401)
 
         refresh = RefreshToken.for_user(user)
-        
-        from apps.core.views import getCapabilities, getModulesForRole
         role_id = user.employee_type if hasattr(user, 'employee_type') else None
-        
+
         display_name = ''
         if hasattr(user, 'name') and user.name:
             display_name = f"{user.name.first_name} {user.name.second_name}".strip()
         else:
             display_name = user.username
-        
+
         return Response({
             'ok': True,
             'token': str(refresh.access_token),
@@ -91,7 +115,6 @@ class RegisterView(APIView):
         if Users.objects.filter(username=username).exists():
             return Response({'ok': False, 'error': 'Username already exists'}, status=400)
 
-        from apps.users.models import Names, Employee
         name = Names.objects.create(
             first_name=first_name,
             second_name=second_name,

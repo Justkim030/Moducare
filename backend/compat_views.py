@@ -10,9 +10,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
+from django.db import transaction
 
 from apps.patients.models import Patient
 from apps.visits.models import Visits
@@ -46,6 +48,23 @@ from apps.quality.serializers import IncidentReportSerializer
 from apps.inventory.serializers import MedicineSerializer
 from apps.operations.serializers import ActivitySerializer, CalendarEventSerializer
 from apps.hr.serializers import StaffSerializer
+
+
+class CompatPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'limit'
+    max_page_size = 100
+
+    def get_paginated_response(self, data):
+        return Response({
+            'ok': True,
+            'results': data,
+            'pagination': {
+                'page': self.page.number,
+                'totalPages': self.page.paginator.num_pages,
+                'total': self.page.paginator.count,
+            }
+        })
 
 
 class DashboardView(APIView):
@@ -114,6 +133,8 @@ class SearchView(APIView):
 
 class CompatPatientList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatPatientSerializer
+    resource_name = 'patients'
 
     def get(self, request):
         qs = Patient.objects.all().select_related('name')
@@ -125,17 +146,20 @@ class CompatPatientList(APIView):
                 Q(name__phone_number__icontains=q)
             )
         qs = qs.order_by('-register_date')
-        serializer = CompatPatientSerializer(qs, many=True)
-        return Response({'ok': True, 'patients': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatPatientSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         name_data = serializer.validated_data.pop('name', {})
         from apps.users.models import Names
         name_instance = Names.objects.create(**name_data)
         patient_instance = Patient.objects.create(name=name_instance, **serializer.validated_data)
-        return Response({'ok': True, 'patient': CompatPatientSerializer(patient_instance).data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: self.serializer_class(patient_instance).data}, status=status.HTTP_201_CREATED)
 
 
 class CompatPatientDetail(APIView):
@@ -193,17 +217,22 @@ class CompatPatientDetail(APIView):
 
 class CompatIncidentList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatIncidentSerializer
+    resource_name = 'incidents'
 
     def get(self, request):
         qs = IncidentReport.objects.all().order_by('-incident_date')
-        serializer = CompatIncidentSerializer(qs, many=True)
-        return Response({'ok': True, 'incidents': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatIncidentSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'ok': True, 'incident': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatIncidentDetail(APIView):
@@ -247,12 +276,17 @@ class CompatIncidentDetail(APIView):
 
 class CompatInventoryList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = MedicineSerializer
+    resource_name = 'inventory'
 
     def get(self, request):
         qs = Medicine.objects.all().order_by('name')
-        serializer = MedicineSerializer(qs, many=True)
-        return Response({'ok': True, 'inventory': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
         from apps.inventory.serializers import MedicineSerializer
         serializer = MedicineSerializer(data=request.data)
@@ -302,20 +336,25 @@ class CompatInventoryDetail(APIView):
 
 class CompatAppointmentList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatAppointmentSerializer
+    resource_name = 'appointments'
 
     def get(self, request):
         qs = Appointment.objects.all().select_related('patient__name', 'doctor').order_by('appointment_date')
         status = request.query_params.get('status', '')
         if status:
             qs = qs.filter(status=status)
-        serializer = CompatAppointmentSerializer(qs, many=True)
-        return Response({'ok': True, 'appointments': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatAppointmentSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'ok': True, 'appointment': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatAppointmentDetail(APIView):
@@ -359,20 +398,25 @@ class CompatAppointmentDetail(APIView):
 
 class CompatNotificationList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatNotificationSerializer
+    resource_name = 'notifications'
 
     def get(self, request):
         qs = Notification.objects.filter(recipient=request.user).order_by('-created_at')
         unread = request.query_params.get('unread', '')
         if unread == 'true':
             qs = qs.filter(is_read=False)
-        serializer = CompatNotificationSerializer(qs, many=True)
-        return Response({'ok': True, 'notifications': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatNotificationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(recipient=request.user)
-        return Response({'ok': True, 'notification': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatNotificationBroadcast(APIView):
@@ -397,6 +441,8 @@ class EmployeeMeView(APIView):
 
 class CompatUserList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatUserSerializer
+    resource_name = 'users'
 
     def get(self, request):
         qs = Users.objects.all().select_related('name')
@@ -408,11 +454,14 @@ class CompatUserList(APIView):
                 Q(username__icontains=q)
             )
         qs = qs.order_by('-id')
-        serializer = CompatUserSerializer(qs, many=True)
-        return Response({'ok': True, 'users': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatUserSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         name_data = serializer.validated_data.pop('name', {})
         from apps.users.models import Names
@@ -425,7 +474,7 @@ class CompatUserList(APIView):
         for attr, value in serializer.validated_data.items():
             setattr(user, attr, value)
         user.save()
-        return Response({'ok': True, 'user': CompatUserSerializer(user).data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: self.serializer_class(user).data}, status=status.HTTP_201_CREATED)
 
 
 class CompatUserDetail(APIView):
@@ -483,20 +532,25 @@ class CompatUserDetail(APIView):
 
 class CompatFinanceList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatFinanceSerializer
+    resource_name = 'finance'
 
     def get(self, request):
         qs = Finance.objects.all().order_by('-date')
         status = request.query_params.get('status', '')
         if status:
             qs = qs.filter(category=status)
-        serializer = CompatFinanceSerializer(qs, many=True)
-        return Response({'ok': True, 'finance': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatFinanceSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'ok': True, 'entry': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatFinanceDetail(APIView):
@@ -540,20 +594,25 @@ class CompatFinanceDetail(APIView):
 
 class CompatOperationList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CompatOperationSerializer
+    resource_name = 'operations'
 
     def get(self, request):
         qs = Operation.objects.all().order_by('-start_date')
         status = request.query_params.get('status', '')
         if status:
             qs = qs.filter(status=status)
-        serializer = CompatOperationSerializer(qs, many=True)
-        return Response({'ok': True, 'operations': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CompatOperationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'ok': True, 'operation': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatOperationDetail(APIView):
@@ -597,20 +656,25 @@ class CompatOperationDetail(APIView):
 
 class CompatStaffList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = StaffSerializer
+    resource_name = 'staff'
 
     def get(self, request):
         qs = Staff.objects.all().select_related('user__name')
         status = request.query_params.get('status', '')
         if status:
             qs = qs.filter(status=status)
-        serializer = StaffSerializer(qs, many=True)
-        return Response({'ok': True, 'staff': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = StaffSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'ok': True, 'staff': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatStaffDetail(APIView):
@@ -654,6 +718,8 @@ class CompatStaffDetail(APIView):
 
 class CompatEventList(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CalendarEventSerializer
+    resource_name = 'events'
 
     def get(self, request):
         qs = CalendarEvent.objects.all().select_related('employee')
@@ -662,14 +728,17 @@ class CompatEventList(APIView):
         if start and end:
             qs = qs.filter(start_time__gte=start, start_time__lte=end)
         qs = qs.order_by('start_time')
-        serializer = CalendarEventSerializer(qs, many=True)
-        return Response({'ok': True, 'events': serializer.data})
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
+    @transaction.atomic
     def post(self, request):
-        serializer = CalendarEventSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'ok': True, 'event': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class CompatEventDetail(APIView):
@@ -708,6 +777,80 @@ class CompatEventDetail(APIView):
         except CalendarEvent.DoesNotExist:
             return Response({'ok': False, 'error': 'Not found'}, status=404)
         event.delete()
+        return Response({'ok': True})
+
+
+class CompatEmployeeList(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = None  # Uses EmployeeSerializer dynamically
+    resource_name = 'employees'
+
+    def get_serializer_class(self):
+        from apps.users.serializers import EmployeeSerializer
+        return EmployeeSerializer
+
+    def get(self, request):
+        qs = Employee.objects.all().select_related('user__name')
+        q = request.query_params.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(user__name__first_name__icontains=q) |
+                Q(user__name__second_name__icontains=q) |
+                Q(email__icontains=q)
+            )
+        qs = qs.order_by('-date_added')
+        paginator = CompatPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = self.get_serializer_class()(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, self.resource_name: serializer.data}, status=status.HTTP_201_CREATED)
+
+
+class CompatEmployeeDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            emp = Employee.objects.select_related('user__name').get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        from apps.users.serializers import EmployeeSerializer
+        return Response({'ok': True, 'employee': EmployeeSerializer(emp).data})
+
+    def put(self, request, pk):
+        try:
+            emp = Employee.objects.select_related('user__name').get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        from apps.users.serializers import EmployeeSerializer
+        serializer = EmployeeSerializer(emp, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'employee': serializer.data})
+
+    def patch(self, request, pk):
+        try:
+            emp = Employee.objects.select_related('user__name').get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        from apps.users.serializers import EmployeeSerializer
+        serializer = EmployeeSerializer(emp, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'ok': True, 'employee': serializer.data})
+
+    def delete(self, request, pk):
+        try:
+            emp = Employee.objects.get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({'ok': False, 'error': 'Not found'}, status=404)
+        emp.delete()
         return Response({'ok': True})
 
 

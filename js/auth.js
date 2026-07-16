@@ -56,6 +56,16 @@ export const CLINICAL_ROLE_MAP = {
   role_supervisor: { key: 'mande',    label: 'Facility Analytics & M&E', color: '#F59E0B' },
   role_director:   { key: 'mande',    label: 'Facility Analytics & M&E', color: '#F59E0B' },
   role_finance:    { key: 'ancillary',label: 'Ancillary Services',    color: '#7C3AED' },
+  admin:           { key: 'admin',    label: 'System Admin',          color: '#DC2626' },
+  doctor:          { key: 'provider', label: 'Healthcare Provider',   color: '#1E5799' },
+  chemist:         { key: 'ancillary',label: 'Ancillary Services',    color: '#7C3AED' },
+  store_manager:   { key: 'ancillary',label: 'Ancillary Services',    color: '#7C3AED' },
+  quality_assurance: { key: 'mande', label: 'Facility Analytics & M&E', color: '#F59E0B' },
+  triage:          { key: 'triage',   label: 'Clinical Staff / Triage', color: '#13C8BC' },
+  nurse:           { key: 'triage',   label: 'Clinical Staff / Triage', color: '#13C8BC' },
+  receptionist:    { key: 'intake',   label: 'Front-Desk / Intake',   color: '#5B9ED6' },
+  accountant:      { key: 'mande',    label: 'Facility Analytics & M&E', color: '#F59E0B' },
+  lab_tech:        { key: 'ancillary',label: 'Ancillary Services',    color: '#7C3AED' },
 };
 
 // module id -> capability required to view it (mirrors server MODULE_CAPABILITIES)
@@ -283,21 +293,6 @@ export const QUICK_ACTIONS = {
     { label: 'Finance Summary',     icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
     { label: 'Attendance Review',   icon: '⏰', route: '/time-attendance',    cap: 'attendance:view' },
     { label: 'Leave Approvals',     icon: '📅', route: '/leave',              cap: 'leave:approve' },
-  ],
-  ancillary: [
-    { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
-    { label: 'Prescription Queue',  icon: '💊', route: '/pharmacy',           cap: 'pharmacy:dispense' },
-    { label: 'Pharmacy Inventory',  icon: '📦', route: '/pharmacy',           cap: 'pharmacy:inventory_read' },
-    { label: 'Stock Alerts',        icon: '⚠️', route: '/inventory',          cap: 'inventory:read' },
-  ],
-  admin: [
-    { label: 'Add User',            icon: '➕', route: '/admin',              cap: 'user:manage' },
-    { label: 'Role Permissions',    icon: '🔐', route: '/admin',              cap: 'role:manage' },
-    { label: 'View Audit Logs',     icon: '📝', route: '/audit-compliance',   cap: 'audit:read' },
-    { label: 'System Health',       icon: '🖥️', route: '/dashboard/overview', cap: 'system:health' },
-    { label: 'Manage Incidents',    icon: '🚨', route: '/incident-reporting', cap: 'incident:read' },
-    { label: 'Finance Overview',    icon: '💰', route: '/finance-billing',    cap: 'finance:read' },
-    { label: 'Staff Directory',     icon: '👥', route: '/staff',              cap: 'staff:read' },
   ],
   ancillary: [
     { label: 'Pending Lab Orders',  icon: '🧪', route: '/lab-orders',         cap: 'lab:read' },
@@ -539,15 +534,12 @@ export function canAccessModule(moduleId) {
   return current >= required;
 }
 
-// ── Mock Auth (replace with real API call) ───────────────────
-
 /**
- * Simulates an API login.
- * In production: replace with fetch('/api/auth/login', { method:'POST', body: ... })
+ * Performs login API call.
  *
  * @param {string} email
  * @param {string} password
- * @returns {Promise<{success: boolean, user?: object, error?: string}>}
+ * @returns {Promise<{success: boolean, user?: object, token?: string, error?: string}>}
  */
 export async function loginRequest(email, password) {
   try{

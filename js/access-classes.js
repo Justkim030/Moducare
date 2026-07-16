@@ -55,6 +55,8 @@ const ROLE_TO_CLASS = {
   role_admin: 'A', role_dev: 'C', role_nurse: 'B', role_lead: 'B',
   role_supervisor: 'D', role_director: 'D', role_finance: 'C',
   admin: 'A', dev: 'C', nurse: 'B', lead: 'B', supervisor: 'D', director: 'D', finance: 'C',
+  doctor: 'B', chemist: 'C', store_manager: 'C', quality_assurance: 'D',
+  triage: 'B', receptionist: 'C', accountant: 'D', lab_tech: 'C',
 };
 
 export function getClassForRole(roleId) {

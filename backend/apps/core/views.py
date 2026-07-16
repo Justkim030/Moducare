@@ -19,6 +19,8 @@ ROLE_CAPABILITIES = {
     'LAB_TECH': ['dashboard:view', 'lab:read', 'lab:result_entry', 'communication:read'],
 }
 
+ALL_CAPABILITIES = list(set(c for caps in ROLE_CAPABILITIES.values() for c in caps if c != '*'))
+
 MODULE_CAPABILITIES = {
     'dashboard': 'dashboard:view',
     'patients': 'patient:read',
@@ -46,7 +48,7 @@ def getCapabilities(role_id):
         return []
     caps = ROLE_CAPABILITIES.get(role_id, [])
     if '*' in caps:
-        return list(set([c for caps_list in ROLE_CAPABILITIES.values() for c in caps_list if c != '*']))
+        return ALL_CAPABILITIES
     return caps
 
 

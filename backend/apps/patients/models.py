@@ -2,7 +2,7 @@ from django.db import models
 from apps.users.models import Names  # Import the correct class name
 
 class Patient(models.Model):
-    name = models.OneToOneField(Names, on_delete=models.CASCADE, db_index=True)
+    name = models.ForeignKey(Names, on_delete=models.CASCADE, db_index=True, related_name='patients')
     register_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

@@ -23,8 +23,8 @@ urlpatterns = [
     path('api/v1/users/', include('apps.users.urls')),
     path('api/v1/patients/', include('apps.patients.urls')),
 
-    path('api/v1/prescriptions/', include('apps.prescriptions.urls')), 
-    path('api/v1/visits/', include('apps.visits.urls')), 
+    path('api/v1/prescriptions/', include('apps.prescriptions.urls')),
+    path('api/v1/visits/', include('apps.visits.urls')),
     path('api/v1/lab/', include('apps.lab.urls')),
     path('api/v1/accounts/', include('apps.accounts.urls')),
     path('api/v1/incident/', include('apps.quality.urls')),
@@ -42,13 +42,13 @@ urlpatterns = [
     path('api/v1/get-token/', obtain_auth_token),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    
+
     # Old vanilla JS frontend pages
     path('login.html', TemplateView.as_view(template_name='login.html'), name='login-page'),
     path('register.html', TemplateView.as_view(template_name='register.html'), name='register-page'),
     path('forgot-password.html', TemplateView.as_view(template_name='forgot-password.html'), name='forgot-password-page'),
     re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
-    
+
     # Old vanilla JS frontend static files
     path('js/<path:path>', serve, {'document_root': django_settings.BASE_DIR / '..' / 'js'}),
     path('css/<path:path>', serve, {'document_root': django_settings.BASE_DIR / '..' / 'css'}),
@@ -56,10 +56,7 @@ urlpatterns = [
 ]
 
 # Old vanilla JS frontend compatibility layer (api/ prefix)
-from apps.users.views import UserViewSet, EmployeeViewSet, LoginView, RegisterView, CurrentEmployeeProfileView
-from apps.patients.views import PatientViewSet
-from apps.quality.views import IncidentReportViewSet
-from apps.inventory.views import MedicineViewSet
+from apps.users.views import LoginView, RegisterView
 from apps.core.views import capabilities_view, role_permissions_view, health_view
 from apps.analytics.views import AnalyticsOverviewView
 from apps.reports.views import ReportScheduledListView, ReportRunView
@@ -73,26 +70,12 @@ from compat_views import (
     CompatNotificationList, CompatNotificationBroadcast,
     EmployeeMeView,
     CompatUserList, CompatUserDetail,
+    CompatEmployeeList, CompatEmployeeDetail,
     CompatFinanceList, CompatFinanceDetail,
     CompatOperationList, CompatOperationDetail,
     CompatStaffList, CompatStaffDetail,
     CompatEventList, CompatEventDetail,
 )
-
-user_list = UserViewSet.as_view({'get': 'list', 'post': 'create'})
-user_detail = UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
-
-employee_list = EmployeeViewSet.as_view({'get': 'list', 'post': 'create'})
-employee_detail = EmployeeViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})
-
-patient_list = CompatPatientList.as_view()
-patient_detail = CompatPatientDetail.as_view()
-
-incident_list = CompatIncidentList.as_view()
-incident_detail = CompatIncidentDetail.as_view()
-
-inventory_list = CompatInventoryList.as_view()
-inventory_detail = CompatInventoryDetail.as_view()
 
 compat_patterns = [
     path('api/login/', LoginView.as_view(), name='login'),
@@ -110,24 +93,20 @@ compat_patterns = [
     path('api/activities/', ActivitiesView.as_view(), name='activities'),
     path('api/search/', SearchView.as_view(), name='search'),
 
-    path('api/users/', user_list),
-    path('api/users/<pk>/', user_detail),
-    path('api/employees/', employee_list),
-    path('api/employees/<pk>/', employee_detail),
-    path('api/patients/', patient_list),
-    path('api/patients/<pk>/', patient_detail),
-    path('api/incidents/', incident_list),
-    path('api/incidents/<pk>/', incident_detail),
-    path('api/inventory/', inventory_list),
-    path('api/inventory/<pk>/', inventory_detail),
+    path('api/users/', CompatUserList.as_view(), name='compat-users'),
+    path('api/users/<pk>/', CompatUserDetail.as_view(), name='compat-user-detail'),
+    path('api/employees/', CompatEmployeeList.as_view(), name='compat-employees'),
+    path('api/employees/<pk>/', CompatEmployeeDetail.as_view(), name='compat-employee-detail'),
+    path('api/patients/', CompatPatientList.as_view(), name='compat-patients'),
+    path('api/patients/<pk>/', CompatPatientDetail.as_view(), name='compat-patient-detail'),
+    path('api/incidents/', CompatIncidentList.as_view(), name='compat-incidents'),
+    path('api/incidents/<pk>/', CompatIncidentDetail.as_view(), name='compat-incident-detail'),
+    path('api/inventory/', CompatInventoryList.as_view(), name='compat-inventory'),
+    path('api/inventory/<pk>/', CompatInventoryDetail.as_view(), name='compat-inventory-detail'),
     path('api/appointments/', CompatAppointmentList.as_view(), name='compat-appointments'),
     path('api/appointments/<pk>/', CompatAppointmentDetail.as_view(), name='compat-appointment-detail'),
     path('api/notifications/', CompatNotificationList.as_view(), name='compat-notifications'),
     path('api/notifications/broadcast/', CompatNotificationBroadcast.as_view(), name='compat-notifications-broadcast'),
-    path('api/users/', CompatUserList.as_view(), name='compat-users'),
-    path('api/users/<pk>/', CompatUserDetail.as_view(), name='compat-user-detail'),
-    path('api/employees/', employee_list),
-    path('api/employees/<pk>/', employee_detail),
     path('api/finance/', CompatFinanceList.as_view(), name='compat-finance'),
     path('api/finance/<pk>/', CompatFinanceDetail.as_view(), name='compat-finance-detail'),
     path('api/operations/', CompatOperationList.as_view(), name='compat-operations'),
@@ -137,10 +116,7 @@ compat_patterns = [
     path('api/events/', CompatEventList.as_view(), name='compat-events'),
     path('api/events/<pk>/', CompatEventDetail.as_view(), name='compat-event-detail'),
 
-    path('api/operations/', include('apps.operations.urls')),
-    path('api/finance/', include('apps.finance.urls')),
-    path('api/appointments/', include('apps.appointments.urls')),
-    path('api/staff/', include('apps.hr.urls')),
+    # HR sub-resources routed under /api/ for vanilla JS frontend
     path('api/profiles/', include('apps.hr.urls')),
     path('api/contracts/', include('apps.hr.urls')),
     path('api/trainings/', include('apps.hr.urls')),
@@ -158,9 +134,9 @@ compat_patterns = [
 
 urlpatterns += compat_patterns
 
-# SPA catch-all for old frontend (must be last)
+# SPA catch-all for old frontend (must be last, exclude /api/)
 urlpatterns += [
-    re_path(r'^(?P<path>.*)/?$', TemplateView.as_view(template_name='../index.html')),
+    re_path(r'^(?!api/).*$', TemplateView.as_view(template_name='../index.html')),
 ]
 
 if settings.DEBUG:
