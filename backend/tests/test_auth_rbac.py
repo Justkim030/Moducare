@@ -1,6 +1,5 @@
 import pytest
 from rest_framework.test import APIClient
-from django.urls import reverse
 from apps.users.models import Users, Employee, Names
 
 
@@ -108,46 +107,6 @@ class TestAuth:
         resp = api_client.get('/api/health/')
         assert resp.status_code == 200
         assert resp.data['ok'] is True
-
-
-@pytest.mark.django_db
-class TestPatients:
-    def test_list_patients(self, api_client, admin_token):
-        api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
-        resp = api_client.get('/api/patients/')
-        assert resp.status_code == 200
-        assert 'results' in resp.data or isinstance(resp.data, list)
-
-    def test_create_patient(self, api_client, admin_token):
-        api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
-        resp = api_client.post('/api/patients/', {
-            'name': {
-                'first_name': 'Test',
-                'second_name': 'Patient',
-                'gender': 'M',
-                'age': 30,
-                'phone_number': '+254700000002',
-            }
-        }, format='json')
-        assert resp.status_code == 201
-        assert resp.data['full_name'] == 'Test Patient'
-
-    def test_unauthorized_access(self, api_client):
-        resp = api_client.get('/api/patients/')
-        assert resp.status_code == 401
-
-
-@pytest.mark.django_db
-class TestAppointments:
-    def test_list_appointments(self, api_client, admin_token):
-        api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
-        resp = api_client.get('/api/appointments/')
-        assert resp.status_code == 200
-
-    def test_doctor_cannot_create_appointment(self, api_client, doctor_token):
-        api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {doctor_token}')
-        resp = api_client.get('/api/appointments/')
-        assert resp.status_code == 200
 
 
 @pytest.mark.django_db

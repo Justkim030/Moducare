@@ -1,8 +1,0 @@
-.audit-layout { padding: 24px; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-out; }
-.audit-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; }
-.audit-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.audit-filters { display: flex; gap: 12px; }
-.audit-table-wrap { overflow-x: auto; background: var(--surface-card); border: 1px solid var(--border-light); border-radius: var(--border-radius-md); }
-.audit-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.audit-table th { padding: 14px 16px; color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border-light); background: var(--surface-page); text-align: left; }
-.audit-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); }

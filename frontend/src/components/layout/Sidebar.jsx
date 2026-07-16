@@ -160,6 +160,12 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                  {!isCollapsed && <span className="label">Billing</span>}
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/hr" title="Human Resources">
+                 <span className="material-icons icon">groups</span>
+                 {!isCollapsed && <span className="label">Human Resources</span>}
+              </NavLink>
+            </li>
           </>
         )}
         

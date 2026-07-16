@@ -1,0 +1,154 @@
+/* src/pages/HR.css */
+
+.hr-page {
+  color: var(--text);
+}
+
+.hr-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.hr-header-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.hr-warn {
+  color: var(--warning, #b7791f);
+  font-size: 0.85rem;
+}
+
+.hr-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.hr-tab {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--border);
+  background-color: var(--bg-light);
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hr-tab.active {
+  background-color: var(--primary, #2b6cb0);
+  color: #fff;
+  border-color: var(--primary, #2b6cb0);
+}
+
+.hr-panel {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px oklch(from var(--text) l c h / 0.02);
+}
+
+.hr-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.hr-panel-header h3 {
+  margin: 0;
+}
+
+.hr-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hr-table th,
+.hr-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.hr-table th {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hr-muted {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.action-button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-pending,
+.status-leave {
+  background-color: #fefcbf;
+  color: #744210;
+}
+
+.status-approved,
+.status-present {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.status-rejected,
+.status-absent {
+  background-color: #fed7d7;
+  color: #742a2a;
+}
+
+.hr-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.hr-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.hr-form-modal .span-two {
+  grid-column: span 2;
+}
+
+.hr-form-modal .form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.hr-form-modal .form-group input,
+.hr-form-modal .form-group select,
+.hr-form-modal .form-group textarea {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-light);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}

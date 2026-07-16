@@ -101,14 +101,32 @@ Moducare/
 │   │   ├── operations/         # Operations & activities
 │   │   └── core/               # Departments, roles, capabilities
 │   └── hospital_db.sqlite3     # SQLite database
-├── frontend/                   # React frontend (collaborator)
-├── src/                        # Old vanilla JS SPA (preserved)
-├── js/                         # Old JS modules (preserved)
-├── css/                        # Old CSS (preserved)
+├── frontend/                   # React frontend (Vite + React 19)
+│   └── dist/                   # Production build served by Django
 └── README.md                   # This file
 ```
 
 > **Note:** The Django project package lives at `backend/backend/` — this is standard Django layout. `backend/manage.py` sets `DJANGO_SETTINGS_MODULE=backend.settings`, which resolves to `backend/backend/settings.py`.
+
+### Frontend (React)
+
+The SPA lives in `frontend/` and is built into `frontend/dist/`, which Django
+serves directly (static assets under `/static/`, SPA routes via a catch-all).
+
+```bash
+# Install deps (one time)
+cd frontend
+npm install
+
+# Build the production bundle (output: frontend/dist)
+npm run build
+
+# Or run the Vite dev server with hot reload (proxies /api to the Django server)
+npm run dev
+```
+
+In local development, `python manage.py runserver` serves both the API and the
+built SPA, so no separate frontend server is required.
 
 ---
 ## 🚀 REST API Reference
@@ -150,33 +168,8 @@ Moducare/
 | `GET/POST` | `/api/v1/referrals/` | Referrals |
 | `GET/POST` | `/api/v1/operations/` | Operations |
 
-### Legacy Frontend Compatibility (`/api/`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET/POST` | `/api/users/` | Users |
-| `GET/POST` | `/api/employees/` | Employees |
-| `GET/POST` | `/api/patients/` | Patients |
-| `GET/POST` | `/api/incidents/` | Incident Reports |
-| `GET/POST` | `/api/inventory/` | Medicines |
-| `GET/POST` | `/api/operations/` | Operations |
-| `GET/POST` | `/api/finance/` | Finance |
-| `GET/POST` | `/api/appointments/` | Appointments |
-| `GET/POST` | `/api/staff/` | HR Staff |
-| `GET/POST` | `/api/profiles/` | Employee Profiles |
-| `GET/POST` | `/api/contracts/` | Contracts |
-| `GET/POST` | `/api/trainings/` | Training Records |
-| `GET/POST` | `/api/performance/` | Performance Reviews |
-| `GET/POST` | `/api/payroll/` | Payroll |
-| `GET/POST` | `/api/attendance/` | Attendance |
-| `GET/POST` | `/api/leave/` | Leave Requests |
-| `GET/POST` | `/api/analytics/` | Analytics |
-| `GET/POST` | `/api/reports/` | Reports |
-| `GET/POST` | `/api/audit/` | Audit logs |
-| `GET/POST` | `/api/notifications/` | Notifications |
-| `GET/POST` | `/api/documents/` | Documents |
-| `GET/POST` | `/api/referrals/` | Referrals |
-
 ---
+
 ## 🛠 Developer Commands
 
 ```bash
@@ -199,13 +192,12 @@ python manage.py shell
 ---
 ## ✅ What to Work on Next
 
-1. **Connect React frontend** to `/api/v1/` endpoints
-2. **Connect old vanilla JS frontend** to `/api/` compatibility endpoints
-3. **Implement dashboard rendering** per role using capabilities/modules from login response
-4. **Add pagination** and filtering on all list endpoints
-5. **Add file upload** for documents and profile pictures
-6. **Add email notifications** for appointments and referrals
-7. **Add reporting** with PDF export
+1. **Finish React frontend screens** (admin/user-mgmt, audit, communications, documents, referrals, time & attendance/leave) to fully replace the retired vanilla-JS frontend
+2. **Implement dashboard rendering** per role using capabilities/modules from login response
+3. **Add pagination** and filtering on all list endpoints
+4. **Add file upload** for documents and profile pictures
+5. **Add email notifications** for appointments and referrals
+6. **Add reporting** with PDF export
 
 ---
 ## 📝 Recent Changes (2026-07-15)
