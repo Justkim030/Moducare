@@ -29,6 +29,9 @@ import Audit from './pages/Audit';
 import Notifications from './pages/Notifications';
 import Referrals from './pages/Referrals';
 import Operations from './pages/Operations';
+import Analytics from './pages/Analytics';
+import Reports from './pages/Reports';
+import Documents from './pages/Documents';
 
 function App() {
   return (
@@ -60,6 +63,9 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/referrals" element={<Referrals />} />
           <Route path="/operations" element={<Operations />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/documents" element={<Documents />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

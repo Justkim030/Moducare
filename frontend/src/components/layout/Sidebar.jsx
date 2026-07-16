@@ -196,6 +196,24 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                  {!isCollapsed && <span className="label">Operations</span>}
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/analytics" title="Analytics">
+                 <span className="material-icons icon">insights</span>
+                 {!isCollapsed && <span className="label">Analytics</span>}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/reports" title="Reports">
+                 <span className="material-icons icon">description</span>
+                 {!isCollapsed && <span className="label">Reports</span>}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/documents" title="Documents">
+                 <span className="material-icons icon">folder_open</span>
+                 {!isCollapsed && <span className="label">Documents</span>}
+              </NavLink>
+            </li>
           </>
         )}
         
