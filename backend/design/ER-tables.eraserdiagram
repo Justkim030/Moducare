@@ -1,4 +1,5 @@
-entity-relationship-diagram
+entity-Relationship Diagram
+
 NAMES [icon: user, color: red]{
   ID string pk
   FIRST_NAME string
@@ -23,7 +24,7 @@ VISITS [icon: calendar, color: yellow] {
   VISIT_DATE string
   STATUS string
   PATIENT_ID string
-  EMPLOYEE_ID string
+  EMPLOYEE_ID string 
   CONSULTATION_NOTES string
   PHARMACY_NOTES string
   TRIAGE_ID string
@@ -46,7 +47,7 @@ MEDICINE [icon: package, color: green]  {
 }
 
 
-EMPLOYEES [icon: users, color: green] {
+EMPLOYEES [icon: users, color: Green, styleMode: watercolor, colorMode: pastel] {
   ID string pk
   PASSWORD string
   EMAIL string
@@ -82,15 +83,87 @@ TRIAGE [icon: user, color: orange]   {
   WEIGHT string
 }
 
-FINANCE [icon: dollar-sign, color: green] {
+PAYMENT [icon: dollar-sign, color: green] {
   ID string pk
   AMOUNT string
   PAYMENT_METHOD string
   PAYMENT_DATE string
   VISIT_ID string
-  EMPLOYEE_ID string
+  FK_EMPLOYEE_ID string
 }
 
+FINANCE [icon: adjust, color: white]{
+  ID string pk
+  TRANSACTION_TYPE string
+  AMOUNT string
+  DESCRIPTION string
+  DATE_ADDED string
+  CATEGORY string
+  CREATED_AT string 
+}
+
+HR_TIMEATTENDANCE [icon: clock-1, color: orange]{
+  ID string pk
+  DATE DATE
+  CHECK_IN time 
+  CHECK_OUT time
+  STATUS string 
+  EMPLOYEE_ID string fk
+}
+HR_CONTRACT [icon: adjust, color: orange] {
+  ID string pk
+  CONTRACT_TYPE string
+  START_DATE DATE
+  END_DATE DATE
+  SALARY decimal
+  STATUS string
+  EMPLOYEE_ID string fk
+}
+
+HR_EMPLOYEEPROFILE [icon: user, color: orange]{
+  ID string pk
+  BIO string 
+  ADDRESS string
+  EMERGENCY_CONTACT VARCHAR
+  EMPLOYEE_ID string fk
+}
+
+HR_LEAVEREQUEST [icon: 1password, color: orange]{
+  ID string
+  LEAVE_TYPE string
+  START_DATE DATE
+  END_DATE DATE
+  REASON string
+  STATUS string
+  EMPLOYEE_ID string fk
+}
+
+HR_PAYROLLRECORD [icon: money, color: orange]{
+  ID string 
+  PERIOD VARCHAR
+  BASE_SALARY decimal
+  BONUSES decimal
+  DEDUCTIONS VARCHAR
+  NET_SALARY decimal
+  PAYEMENT_DATE DATE
+  EMPLOYEE_ID string fk
+}
+
+HR_PERFORMANCEREVIEW [icon: gcp-performance-dashboard, color: orange] {
+  ID string
+  REVIEW_DATA DATE
+  RATING string
+  COMMENTS string
+  EMPLOYEE_ID string fk
+}
+
+DOCUMENTS [icon: document, color: yellow] {
+  ID string pk
+  TITLE string
+  FILE string 
+  DESCRIPTION string
+  UPDATED_BY_ID string
+}
 INCIDENT_REPORT [icon: check-circle, color: purple] {
   ID string pk
   EMPLOYEE_ID string
@@ -107,19 +180,29 @@ INCIDENT [icon: exclamation-triangle, color: pink] {
   FOLLOW_UP_DATE string
 }
 
+
+EMPLOYEES.ID - HR_TIMEATTENDANCE.EMPLOYEE_ID: [color: orange]
+EMPLOYEES.ID - HR_PERFORMANCEREVIEW.EMPLOYEE_ID: [color: orange]
+EMPLOYEES.ID - HR_PAYROLLRECORD.EMPLOYEE_ID: [color: orange]
+EMPLOYEES.ID - HR_LEAVEREQUEST.EMPLOYEE_ID: [color: orange]
+EMPLOYEES.ID - HR_EMPLOYEEPROFILE.EMPLOYEE_ID: [color: orange]
+EMPLOYEES.ID - HR_CONTRACT.EMPLOYEE_ID: [color: orange]
+
+USERS.NAME_ID < DOCUMENTS.UPDATED_BY_ID
+
 USERS.NAME_ID < NAMES.ID
-EMPLOYEES.USERS_ID < USERS.ID
+EMPLOYEES.USERS_ID - USERS.ID: [color: green]
 PATIENT.NAME_ID < NAMES.ID
-PRESCRIPTION.EMPLOYEE_ID > EMPLOYEES.ID
-PRESCRIPTION.PATIENT_ID > PATIENT.ID
-PRESCRIPTION.DISPENSED_BY_ID > EMPLOYEES.ID
-PRESCRIPTION.VISIT_ID > VISITS.ID
-VISITS.PATIENT_ID > PATIENT.ID
-VISITS.EMPLOYEE_ID > EMPLOYEES.ID
-VISITS.TRIAGE_ID > TRIAGE.ID
-PRESCRIPTION_RECORD.MEDICINE_ID > MEDICINE.ID
-PRESCRIPTION_RECORD.PATIENT_ID > PATIENT.ID
-FINANCE.VISIT_ID > EMPLOYEES.ID
-INCIDENT_REPORT.EMPLOYEE_ID > EMPLOYEES.ID
-INCIDENT_REPORT.PATIENT_ID > PATIENT.ID
-INCIDENT.INCIDENT_REPORT_ID > INCIDENT_REPORT.ID
+PRESCRIPTION.EMPLOYEE_ID > EMPLOYEES.ID: [color: red]
+PRESCRIPTION.PATIENT_ID > PATIENT.ID: [color: red]
+PRESCRIPTION.DISPENSED_BY_ID > EMPLOYEES.ID: [color: red]
+PRESCRIPTION.VISIT_ID > VISITS.ID: [color: red]
+VISITS.PATIENT_ID > PATIENT.ID: [color: yellow]
+VISITS.EMPLOYEE_ID > EMPLOYEES.ID: [color: yellow]
+VISITS.TRIAGE_ID > TRIAGE.ID: [color: orange]
+PRESCRIPTION_RECORD.MEDICINE_ID > MEDICINE.ID: [color: green]
+PRESCRIPTION_RECORD.PATIENT_ID > PATIENT.ID: [color: red]
+PAYMENT.VISIT_ID> VISITS.ID: [color: green]
+INCIDENT_REPORT.EMPLOYEE_ID > EMPLOYEES.ID: [color: purple]
+INCIDENT_REPORT.PATIENT_ID > PATIENT.ID: [color: purple]
+INCIDENT.INCIDENT_REPORT_ID - INCIDENT_REPORT.ID: [color: "#e01f76"]
