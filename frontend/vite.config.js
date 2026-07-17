@@ -7,9 +7,6 @@ import react from '@vitejs/plugin-react'
 // directly by the Django dev server.
 export default defineConfig({
   plugins: [react()],
-  base: '/static/',
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-  },
+  base: '/',
+  
 })
