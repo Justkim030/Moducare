@@ -74,16 +74,25 @@ class EmployeeSerializer(serializers.ModelSerializer):
             return obj.user.username
 
     def create(self, validated_data):
+        # Extract nested structures
         user_data = validated_data.pop('user')
         name_data = user_data.pop('name', {})
+        
+        # Ensure all name fields exist
         for field in ['first_name', 'second_name', 'gender', 'age', 'phone_number']:
-            if field not in name_data:
-                name_data[field] = ''
+            name_data.setdefault(field, '')
         name_data.setdefault('third_name', '')
         name_instance = Names.objects.create(**name_data)
-        password = user_data.pop('password')
+        
+        # Extract password securely
+        password = user_data.pop('password', None)
+        
+        # Create user
         user_instance = Users.objects.create(name=name_instance, **user_data)
-        user_instance.set_password(password)
-        user_instance.save()
+        if password:
+            user_instance.set_password(password)
+            user_instance.save()
+            
+        # Create employee
         employee_instance = Employee.objects.create(user=user_instance, **validated_data)
         return employee_instance

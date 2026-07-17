@@ -3,8 +3,9 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(r'', views.UserViewSet)
 router.register(r'employees', views.EmployeeViewSet)
+router.register(r'', views.UserViewSet)
+
 
 urlpatterns = [
     # 1. Manually add the route for your custom APIView BEFORE the router patterns
