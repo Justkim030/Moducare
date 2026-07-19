@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { patientService } from '../api/patientService';
 import { userService } from '../api/userService';
 import { inventoryService } from '../api/inventoryService';
-import { prescriptionService } from '../api/prescriptionService';
+// import { prescriptionService } from '../api/prescriptionService';
 import { visitService } from '../api/visitService';
 import { wardService } from '../api/wardService';
-import { labService } from '../api/labService';
+// import { labService } from '../api/labService';
 import { accountService } from '../api/accountService';
 import { incidentService } from '../api/incidentService'; // Imported our new service[cite: 4]
 import { useAuth } from '../hooks/useAuth'; 

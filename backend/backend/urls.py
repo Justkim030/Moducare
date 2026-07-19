@@ -20,8 +20,6 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from apps.users.views import LoginView, RegisterView
 from apps.core.views import capabilities_view, role_permissions_view, health_view
 
-# React SPA build output (run `npm run build` in ../frontend)
-SPA_DIR = settings.BASE_DIR / '..' / 'frontend' / 'dist'
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -27,8 +27,8 @@ function Appointments() {
       const res = await appointmentsService.getAppointments();
       setItems(res.data.results || res.data || []);
       setError(null);
-    } catch (e) {
-      setError('Failed to load appointments.');
+    } catch (err) {
+      setError('Failed to load appointments.',err);
     } finally {
       setLoading(false);
     }

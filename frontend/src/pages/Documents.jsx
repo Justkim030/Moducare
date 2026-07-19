@@ -22,8 +22,8 @@ function Documents() {
       const res = await documentsService.getDocuments();
       setItems(res.data.results || res.data || []);
       setError(null);
-    } catch (e) {
-      setError('Failed to load documents.');
+    } catch (err) {
+      setError('Failed to load documents.',err);
     } finally {
       setLoading(false);
     }
@@ -45,8 +45,8 @@ function Documents() {
       setTitle(''); setDescription(''); setFile(null);
       if (fileRef.current) fileRef.current.value = '';
       load();
-    } catch (e) {
-      setError(e.response?.data ? JSON.stringify(e.response.data) : 'Failed to upload document.');
+    } catch (err) {
+      setError(err.response?.data ? JSON.stringify(err.response.data) : 'Failed to upload document.');
     }
   };
 
@@ -55,8 +55,8 @@ function Documents() {
       await documentsService.deleteDocument(id);
       setSuccess('Document deleted.');
       load();
-    } catch (e) {
-      setError('Failed to delete document.');
+    } catch (err) {
+      setError('Failed to delete document.',err);
     }
   };
 

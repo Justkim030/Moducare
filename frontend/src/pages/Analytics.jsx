@@ -15,8 +15,8 @@ function Analytics() {
         const res = await analyticsService.getMetrics();
         setItems(res.data.results || res.data || []);
         setError(null);
-      } catch (e) {
-        setError('Failed to load analytics metrics.');
+      } catch (err) {
+        setError('Failed to load analytics metrics.', err);
       } finally {
         setLoading(false);
       }

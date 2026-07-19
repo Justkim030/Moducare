@@ -12,21 +12,21 @@ const getVisits = (pageOrStatus, pageSize, sortOrder, statusFilter = '') => {
       status: statusFilter
     };
   }
-  return api.get(`visits/visits/`, { params });
+  return api.get(`visits/`, { params });
 };
 
 const createVisit = (visitData) => {
-  return api.post('visits/visits/', visitData);
+  return api.post('visits/', visitData);
 };
 
 const getVisitById = (id) => {
-  return api.get(`visits/visits/${id}/`);
+  return api.get(`visits/${id}/`);
 };
 
 
 const saveConsultationReport = (id, data) => {
 
-  return api.post(`visits/visits/${id}/save_report/`, data);
+  return api.post(`visits/${id}/save_report/`, data);
 };
 
 export const visitService = {

@@ -27,8 +27,8 @@ function Finance() {
       const res = await financeService.getTransactions();
       setItems(res.data.results || res.data || []);
       setError(null);
-    } catch (e) {
-      setError('Failed to load financial transactions.');
+    } catch (err) {
+      setError('Failed to load financial transactions.',err);
     } finally {
       setLoading(false);
     }

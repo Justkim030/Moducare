@@ -14,7 +14,7 @@ function Accounts() {
 
   // Pagination & Sorting
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize] = useState(20);
   const [totalInvoices, setTotalInvoices] = useState(0);
   const [filterStatus, setFilterStatus] = useState(''); // '' = All, 'PENDING', 'PAID'
 

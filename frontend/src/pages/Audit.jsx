@@ -15,8 +15,8 @@ function Audit() {
         const res = await auditService.getAuditLogs();
         setItems(res.data.results || res.data || []);
         setError(null);
-      } catch (e) {
-        setError('Failed to load audit logs.');
+      } catch (err) {
+        setError('Failed to load audit logs.',err);
       } finally {
         setLoading(false);
       }

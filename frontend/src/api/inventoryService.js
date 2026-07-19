@@ -1,7 +1,7 @@
 import api from './api';
 
 const getAllMedicines = (page, pageSize, sortOrder) => {
-  return api.get('inventory/medicines/', {
+  return api.get('inventory/', {
     params: {
       page: page,
       page_size: pageSize,
@@ -10,15 +10,15 @@ const getAllMedicines = (page, pageSize, sortOrder) => {
   });
 };
 const createMedicine = (medicineData) => {
-  return api.post('inventory/medicines/', medicineData);
+  return api.post('inventory/', medicineData);
 };
 
 const deleteMedicine = (id) => {
-  return api.delete(`inventory/medicines/${id}/`);
+  return api.delete(`inventory/${id}/`);
 };
 
 const updateMedicine = (id, medicineData) => {
-  return api.put(`inventory/medicines/${id}/`, medicineData);
+  return api.put(`inventory/${id}/`, medicineData);
 };
 
 export const inventoryService = {
