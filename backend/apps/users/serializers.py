@@ -25,12 +25,13 @@ class UserSerializer(serializers.ModelSerializer):
         except Employee.DoesNotExist:
             return ''
 
-    def get_phone_number(self, obj):
-        try:
-            return obj.name.phone_number
-        except Names.DoesNotExist:
-            return ''
+   # apps/users/serializers.py
 
+    def get_phone_number(self, obj):
+        # This prevents the NoneType crash
+        if obj.name and hasattr(obj.name, 'phone_number'):
+            return obj.name.phone_number
+        return ''
     def get_department(self, obj):
         return 'Operations'
 

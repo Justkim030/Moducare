@@ -155,7 +155,6 @@ function EditProfile() {
             </div>
             <small className="text-muted">Click camera icon to change</small>
         </div>
-        {/* ------------------------------- */}
 
         {/* Read-only Fields */}
         <div className="form-group">

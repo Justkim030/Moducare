@@ -11,6 +11,7 @@ function Documents() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState(null); // New state for viewer
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
@@ -23,7 +24,7 @@ function Documents() {
       setItems(res.data.results || res.data || []);
       setError(null);
     } catch (err) {
-      setError('Failed to load documents.',err);
+      setError('Failed to load documents.', err);
     } finally {
       setLoading(false);
     }
@@ -59,44 +60,50 @@ function Documents() {
       setError('Failed to delete document.',err);
     }
   };
-
-  return (
+return (
     <div className="documents-page">
-      <div className="staff-header-row">
+      <div className="documents-header-row">
         <h2>Document Vault</h2>
         <Button variant="submit" onClick={() => setIsOpen(true)}>+ Upload Document</Button>
       </div>
+      
       {success && <p className="page-success">{success}</p>}
       {error && <p className="page-error">{error}</p>}
 
-      {loading ? (
-        <p className="hr-muted">Loading…</p>
-      ) : items.length === 0 ? (
-        <p className="hr-muted">No documents uploaded.</p>
-      ) : (
-        <table className="hr-table">
-          <thead>
-            <tr><th>Title</th><th>Description</th><th>Uploaded By</th><th>Date</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {items.map((d) => (
-              <tr key={d.id}>
-                <td>{d.title}</td>
-                <td>{d.description || '—'}</td>
-                <td>{d.uploaded_by ?? '—'}</td>
-                <td>{d.uploaded_at ?? '—'}</td>
-                <td>
-                  <div className="action-button-group">
-                    {d.file && <a className="mc-btn btn-sm btn-ghost" href={d.file} target="_blank" rel="noreferrer">Open</a>}
-                    <Button variant="delete" onClick={() => remove(d.id)}>Delete</Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="documents-list-container">
+        {loading ? (
+          <p className="hr-muted">Loading…</p>
+        ) : items.length === 0 ? (
+          <p className="hr-muted">No documents uploaded.</p>
+        ) : (
+          <table className="documents-table">
+            <thead>
+              <tr><th>Title</th><th>Description</th><th>Uploaded By</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+              <tbody>
+                {items.map((d) => (
+                  <tr key={d.id}>
+                    <td>{d.title}</td>
+                    <td>{d.description || '—'}</td>
+                    {/* Update this line below: */}
+                    <td>{d.uploaded_by_name || 'System'}</td>
+                    <td>{d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : '—'}</td>
+                    <td>
+                      <div className="action-button-group">
+                        {d.file && (
+                          <Button variant="edit" onClick={() => setViewingDoc(d)}>Open</Button>
+                        )}
+                        <Button variant="delete" onClick={() => remove(d.id)}>Delete</Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+          </table>
+        )}
+      </div>
 
+      {/* Upload Modal */}
       {isOpen && (
         <Modal onClose={() => setIsOpen(false)}>
           <div className="hr-form-modal">
@@ -110,6 +117,29 @@ function Documents() {
                 <input ref={fileRef} type="file" onChange={(e) => setFile(e.target.files[0])} required /></div>
               <Button type="submit" variant="submit" className="span-two">Upload</Button>
             </form>
+          </div>
+        </Modal>
+      )}
+
+      {/* Document Viewer Modal */}
+      {viewingDoc && (
+        <Modal onClose={() => setViewingDoc(null)}>
+          <div className="hr-form-modal">
+            <h3>{viewingDoc.title}</h3>
+            <div className="viewer-container" style={{ height: '400px', width: '100%', marginTop: '10px' }}>
+              <iframe 
+                src={viewingDoc.file} 
+                title="Document Viewer" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 'none' }}
+              />
+            </div>
+            <div style={{ marginTop: '15px', textAlign: 'right' }}>
+              <a href={viewingDoc.file} target="_blank" rel="noreferrer" className="mc-btn btn-submit">
+                Download Original
+              </a>
+            </div>
           </div>
         </Modal>
       )}

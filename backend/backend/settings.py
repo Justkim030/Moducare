@@ -111,7 +111,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
+
+CSP_FRAME_ANCESTORS = ("'self'", "http://localhost:5173", "http://127.0.0.1:5173")
 
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar']

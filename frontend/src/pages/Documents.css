@@ -1,2 +1,65 @@
 /* src/pages/Documents.css */
-/* Shared list/page styles are defined in Appointments.css */
+
+.documents-page {
+  padding: 20px;
+}
+
+/* Use the Staff list container style */
+.documents-list-container {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px oklch(from var(--text) l c h / 0.02);
+}
+
+/* Standard Header Row shared across pages */
+.documents-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.documents-header-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Table styling aligned with Staff.css */
+.documents-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.documents-table th {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-muted);
+}
+
+.documents-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+/* Modal form grid alignment */
+.hr-form-modal form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.hr-form-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.hr-form-modal .span-two {
+  grid-column: span 2;
+}
