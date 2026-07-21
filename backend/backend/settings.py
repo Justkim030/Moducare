@@ -111,10 +111,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'csp.middleware.CSPMiddleware',
 ]
 
-CSP_FRAME_ANCESTORS = ("'self'", "http://localhost:5173", "http://127.0.0.1:5173")
 
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar']
@@ -152,9 +150,6 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-
-# Database Setup for Local Development & PythonAnywhere Production
-# (We replace the 'django_cf.db.backends.d1' block since PythonAnywhere runs a true Linux storage layer)
 
 DATABASES = {
     'default': {
@@ -226,4 +221,3 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
 
-X_FRAME_OPTIONS = 'ALLOW-FROM http://localhost:5173'
