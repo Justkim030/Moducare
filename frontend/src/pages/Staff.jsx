@@ -11,7 +11,6 @@ function Staff() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Clean initial state representation
   const initialFormState = {
     username: '', 
     password: '', 
