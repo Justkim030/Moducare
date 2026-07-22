@@ -14,7 +14,6 @@ import { Link } from 'react-router-dom';
 import './Dashboard.css';
 import '../App.css';
 
-// Reusable Skeleton Component for Dashboard Statistic Cards[cite: 4]
 const SkeletonCard = () => (
   <div className="skeleton-card">
     <div className="skeleton-line short"></div>
@@ -22,7 +21,6 @@ const SkeletonCard = () => (
   </div>
 );
 
-// Reusable Skeleton Component for Dashboard Sidebar Lists[cite: 4]
 const SkeletonList = ({ rows = 3 }) => (
   <div className="skeleton-list-wrapper">
     {Array.from({ length: rows }).map((_, index) => (
@@ -34,7 +32,7 @@ const SkeletonList = ({ rows = 3 }) => (
   </div>
 );
 
-// 1. NURSE DASHBOARD[cite: 4]
+// 1. NURSE DASHBOARD
 const NurseDashboard = ({ stats, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -67,7 +65,7 @@ const NurseDashboard = ({ stats, loading }) => (
   </div>
 );
 
-// 2. DOCTOR DASHBOARD[cite: 4]
+// 2. DOCTOR DASHBOARD
 const DoctorDashboard = ({ recentPatients, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -99,7 +97,7 @@ const DoctorDashboard = ({ recentPatients, loading }) => (
   </div>
 );
 
-// 3. PHARMACIST DASHBOARD[cite: 4]
+// 3. PHARMACIST DASHBOARD
 const PharmacistDashboard = ({ lowStockMeds, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -131,7 +129,7 @@ const PharmacistDashboard = ({ lowStockMeds, loading }) => (
   </div>
 );
 
-// 4. LAB TECH DASHBOARD[cite: 4]
+// 4. LAB TECH DASHBOARD
 const LabTechDashboard = () => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -153,7 +151,7 @@ const LabTechDashboard = () => (
   </div>
 );
 
-// 5. ACCOUNTANT DASHBOARD[cite: 4]
+// 5. ACCOUNTANT DASHBOARD
 const AccountantDashboard = ({ invoiceStats, loading }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -194,7 +192,7 @@ const AccountantDashboard = ({ invoiceStats, loading }) => (
   </div>
 );
 
-// 6. INCIDENT REPORT DASHBOARD (Cleaned up to only contain the Summary card)[cite: 4]
+// 6. INCIDENT REPORT DASHBOARD 
 const IncidentReportDashboard = ({ loading, incidentStats }) => (
   <div className="dashboard-lists">
     <div className="dashboard-list-card wide-card">
@@ -235,7 +233,7 @@ const IncidentReportDashboard = ({ loading, incidentStats }) => (
   </div>
 );
 
-// 7. ADMIN DASHBOARD[cite: 4]
+// 7. ADMIN DASHBOARD
 const AdminDashboard = ({ stats, recentPatients, lowStockMeds, loading }) => (
   <div className="admin-grid-dashboard">
     <div className="stat-card-container">
