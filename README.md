@@ -195,9 +195,8 @@ python manage.py shell
 1. **Finish React frontend screens** (admin/user-mgmt, audit, communications, documents, referrals, time & attendance/leave) to fully replace the retired vanilla-JS frontend
 2. **Implement dashboard rendering** per role using capabilities/modules from login response
 3. **Add pagination** and filtering on all list endpoints
-4. **Add file upload** for documents and profile pictures
-5. **Add email notifications** for appointments and referrals
-6. **Add reporting** with PDF export
+4. **Add email notifications** for appointments and referrals
+5. **Add reporting** with PDF export
 
 ---
 ## 📝 Recent Changes (2026-07-15)
