@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { notificationsService } from '../api/notificationsService';
 import Button from '../components/common/Button';
-import './Notifications.css';
 
 function Notifications() {
   const [items, setItems] = useState([]);

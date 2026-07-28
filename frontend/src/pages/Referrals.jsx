@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { referralsService } from '../api/referralsService';
 import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
-import './Referrals.css';
 
 const STATUSES = ['pending', 'accepted', 'completed', 'rejected'];
 

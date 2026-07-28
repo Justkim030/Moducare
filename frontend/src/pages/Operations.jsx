@@ -1,7 +1,6 @@
 // src/pages/Operations.jsx
 import React, { useState, useEffect } from 'react';
 import { operationsService } from '../api/operationsService';
-import './Operations.css';
 
 function Operations() {
   const [activities, setActivities] = useState([]);

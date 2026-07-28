@@ -1,7 +1,6 @@
 // src/pages/Reports.jsx
 import React, { useState, useEffect } from 'react';
 import { reportsService } from '../api/reportsService';
-import './Reports.css';
 
 function Reports() {
   const [items, setItems] = useState([]);

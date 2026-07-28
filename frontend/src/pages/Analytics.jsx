@@ -1,7 +1,6 @@
 // src/pages/Analytics.jsx
 import React, { useState, useEffect } from 'react';
 import { analyticsService } from '../api/analyticsService';
-import './Analytics.css';
 
 function Analytics() {
   const [items, setItems] = useState([]);

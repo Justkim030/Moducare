@@ -1,7 +1,6 @@
 // src/pages/Audit.jsx
 import React, { useState, useEffect } from 'react';
 import { auditService } from '../api/auditService';
-import './Audit.css';
 
 function Audit() {
   const [items, setItems] = useState([]);

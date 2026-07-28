@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { financeService } from '../api/financeService';
 import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
-import './Finance.css';
 
 const TYPES = ['income', 'expense', 'adjustment'];
 
