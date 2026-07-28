@@ -2,7 +2,7 @@
 import api from './api';
 
 const getAdmittedPatients = (page, pageSize) => {
-  return api.get('visits/visits/', {
+  return api.get('visits/', {
     params: {
       page,
       page_size: pageSize,
@@ -21,7 +21,7 @@ const getWardLogs = (visitId) => {
 
 const dischargePatient = (visitId) => {
   // Patch the status to DISCHARGED
-  return api.patch(`visits/visits/${visitId}/`, { status: 'DISCHARGED' });
+  return api.patch(`visits/${visitId}/`, { status: 'DISCHARGED' });
 };
 
 export const wardService = {
