@@ -1,7 +1,7 @@
 import api from './api';
 
 const getAllPrescriptions = (page, pageSize, sortOrder) => {
-  return api.get('prescriptions/prescriptions/', {
+  return api.get('prescriptions/', {
     params: {
       page: page,
       page_size: pageSize,
@@ -11,7 +11,7 @@ const getAllPrescriptions = (page, pageSize, sortOrder) => {
 };
 
 const createPrescription = (prescriptionData) => {
-  return api.post('prescriptions/prescriptions/', prescriptionData);
+  return api.post('prescriptions/', prescriptionData);
 };
 
 const addPrescriptionItem = (itemData) => {
@@ -27,11 +27,11 @@ const deletePrescriptionItem = (itemId) => {
 };
 
 const dispensePrescription = (id) => {
-  return api.post(`prescriptions/prescriptions/${id}/dispense/`);
+  return api.post(`prescriptions/${id}/dispense/`);
 };
 
 const markAsPaid = (id) => {
-  return api.post(`prescriptions/prescriptions/${id}/mark_as_paid/`);
+  return api.post(`prescriptions/${id}/mark_as_paid/`);
 };
 
 export const prescriptionService = {
